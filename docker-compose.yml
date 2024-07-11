@@ -2,6 +2,7 @@ name: "doppelganger"
 services:
   app:
     image: "ghcr.io/regulad/doppelganger-front:latest"
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
