@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        Assert.assertEquals("xyz.regulad.pheidippides.notify", appContext.packageName)
+        Assert.assertEquals("xyz.regulad.pheidippides.locate", appContext.packageName)
     }
 }

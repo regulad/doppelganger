@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "xyz.regulad.pheidippides.notify"
+    namespace = "xyz.regulad.pheidippides.locate"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "xyz.regulad.pheidippides.notify"
+        applicationId = "xyz.regulad.pheidippides.locate"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
