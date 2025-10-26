@@ -22,7 +22,7 @@ const classesForTypes = {
   // p: "shadcn-muted",
 };
 
-export function useMDXComponents(components: MDXComponents): MDXComponents {
+export function shadcnizeMDXComponents(components: MDXComponents): MDXComponents {
   return {
     h1: ({ children }) => <h1 className={classesForTypes.h1}>{children}</h1>,
     h2: ({ children }) => <h2 className={classesForTypes.h2}>{children}</h2>,
