@@ -11,7 +11,7 @@ RUN apk add --no-cache \
     curl \
     android-tools
 
-# Install docker-compsoe plugin for deployment
+# Install docker-compose plugin for deployment
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
     ARCH=$(uname -m) && \
     case ${ARCH} in \
