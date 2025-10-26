@@ -27,7 +27,7 @@ env:
   TURBO_REMOTE_ONLY: true
   # java, gradle & android
   JAVA_VERSION: "17"
-  DISTRIBUTION: "zulu"
+  DISTRIBUTION: "oracle"
   MAIN_PROJECT_MODULE: app
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
 
@@ -64,6 +64,7 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        # no need to pin version for gradle, it tries to get it from the wrapper by default
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
