@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "./gradlew --console=plain assembleDebug",
-    "lint": "./gradlew --console=plain lint",
-    "test": "./gradlew --console=plain test",
-    "clean": "./gradlew --console=plain clean"
+    "build": "./gradlew --no-daemon --console=plain assembleDebug",
+    "lint": "./gradlew --no-daemon --console=plain lint",
+    "test": "./gradlew --no-daemon --console=plain test",
+    "clean": "./gradlew --no-daemon --console=plain clean"
   }
 }
