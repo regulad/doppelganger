@@ -27,7 +27,7 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
 COPY package.json pnpm-lock.yaml ./
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8.15.5
 
 # Install project dependencies
 RUN pnpm install
