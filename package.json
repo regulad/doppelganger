@@ -10,6 +10,7 @@
     "format": "prettier \"**/*.{json,json5,ts,tsx,md,mdx,js,cjs,mjs,jsx,yml,yaml,css,scss,html,xml,svg}\""
   },
   "devDependencies": {
+    "@pnpm/make-dedicated-lockfile": "0.5.15",
     "@prettier/plugin-xml": "^3.4.1",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^4.0.0",
