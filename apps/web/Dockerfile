@@ -9,7 +9,10 @@ RUN apk add --no-cache \
     build-base \
     docker-cli \
     curl \
-    android-tools
+    android-tools \
+    python3 \
+    make \
+    g++
 
 # Install docker-compose plugin for deployment
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
@@ -27,6 +30,7 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
 COPY package.json pnpm-lock.yaml ./
 
 # Install pnpm
+RUN npm install -g node-gyp-build
 RUN npm install -g pnpm@8.15.5
 
 # Install project dependencies

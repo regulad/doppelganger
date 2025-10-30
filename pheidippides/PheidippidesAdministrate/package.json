@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "./gradlew --no-daemon --console=plain assembleDebug",
-    "lint": "./gradlew --no-daemon --console=plain lint",
-    "test": "./gradlew --no-daemon --console=plain test",
-    "clean": "./gradlew --no-daemon --console=plain clean"
+    "build": "flock /tmp/pheidippides-administrate ./gradlew --no-daemon --console=plain clean assembleDebug",
+    "lint": "flock /tmp/pheidippides-administrate ./gradlew --no-daemon --console=plain clean lint",
+    "test": "flock /tmp/pheidippides-administrate ./gradlew --no-daemon --console=plain clean test"
   }
 }

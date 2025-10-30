@@ -37,15 +37,15 @@ export function ConfiguredNavbar() {
 export function ConfiguredFooter() {
   return (
     <Footer3
-      footerText="© 2024 Nefum LLC. All rights reserved."
+      footerText="© 2025 Nefum LLC. All rights reserved."
       address={{
         label: "Address:",
         value: "7 Beverly Road, Livingston NJ, US, 07039",
       }}
       contact={{
         label: "Contact:",
-        phone: "+1 (732) 893-7406",
-        email: "contact@nefum.com",
+        phone: "+1 (908) 656-8176",
+        email: "doppelganger (at) regulad.xyz",
       }}
       columnLinks={[
         {
