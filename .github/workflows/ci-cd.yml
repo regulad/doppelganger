@@ -33,7 +33,7 @@ env:
 
 jobs:
   check:
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest-m"
     name: Check
     permissions:
       contents: read
@@ -107,7 +107,7 @@ jobs:
           fi
 
   build-android:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest-m"
     name: Build ${{ matrix.tag }}
     needs:
       - check
@@ -171,7 +171,7 @@ jobs:
 
   build-docker:
     # GitHub does not yet offer native building on arm64 (https://github.blog/changelog/2023-10-30-accelerate-your-ci-cd-with-arm-based-hosted-runners-in-github-actions/)
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-latest-m"
     name: Build ${{ matrix.tag }}
     needs:
       - build-android
@@ -280,7 +280,7 @@ jobs:
   # deploy:
   #   needs:
   #     - build-docker
-  #   runs-on: "ubuntu-22.04"
+  #   runs-on: "ubuntu-latest-m"
   #   steps:
   #     # Deploy changes on production server
   #     - name: Deploy changes to prod
