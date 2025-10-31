@@ -27,13 +27,13 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 # Copy package.json and pnpm-lock.yaml for installing dependencies
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc ./
 
 # Install pnpm
 RUN npm install -g pnpm@8.15.5
 
 # Install project dependencies
-RUN pnpm install --frozen-lockfile --no-optional
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy the rest of the application code
 COPY . .
