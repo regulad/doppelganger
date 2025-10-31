@@ -275,22 +275,22 @@ jobs:
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
 
-  deploy:
-    needs:
-      - build-docker
-    runs-on: "ubuntu-22.04"
-    steps:
-      # Deploy changes on production server
-      - name: Deploy changes to prod
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd ~/doppelganger
-            git pull
-            docker compose pull
-            docker compose up -d
+  # deploy:
+  #   needs:
+  #     - build-docker
+  #   runs-on: "ubuntu-22.04"
+  #   steps:
+  #     # Deploy changes on production server
+  #     - name: Deploy changes to prod
+  #       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #         host: ${{ secrets.SSH_HOST }}
+  #         username: ${{ secrets.SSH_USERNAME }}
+  #         key: ${{ secrets.SSH_KEY }}
+  #         port: ${{ secrets.SSH_PORT }}
+  #         script: |
+  #           cd ~/doppelganger
+  #           git pull
+  #           docker compose pull
+  #           docker compose up -d
