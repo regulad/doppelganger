@@ -10,8 +10,9 @@
       "import": "./dist/instrument.mjs"
     }
   },
+  "type": "module",
   "engines": {
-    "node": ">=22.4.0"
+    "node": "^22.11.0"
   },
   "dependencies": {
     "@cycjimmy/jsmpeg-player": "^6.1.1",
@@ -23,8 +24,8 @@
     "@lifeomic/attempt": "^3.1.0",
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
-    "@next/mdx": "14.2.5",
-    "@next/third-parties": "14.2.5",
+    "@next/mdx": "14.2.32",
+    "@next/third-parties": "14.2.32",
     "@onesignal/node-onesignal": "5.0.0-alpha-01",
     "@paralleldrive/cuid2": "^2.2.2",
     "@pm2/io": "^6.1.0",
@@ -69,7 +70,7 @@
     "client-only": "^0.0.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
-    "contentlayer": "^0.3.4",
+    "contentlayer2": "^0.4.6",
     "cookies-next": "^4.2.1",
     "cpu-features": "^0.0.10",
     "date-fns": "^3.6.0",
@@ -87,8 +88,8 @@
     "lucide-react": "^0.400.0",
     "mustache": "^4.2.0",
     "mutation-observer": "^1.0.3",
-    "next": "14.2.5",
-    "next-contentlayer": "^0.3.4",
+    "next": "14.2.32",
+    "next-contentlayer2": "^0.4.6",
     "next-mdx-remote": "^5.0.0",
     "next-sitemap": "^4.2.3",
     "next-themes": "^0.3.0",
@@ -187,7 +188,7 @@
     "licenses:check": "rimraf \"src/app/(userland)/(contained)/licenses/licenses.json\" && license-checker --production --json --out \"src/app/(userland)/(contained)/licenses/licenses.json\"",
     "precommit": "cd ../..; ./scripts/sync-legacy-dockerfile-lock.sh",
     "build": "next build",
-    "content:build": "contentlayer build",
+    "content:build": "contentlayer2 build",
     "postbuild": "next-sitemap --config next-sitemap.config.mjs",
     "start": "pm2 start ecosystem.config.json --no-daemon",
     "lint": "next lint --max-warnings 0",

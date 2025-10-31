@@ -1,7 +1,7 @@
 // @ts-check
 import withMdxFactory from "@next/mdx";
 import { withSentryConfig } from "@sentry/nextjs";
-import { withContentlayer } from "next-contentlayer";
+import { withContentlayer } from "next-contentlayer2";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkToc from "remark-toc";
