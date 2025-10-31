@@ -4,7 +4,11 @@ FROM node:22.4-alpine
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
-# Install system dependencies for node-canvas & as a replacement for dockerode-compose
+# Install system dependencies
+# Used by:
+#   - node-canvas
+#   - docker cli calls (dockerode-compose sucks)
+#   - bufferutil
 RUN apk add --no-cache \
     build-base \
     autoconf \
@@ -17,7 +21,9 @@ RUN apk add --no-cache \
     docker-cli \
     curl \
     android-tools \
-    python3
+    python3 python3-dev \
+    py3-setuptools py3-pip \
+    git
 
 # Install docker-compose plugin for deployment
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
@@ -36,10 +42,18 @@ COPY package.json pnpm-lock.yaml .npmrc ./
 ENV NODE_ENV=production
 
 # Install pnpm
-RUN npm install -g pnpm@8.15.5 node-gyp
+# Randomly, some of the "build-time" dependencies are being omitted by pnpm when it collects dependencies.
+# I manually install them here. Even in the generated pnpm-lock.yaml, they are present...
+RUN npm install -g pnpm@8.15.5 \
+    -g node-gyp-build@4.8.4 \
+    -g prisma@5.16.1 \
+    -g napi-postinstall@0.3.4
 
 # Install project dependencies
-RUN pnpm install --frozen-lockfile --prod
+# The weirdness of this one file building like a monolithic project separate of the monorepo 
+# exists because this project was bolted into a monorepo when building apks in parallel in the project became neccesary
+# NODE_ENV is unset during install-time because pnpm needs to install both regular dependencies and devDependencies for the build
+RUN NODE_ENV= pnpm install --frozen-lockfile
 
 # Copy the rest of the application code
 COPY . .
