@@ -7,12 +7,17 @@ WORKDIR /usr/src/app
 # Install system dependencies for node-canvas & as a replacement for dockerode-compose
 RUN apk add --no-cache \
     build-base \
+    autoconf \
+    automake \
+    zlib-dev \
+    libpng-dev \
+    nasm \
+    bash \
+    vips-dev \
     docker-cli \
     curl \
     android-tools \
-    python3 \
-    make \
-    g++
+    python3
 
 # Install docker-compose plugin for deployment
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
@@ -28,9 +33,10 @@ RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
 
 # Copy package.json and pnpm-lock.yaml for installing dependencies
 COPY package.json pnpm-lock.yaml .npmrc ./
+ENV NODE_ENV=production
 
 # Install pnpm
-RUN npm install -g pnpm@8.15.5
+RUN npm install -g pnpm@8.15.5 node-gyp
 
 # Install project dependencies
 RUN pnpm install --frozen-lockfile --prod
