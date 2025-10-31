@@ -95,7 +95,9 @@ jobs:
         run: pnpm install
 
       - name: Turbo
-        run: pnpx turbo run lint type-check test
+        run: |
+          ./scripts/verify-clean-commit.sh
+          pnpx turbo run lint type-check test
 
       - name: Check formatting and fail if changes are detected
         run: |

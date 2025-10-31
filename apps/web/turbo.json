@@ -76,6 +76,10 @@
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         "NEXT_PUBLIC_STRIPE_PUBLISHABLE"
       ]
+    },
+    "precommit": {
+      "inputs": ["./package.json"],
+      "outputs": ["./pnpm-lock.yaml"]
     }
   }
 }

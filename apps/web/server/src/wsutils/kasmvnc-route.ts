@@ -4,6 +4,7 @@ import {
   getTargetVncWebsocketUrlForDevice,
 } from "%/device-info/device-info-utils";
 import { audioWsEndpoint, kasmVncWsEndpoint } from "%/endpoint-regex";
+import { METRICrealtimeVncStreams } from "%/metrics";
 import { createClient } from "%/supabase/ro-server";
 import { Device } from "@prisma/client";
 import * as Sentry from "@sentry/node";
@@ -100,6 +101,12 @@ async function handleKasmVncDeviceEndpoint(
   }
 
   console.debug("ws proxy established", ws.readyState, targetWs.readyState);
+
+  // track metric of streams established, should be safe enough
+  METRICrealtimeVncStreams.inc();
+  ws.on("close", () => {
+    METRICrealtimeVncStreams.dec();
+  });
 
   if (endpointType === EndpointType.KASMVNC) {
     attachUpdateListener(ws, targetWs, deviceId);

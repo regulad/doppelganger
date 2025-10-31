@@ -86,7 +86,7 @@ ENV SENTRY_ORG=nefum
 ENV SENTRY_PROJECT=doppelganger-front
 
 # Build the application
-RUN SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN SENTRY_RELEASE=$SENTRY_RELEASE pnpm run build && unset SENTRY_AUTH_TOKEN && unset SENTRY_RELEASE && unset SENTRY_ORG && unset SENTRY_PROJECT
+RUN NODE_OPTIONS="--max-old-space-size=4096" SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN SENTRY_RELEASE=$SENTRY_RELEASE pnpm run build && unset SENTRY_AUTH_TOKEN && unset SENTRY_RELEASE && unset SENTRY_ORG && unset SENTRY_PROJECT
 
 # Expose the port the app runs on
 EXPOSE 3000
