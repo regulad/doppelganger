@@ -96,15 +96,12 @@ jobs:
 
       - name: Turbo
         run: |
-          ./scripts/verify-clean-commit.sh
-          pnpx turbo run lint type-check test
-
-      - name: Check formatting and fail if changes are detected
-        run: |
           if pnpm run format --check | grep -q "Files were formatted"; then
             echo "Formatting changes detected. Please run 'pnpx turbo run format' locally and commit the changes."
             exit 1
           fi
+          ./scripts/verify-clean-commit.sh
+          pnpx turbo run lint type-check test
 
   build-android:
     runs-on: "ubuntu-latest-m"
