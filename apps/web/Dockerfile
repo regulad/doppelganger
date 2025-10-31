@@ -9,6 +9,7 @@ WORKDIR /usr/src/app
 #   - node-canvas
 #   - docker cli calls (dockerode-compose sucks)
 #   - bufferutil
+#   - prisma
 RUN apk add --no-cache \
     build-base \
     autoconf \
@@ -23,7 +24,11 @@ RUN apk add --no-cache \
     android-tools \
     python3 python3-dev \
     py3-setuptools py3-pip \
-    git
+    git \
+    libressl \
+    zlib \
+    libgcc \
+    musl
 
 # Install docker-compose plugin for deployment
 RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
