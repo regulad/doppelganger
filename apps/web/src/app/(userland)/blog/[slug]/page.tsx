@@ -1,4 +1,4 @@
-import { shadcnizeMDXComponents } from "@/mdx-components.tsx";
+import { useMDXComponents } from "@/mdx-components.tsx";
 import { allPosts } from "contentlayer/generated";
 import { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
@@ -33,14 +33,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function PostPage({ params }: { params: PostParams }) {
+export default function PostPage({ params }: { params: PostParams }) {
   const post = allPosts.find((post) => post.slug === params.slug);
 
   if (!post) {
     notFound();
   }
 
-  const MDXContentComponents = shadcnizeMDXComponents({});
+  const MDXContentComponents = useMDXComponents({});
 
   return (
     <article className="mx-auto max-w-2xl py-8">

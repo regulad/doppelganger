@@ -37,7 +37,7 @@ export function ConfiguredNavbar() {
 export function ConfiguredFooter() {
   return (
     <Footer3
-      footerText="© 2025 Nefum LLC. All rights reserved."
+      footerText="© 2025 Nefum LLC. All rights reserved. Any data uploaded or generated on our services is to be treated as insecure. Doppelganger is not responsible for the loss or compromise of any data. Doppelganger is best used for low-risk data, including but not limited to rewards apps, games, social media, and websites. Banking apps and similar high-security tasks may be blocked from running in Doppelganger environments."
       address={{
         label: "Address:",
         value: "7 Beverly Road, Livingston NJ, US, 07039",
@@ -45,7 +45,7 @@ export function ConfiguredFooter() {
       contact={{
         label: "Contact:",
         phone: "+1 (908) 656-8176",
-        email: "doppelganger (at) regulad.xyz",
+        email: "doppelganger@regulad.xyz",
       }}
       columnLinks={[
         {
