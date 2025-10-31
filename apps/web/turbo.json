@@ -78,8 +78,14 @@
       ]
     },
     "precommit": {
-      "inputs": ["./package.json"],
-      "outputs": ["./pnpm-lock.yaml"]
+      "inputs": [
+        "./package.json",
+        "../../package.json",
+        "../../pnpm-lock.yaml"
+      ],
+      "outputs": [
+        "./pnpm-lock.yaml"
+      ]
     }
   }
 }
