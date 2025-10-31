@@ -13,7 +13,7 @@ echo "Running type check, lint, and test..."
 turbo type-check lint test || exit 1
 
 echo "Checking to see if all precommit generated files are up-to-date..."
-./scripts/verify-clean-commit.sh
+./scripts/verify-clean-commit.sh || exit 1
 
 echo "All checks passed"
 exit 0
