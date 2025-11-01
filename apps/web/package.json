@@ -151,7 +151,7 @@
     "license-checker": "^25.0.1",
     "node-loader": "^2.0.0",
     "pkgroll": "^2.4.1",
-    "pm2": "^5.4.2",
+    "pm2": "^6.0.9",
     "postcss": "^8.4.40",
     "prisma": "^5.22.0",
     "rimraf": "^5.0.9",
