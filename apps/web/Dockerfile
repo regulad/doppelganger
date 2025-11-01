@@ -10,37 +10,25 @@ WORKDIR /usr/src/app
 #   - docker cli calls (dockerode-compose sucks)
 #   - bufferutil
 #   - prisma
+# Empty line delineates direct deps from transitive deps
 RUN apk add --no-cache \
-    build-base \
-    autoconf \
-    automake \
-    zlib-dev \
-    libpng-dev \
-    nasm \
-    bash \
-    vips-dev \
-    docker-cli \
-    curl \
-    android-tools \
-    python3 python3-dev \
-    py3-setuptools py3-pip \
-    git \
-    libssl1.1 \
-    zlib \
-    libgcc \
-    musl
-
-# Install docker-compose plugin for deployment
-RUN mkdir -p /usr/local/lib/docker/cli-plugins && \
-    ARCH=$(uname -m) && \
-    case ${ARCH} in \
-        x86_64) COMPOSE_ARCH="x86_64" ;; \
-        aarch64) COMPOSE_ARCH="aarch64" ;; \
-        armv7l) COMPOSE_ARCH="armv7" ;; \
-        *) echo "Unsupported architecture: ${ARCH}"; exit 1 ;; \
-    esac && \
-    curl -SL "https://github.com/docker/compose/releases/download/v2.28.0/docker-compose-linux-${COMPOSE_ARCH}" -o /usr/local/lib/docker/cli-plugins/docker-compose && \
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    git=~2.49.1-r0 \
+    bash=~5.2.37-r0 \
+    docker-cli=~28.3.3-r3 \
+    docker-cli-compose=~2.36.2-r3 \
+    curl=~8.14.1-r2 \
+    android-tools=~35.0.2-r14 \
+    \
+    autoconf=~2.72-r1 \
+    automake=~1.17-r1 \
+    zlib-dev=~1.3.1-r2 \
+    libpng-dev=~1.6.47-r0 \
+    build-base=~0.5-r3 \
+    vips-dev=~8.16.1-r0 \
+    python3-dev=~3.12.12-r0 \
+    py3-setuptools=~80.9.0-r0 \
+    py3-pip=~25.1.1-r0 \
+    libssl3=~3.5.4-r0
 
 # Copy package.json and pnpm-lock.yaml for installing dependencies
 COPY package.json pnpm-lock.yaml .npmrc ./
@@ -63,35 +51,20 @@ RUN NODE_ENV= pnpm install --frozen-lockfile
 # Copy the rest of the application code
 COPY . .
 
-# Build database client
-RUN pnpm run db:generate
-
-# provide sentry for the server
-ARG SENTRY_AUTH_TOKEN
-ARG SENTRY_RELEASE
-ENV SENTRY_ORG=nefum
-ENV SENTRY_PROJECT=doppelganger-server
-
-# Build the server-side code
-RUN pnpm run server:build && unset SENTRY_AUTH_TOKEN && unset SENTRY_RELEASE && unset SENTRY_ORG && unset SENTRY_PROJECT
-
-# Generate licenses
-RUN pnpm run licenses:check
-
-# Build static workers
-RUN pnpm run workers:build
-
-# Provide public (NEXT_PUBLIC_) environment variables
-RUN cp .env.local.public .env.local
-
-# Use ARG to accept the token during build
-ARG SENTRY_AUTH_TOKEN
-ARG SENTRY_RELEASE
-ENV SENTRY_ORG=nefum
-ENV SENTRY_PROJECT=doppelganger-front
-
 # Build the application
-RUN NODE_OPTIONS="--max-old-space-size=4096" SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN SENTRY_RELEASE=$SENTRY_RELEASE pnpm run build && unset SENTRY_AUTH_TOKEN && unset SENTRY_RELEASE && unset SENTRY_ORG && unset SENTRY_PROJECT
+ARG SENTRY_RELEASE
+RUN --mount=type=secret,id=sentry_token \
+    export NODE_OPTIONS="--max-old-space-size=4096" \
+    && export SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentry_token) \
+    && export SENTRY_RELEASE=$SENTRY_RELEASE \
+    && export SENTRY_ORG=nefum \
+    && export SENTRY_PROJECT=doppelganger-front \
+    && cp .env.local.public .env.local \
+    && pnpm run db:generate \
+    && pnpm run server:build \
+    && pnpm run licenses:check \
+    && pnpm run workers:build \
+    && pnpm run build
 
 # Expose the port the app runs on
 EXPOSE 3000
