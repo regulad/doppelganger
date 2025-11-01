@@ -16,7 +16,7 @@ services:
       - "81:3000/tcp"
     volumes:
       # ANDROID_RUNTIME_DIR
-      # - "/mnt/doppelganger/prod:/mnt/doppelganger/prod"
+      - "/opt/doppelganger:/opt/doppelganger"
       # DOCKER_HOST
       - "/var/run/docker.sock:/var/run/docker.sock"
     env_file:
