@@ -6,16 +6,17 @@ services:
     hostname: "doppelganger"
     build:
       context: apps/web
-      dockerfile: apps/web/Dockerfile
+      dockerfile: Dockerfile
+      secrets:
+        - sentry_token
       args:
-        - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
         - SENTRY_RELEASE=master
     ports:
       # port 81 for a reverse proxy in front
       - "81:3000/tcp"
     volumes:
       # ANDROID_RUNTIME_DIR
-      - "/mnt/doppelganger/prod:/mnt/doppelganger/prod"
+      # - "/mnt/doppelganger/prod:/mnt/doppelganger/prod"
       # DOCKER_HOST
       - "/var/run/docker.sock:/var/run/docker.sock"
     env_file:
@@ -38,6 +39,9 @@ services:
     hostname: "redis"
     networks:
       - "doppelganger"
+secrets:
+  sentry_token:
+    environment: "SENTRY_AUTH_TOKEN"
 networks:
   doppelganger:
     external: true

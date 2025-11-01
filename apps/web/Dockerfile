@@ -28,25 +28,22 @@ RUN apk add --no-cache \
     python3-dev=~3.12.12-r0 \
     py3-setuptools=~80.9.0-r0 \
     py3-pip=~25.1.1-r0 \
-    libssl3=~3.5.4-r0
-
-# Copy package.json and pnpm-lock.yaml for installing dependencies
-COPY package.json pnpm-lock.yaml .npmrc ./
-ENV NODE_ENV=production
+    openssl=~3.5.4-r0
 
 # Install pnpm
 # Randomly, some of the "build-time" dependencies are being omitted by pnpm when it collects dependencies.
 # I manually install them here. Even in the generated pnpm-lock.yaml, they are present...
 RUN npm install -g pnpm@8.15.5 \
     -g node-gyp-build@4.8.4 \
-    -g prisma@5.16.1 \
     -g napi-postinstall@0.3.4
 
 # Install project dependencies
 # The weirdness of this one file building like a monolithic project separate of the monorepo 
 # exists because this project was bolted into a monorepo when building apks in parallel in the project became neccesary
 # NODE_ENV is unset during install-time because pnpm needs to install both regular dependencies and devDependencies for the build
-RUN NODE_ENV= pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml ./
+ENV NODE_ENV=production
+RUN NODE_ENV= pnpm install --frozen-lockfile --shamefully-hoist
 
 # Copy the rest of the application code
 COPY . .
