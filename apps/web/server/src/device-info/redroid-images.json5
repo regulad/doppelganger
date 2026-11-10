@@ -12,6 +12,8 @@
 // overwrites the tag, and a device keeps the digest it was made from. An image
 // that is no longer offered is kept with `usable: false`, and the reason
 // beside it:
+//   - deprecated: older than Android 14, the oldest version still patched in
+//     Google's Android Security Bulletins (as of 2026-11)
 //   - no audio: audio passthrough needs Android 12 (see redroid-images.test.ts)
 //
 // The fields are described in redroid-images.ts.
@@ -90,7 +92,7 @@
     "name": "AOSP Android 13",
     "description": "Android Open Source Project (AOSP) Android 13.0.0. No Play Store.",
     "imageName": "redroid/redroid:13.0.0-latest",
-    "usable": true,
+    "usable": false, // deprecated
     "premium": true,
     "gms": false,
     "memfd": true,
@@ -100,7 +102,7 @@
     "name": "AOSP Android 12",
     "description": "Android Open Source Project (AOSP) Android 12.0.0 (non-L). No Play Store.",
     "imageName": "redroid/redroid:12.0.0-latest",
-    "usable": true,
+    "usable": false, // deprecated
     "premium": false,
     "gms": false,
     "memfd": true,
@@ -110,7 +112,7 @@
     "name": "AOSP Android 11",
     "description": "Android Open Source Project (AOSP) Android 11.0.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:11.0.0-latest",
-    "usable": false, // no audio
+    "usable": false, // no audio; deprecated
     "premium": false,
     "gms": false,
     "memfd": true,
@@ -120,7 +122,7 @@
     "name": "AOSP Android 10",
     "description": "Android Open Source Project (AOSP) Android 10.0.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:10.0.0-latest",
-    "usable": false, // no audio
+    "usable": false, // no audio; deprecated
     "premium": false,
     "gms": false,
     "memfd": true,
@@ -130,7 +132,7 @@
     "name": "AOSP Android 9",
     "description": "Android Open Source Project (AOSP) Android 9.0.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:9.0.0-latest",
-    "usable": false, // no audio
+    "usable": false, // no audio; deprecated
     "premium": false,
     "gms": false,
     "memfd": true,
@@ -140,7 +142,7 @@
     "name": "AOSP Android 8.1",
     "description": "Android Open Source Project (AOSP) Android 8.1.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:8.1.0-latest",
-    "usable": false, // no audio
+    "usable": false, // no audio; deprecated
     "premium": false,
     "gms": false,
     "memfd": true,
@@ -150,7 +152,7 @@
     "name": "Play Store Android 11",
     "description": "Android 11 with the Play Store installed, fully-featured and ready to go. Audio is not supported using this image.",
     "imageName": "abing7k/redroid:a11_gapps_arm",
-    "usable": false, // no audio
+    "usable": false, // no audio; deprecated
     "premium": false,
     "gms": true,
     "memfd": true,
@@ -160,7 +162,7 @@
     "name": "Play Store Android 10",
     "description": "Android 10 with the Play Store installed, fully-featured and ready to go. Audio is not supported using this image.",
     "imageName": "cr.regulad.xyz/regulad/redroid-script:10.0.0-gapps-latest",
-    "usable": false, // no audio
+    "usable": false, // no audio; deprecated
     "premium": false,
     "gms": true,
     "memfd": true,
@@ -171,7 +173,7 @@
     "name": "Play Store Android 12",
     "description": "Android 12 (non-L) with the Play Store installed, fully-featured and ready to go.",
     "imageName": "cr.regulad.xyz/regulad/redroid-script:12.0.0-gapps-latest",
-    "usable": true,
+    "usable": false, // deprecated
     "premium": false,
     "gms": true,
     "memfd": true,
@@ -181,7 +183,7 @@
     "name": "Play Store Android 13",
     "description": "Android 13 with the Play Store installed, fully-featured and ready to go. DEBUG: Doesn't show Vending in launcher.",
     "imageName": "cr.regulad.xyz/regulad/redroid-script:13.0.0-gapps-latest",
-    "usable": false, // doesn't show Vending in the launcher
+    "usable": false, // doesn't show Vending in the launcher; deprecated
     "premium": true,
     "gms": true,
     "memfd": true,

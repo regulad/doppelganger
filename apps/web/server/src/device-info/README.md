@@ -19,6 +19,8 @@ which the redroid-script CI overwrites with each rebuild; a device's compose
 file pins the digest the tag had when the device was made. An image that is no
 longer offered stays in the list under its `imageName`, with `usable: false` and
 the reason in a comment beside it, so that devices made from it still resolve.
+Android versions older than 14 are deprecated: Android 14 is the oldest version
+Google's Android Security Bulletins still patch (as of 2026-11).
 
 `memfd` starts the image with `androidboot.use_memfd=true`. Images without it
 use ashmem, which the host's kernel must provide (`ashmem_linux`). Android 16

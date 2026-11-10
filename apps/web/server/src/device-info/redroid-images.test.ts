@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import allRedroidImages, {
   getDefaultRedroidImage,
+  getRedroidImage,
   isDeployable,
 } from "./redroid-images.ts";
 
@@ -63,6 +64,17 @@ describe("Redroid Images Tests", () => {
     });
   });
 
+  it("should still find the images that existing devices are keyed by", () => {
+    // a deprecated image, which devices made before still use
+    const image = getRedroidImage(
+      "cr.regulad.xyz/regulad/redroid-script:12.0.0-gapps-latest",
+    );
+    expect(image).not.toBeNull();
+    expect(image!.usable).toBe(false);
+    expect(image!.gms).toBe(true);
+    expect(image!.memfd).toBe(true);
+  });
+
   it("the default image should be usable and free", () => {
     const defaultRedroidImage = getDefaultRedroidImage(true)!;
     expect(defaultRedroidImage.usable).toBe(true);
@@ -81,6 +93,26 @@ describe("Redroid Images Tests", () => {
     const defaultRedroidImage = getDefaultRedroidImage(false);
     expect(defaultRedroidImage).not.toBeNull();
     expect(defaultRedroidImage!.memfd).toBe(true);
+  });
+
+  it("should not contain usable images that are older than Android 14", () => {
+    // older versions are deprecated: Android 14 is the oldest still patched in
+    // Google's Android Security Bulletins (2026-11)
+    allRedroidImages.forEach((image) => {
+      if (image.usable) {
+        expect(image.androidSdkVersion).toBeGreaterThanOrEqual(34);
+      }
+    });
+  });
+
+  it("usable images should be free up to Android 14", () => {
+    // Android 14 is the oldest version still in Google's security bulletins (2026-11)
+    allRedroidImages.forEach((image) => {
+      if (image.usable) {
+        expect(image.premium).toBe(image.androidSdkVersion > 34);
+      }
+    });
+    expect(getDefaultRedroidImage(true)!.androidSdkVersion).toBe(34);
   });
 
   it("only Android 16 and newer should need the host's ashmem", () => {
