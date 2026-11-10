@@ -39,6 +39,10 @@ RUN npm install -g pnpm@8.15.5 \
     -g node-gyp-build@4.8.4 \
     -g napi-postinstall@0.3.4
 
+# Native addons build against this image's own Node headers, rather than
+# headers node-gyp downloads from unofficial-builds.nodejs.org at install time
+ENV npm_config_nodedir=/usr/local
+
 # Install project dependencies
 # The weirdness of this one file building like a monolithic project separate of the monorepo 
 # exists because this project was bolted into a monorepo when building apks in parallel in the project became neccesary
