@@ -182,7 +182,7 @@
     "catalog:generate": "node scripts/generate-redroid-images.mjs",
     "db:migrate": "dotenvx run --env-file=.env.local -- prisma migrate dev",
     "db:seed": "dotenvx run --env-file=.env.local -- tsx prisma/seed.ts",
-    "server:build": "pnpm run catalog:generate && (pkgroll --minify --src server/src --tsconfig=server/tsconfig.json --clean-dist --sourcemap && (sentry-cli releases --org nefum --project doppelganger-server new ${SENTRY_RELEASE:-$(git rev-parse HEAD || echo \"unknown\")} && sentry-cli sourcemaps inject dist && sentry-cli sourcemaps --org nefum --project doppelganger-server upload dist && sentry-cli releases --org nefum --project doppelganger-server finalize ${SENTRY_RELEASE:-$(git rev-parse HEAD || echo \"unknown\")}) || echo \"WARNING: Couldn't upload sentry sourcemap.\")",
+    "server:build": "pnpm run catalog:generate && pkgroll --minify --src server/src --tsconfig=server/tsconfig.json --clean-dist --sourcemap && ((sentry-cli releases --org nefum --project doppelganger-server new ${SENTRY_RELEASE:-$(git rev-parse HEAD || echo \"unknown\")} && sentry-cli sourcemaps inject dist && sentry-cli sourcemaps --org nefum --project doppelganger-server upload dist && sentry-cli releases --org nefum --project doppelganger-server finalize ${SENTRY_RELEASE:-$(git rev-parse HEAD || echo \"unknown\")}) || echo \"WARNING: Couldn't upload sentry sourcemap.\")",
     "android:dev": "bash scripts/android-dev.sh",
     "dev": "pnpm run catalog:generate && BLUEBIRD_DEBUG=1 tsx server/src/index.ts",
     "workers:dev": "rimraf -rf public/workers/ && webpack --config workers/webpack.config.cjs",
