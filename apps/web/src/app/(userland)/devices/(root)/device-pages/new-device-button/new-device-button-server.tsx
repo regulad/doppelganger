@@ -1,5 +1,6 @@
 "use server";
 
+import { hostHasAshmem } from "%/docker/host-kernel.ts";
 import NewDeviceDialogClient from "@/app/(userland)/devices/(root)/device-pages/new-device-form/new-device-form.tsx";
 import { getSubscriptionStatus } from "@/utils/stripe/utils.ts";
 import { createClient } from "@/utils/supabase/server.ts";
@@ -17,6 +18,7 @@ export async function NewDeviceButtonServer() {
     <NewDeviceDialogClient
       emailVerified={emailVerified}
       subscriptionStatus={subscriptionStatus}
+      hostHasAshmem={await hostHasAshmem()}
     />
   );
 }

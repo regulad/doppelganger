@@ -6,7 +6,8 @@ import allSampleDeviceSpecs, {
   SampleDeviceSpecs,
 } from "%/device-info/device-specs.ts";
 import allRedroidImages, {
-  defaultRedroidImage,
+  getDefaultRedroidImage,
+  isDeployable,
   RedroidImage,
 } from "%/device-info/redroid-images.ts";
 import NewDeviceButtonClient from "@/app/(userland)/devices/(root)/device-pages/new-device-button/new-device-button-client.tsx";
@@ -82,6 +83,7 @@ interface RedroidImageComboboxProps {
   field: ControllerRenderProps<formType, keyof formType>;
   form: UseFormReturn<formType>;
   userIsPremium: boolean;
+  hostHasAshmem: boolean;
 }
 
 interface RedroidImageCommandItemProps {
@@ -133,9 +135,13 @@ function RedroidImageCombobox({
   field,
   form,
   userIsPremium,
+  hostHasAshmem,
 }: Readonly<RedroidImageComboboxProps>): ReactNode {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const deployableImages = allRedroidImages.filter((image) =>
+    isDeployable(image, hostHasAshmem),
+  );
 
   return (
     <div className="flex flex-inline">
@@ -163,8 +169,8 @@ function RedroidImageCombobox({
             <CommandList>
               <CommandEmpty>No device type found.</CommandEmpty>
               <CommandGroup heading="Premium">
-                {allRedroidImages
-                  .filter((image) => image.usable && image.premium)
+                {deployableImages
+                  .filter((image) => image.premium)
                   .map((image) => (
                     <RedroidImageCommandItem
                       key={image.imageName}
@@ -177,8 +183,8 @@ function RedroidImageCombobox({
                   ))}
               </CommandGroup>
               <CommandGroup heading="Free">
-                {allRedroidImages
-                  .filter((image) => image.usable && !image.premium)
+                {deployableImages
+                  .filter((image) => !image.premium)
                   .map((image) => (
                     <RedroidImageCommandItem
                       key={image.imageName}
@@ -230,6 +236,7 @@ function RedroidImageCombobox({
 
 interface NewDeviceFormProps {
   subscriptionStatus: SubscriptionStatus;
+  hostHasAshmem: boolean;
   dialogCanClose: boolean;
   setDialogCanClose: (canClose: boolean) => void;
   footerComponentType: typeof DrawerFooter | typeof DialogFooter;
@@ -383,6 +390,7 @@ function AdvancedSettings({
 // https://ui.shadcn.com/docs/components/form
 function NewDeviceForm({
   subscriptionStatus,
+  hostHasAshmem,
   dialogCanClose,
   setDialogCanClose,
   footerComponentType: FooterComp,
@@ -396,7 +404,7 @@ function NewDeviceForm({
     resolver: zodResolver(newDeviceFormSchema),
     defaultValues: {
       deviceName: "My New Device",
-      redroidImage: defaultRedroidImage.imageName,
+      redroidImage: getDefaultRedroidImage(hostHasAshmem)?.imageName ?? "",
       fps: maxFps,
       width: defaultSampleDeviceSpecs.width,
       height: defaultSampleDeviceSpecs.height,
@@ -490,6 +498,7 @@ function NewDeviceForm({
                 field={field}
                 form={form}
                 userIsPremium={userIsPremium}
+                hostHasAshmem={hostHasAshmem}
               />
               <FormDescription>
                 The type of device you want to create. Hover over the info icon
@@ -548,11 +557,13 @@ function NewDeviceForm({
 interface NewDeviceDialogClientProps {
   emailVerified: boolean;
   subscriptionStatus: SubscriptionStatus;
+  hostHasAshmem: boolean; // images not on memfd are offered only if the host has ashmem
 }
 
 export default function NewDeviceDialogClient({
   emailVerified,
   subscriptionStatus,
+  hostHasAshmem,
 }: Readonly<NewDeviceDialogClientProps>) {
   const [open, setOpen] = useState(false);
   const [dialogCanClose, setDialogCanClose] = useState(true);
@@ -582,6 +593,7 @@ export default function NewDeviceDialogClient({
           </DialogHeader>
           <NewDeviceForm
             subscriptionStatus={subscriptionStatus}
+            hostHasAshmem={hostHasAshmem}
             dialogCanClose={dialogCanClose}
             setDialogCanClose={setDialogCanClose}
             footerComponentType={DialogFooter}
@@ -610,6 +622,7 @@ export default function NewDeviceDialogClient({
           <div className="gap-2 p-4">
             <NewDeviceForm
               subscriptionStatus={subscriptionStatus}
+              hostHasAshmem={hostHasAshmem}
               dialogCanClose={dialogCanClose}
               setDialogCanClose={setDialogCanClose}
               footerComponentType={DrawerFooter}

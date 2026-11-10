@@ -19,4 +19,6 @@ never changes. An image that is no longer offered stays in the list under its
 devices made from it still resolve.
 
 `memfd` starts the image with `androidboot.use_memfd=true`. Images without it
-use ashmem, which the host's kernel must provide (`ashmem_linux`).
+use ashmem, which the host's kernel must provide (`ashmem_linux`). If the host's
+`/proc/misc` lists no `ashmem`, those images are not offered or deployed
+(`isDeployable`).

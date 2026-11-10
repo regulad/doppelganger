@@ -1,6 +1,8 @@
 import allRedroidImages, {
+  isDeployable,
   RedroidImage,
 } from "%/device-info/redroid-images.ts";
+import { hostHasAshmem } from "%/docker/host-kernel.ts";
 import {
   Tooltip,
   TooltipContent,
@@ -37,9 +39,10 @@ function PremiumButton() {
   );
 }
 
-export default function DeviceTypes(): ReactNode {
+export default async function DeviceTypes(): Promise<ReactNode> {
   shimSorted();
   shimReversed();
+  const ashmem = await hostHasAshmem();
   return (
     <ul className="shadcn-ul">
       {allRedroidImages
@@ -48,7 +51,7 @@ export default function DeviceTypes(): ReactNode {
             getComparisonNumberOfDevice(a) - getComparisonNumberOfDevice(b),
         )
         .toReversed()
-        .filter((redroidImage) => redroidImage.usable)
+        .filter((redroidImage) => isDeployable(redroidImage, ashmem))
         .map((redroidImage) => (
           <li key={redroidImage.imageName}>
             <div className="inline-flex">

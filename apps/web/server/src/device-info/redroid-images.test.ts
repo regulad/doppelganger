@@ -1,7 +1,10 @@
 import JSON5 from "json5";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import allRedroidImages from "./redroid-images.ts";
+import allRedroidImages, {
+  getDefaultRedroidImage,
+  isDeployable,
+} from "./redroid-images.ts";
 
 const catalogSource = readFileSync(
   join(__dirname, "redroid-images.json5"),
@@ -50,6 +53,24 @@ describe("Redroid Images Tests", () => {
   it("image names should be unique, as devices are keyed by them", () => {
     const imageNames = allRedroidImages.map((image) => image.imageName);
     expect(new Set(imageNames).size).toBe(imageNames.length);
+  });
+
+  it("the default image should be usable and free", () => {
+    const defaultRedroidImage = getDefaultRedroidImage(true)!;
+    expect(defaultRedroidImage.usable).toBe(true);
+    expect(defaultRedroidImage.premium).toBe(false);
+  });
+
+  it("should not deploy images that need ashmem to a host without it", () => {
+    const ashmemImage = { ...getDefaultRedroidImage(true)!, memfd: false };
+    expect(isDeployable(ashmemImage, true)).toBe(true);
+    expect(isDeployable(ashmemImage, false)).toBe(false);
+    expect(isDeployable({ ...ashmemImage, memfd: true }, false)).toBe(true);
+    expect(isDeployable({ ...ashmemImage, usable: false }, true)).toBe(false);
+
+    const defaultRedroidImage = getDefaultRedroidImage(false);
+    expect(defaultRedroidImage).not.toBeNull();
+    expect(defaultRedroidImage!.memfd).toBe(true);
   });
 
   // Test for At Least One Usable Free Image

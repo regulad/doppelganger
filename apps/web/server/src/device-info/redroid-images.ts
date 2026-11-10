@@ -19,10 +19,26 @@ export interface RedroidImage {
 
 const allRedroidImages: RedroidImage[] = allRedroidImagesJson;
 
-// get the first one in the list that meets criteria
-export const defaultRedroidImage = allRedroidImages
-  .toReversed()
-  .find((image) => image.usable && !image.premium)!;
+// if an image may be deployed on a host; one not on memfd needs the host's ashmem
+// (see hostHasAshmem in %/docker/host-kernel.ts)
+export function isDeployable(
+  image: RedroidImage,
+  hostHasAshmem: boolean,
+): boolean {
+  return image.usable && (image.memfd || hostHasAshmem);
+}
+
+// the last free image in the list that the host can deploy
+export function getDefaultRedroidImage(
+  hostHasAshmem: boolean,
+): RedroidImage | null {
+  return (
+    allRedroidImages
+      .toReversed()
+      .find((image) => isDeployable(image, hostHasAshmem) && !image.premium) ??
+    null
+  );
+}
 
 export function getRedroidImage(imageName: string): RedroidImage | null {
   return (

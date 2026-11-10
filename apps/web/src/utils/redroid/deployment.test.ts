@@ -4,7 +4,7 @@
 
 import { SampleDeviceSpecs } from "%/device-info/device-specs.ts";
 import allRedroidImages, {
-  defaultRedroidImage,
+  getDefaultRedroidImage,
   RedroidImage,
 } from "%/device-info/redroid-images.ts";
 import {
@@ -41,6 +41,8 @@ const ajv = new Ajv({
 });
 addFormats(ajv);
 const validate = ajv.compile({ ...dockerComposeSpec, $schema: undefined });
+
+const defaultRedroidImage = getDefaultRedroidImage(true)!; // as on a host with ashmem
 
 describe("createView", () => {
   it("should create a valid DockerComposeMoustacheView with explicit settings", async () => {

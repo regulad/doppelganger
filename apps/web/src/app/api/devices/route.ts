@@ -1,6 +1,7 @@
 import { getPrisma } from "%/database/prisma.ts";
-import { getRedroidImage } from "%/device-info/redroid-images.ts";
+import { getRedroidImage, isDeployable } from "%/device-info/redroid-images.ts";
 import { bringUpDevice } from "%/docker/device-state.ts";
+import { hostHasAshmem } from "%/docker/host-kernel.ts";
 import { newDeviceFormSchema } from "@/app/(userland)/devices/(root)/device-pages/new-device-form/new-device-form-schema.ts";
 import { getDevicesForUser } from "@/utils/devices.ts";
 import { initializeDevice } from "@/utils/redroid/deployment.ts";
@@ -73,6 +74,16 @@ export async function POST(
   } = data!;
   const specs = { width, height, dpi };
   const redroidImage = getRedroidImage(redroidImageName)!;
+
+  if (!isDeployable(redroidImage, await hostHasAshmem())) {
+    return NextResponse.json(
+      {
+        error:
+          "This device type is not available on this server; please select another",
+      },
+      { status: 400 },
+    );
+  }
 
   if (redroidImage.premium && subscriptionStatus === SubscriptionStatus.FREE) {
     return NextResponse.json(
