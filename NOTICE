@@ -1,0 +1,96 @@
+Doppelganger
+Copyright (C) 2024-2026 Parker Wahle and Nefum LLC
+
+Doppelganger is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. It is distributed WITHOUT ANY WARRANTY. See LICENSE for the
+full text.
+
+This repository, and the Docker image built from it, also contain the
+third-party works below. Each is used under its own license, all of which are
+compatible with the AGPL.
+
+
+Included in this repository
+---------------------------
+
+ws-scrcpy
+  apps/web/src/ws-scrcpy/src/ is copied, with modifications, from
+  https://github.com/NetrisTV/ws-scrcpy at commit 9d12bdd. Parts of
+  apps/web/server/src/adb/ are adapted from its server at commit 29897e2.
+  Copyright (C) 2021 by Netris, JSC. MIT License; see
+  apps/web/src/ws-scrcpy/LICENSE.
+
+  It contains works by others:
+  - Material Design icons by Google, in src/public/images/buttons/.
+    Apache License 2.0.
+  - Android emulator skin images from the Android Open Source Project, in
+    src/public/images/skin-light/ and src/public/images/multitouch/. Apache
+    License 2.0. The SOURCE file in each directory says where they came from.
+  - A function from the Closure Library in src/app/Util.ts. Copyright 2008
+    The Closure Library Authors. Apache License 2.0; the notice is kept in
+    the file.
+
+Broadway
+  apps/web/src/ws-scrcpy/vendor/Broadway/, from
+  https://github.com/mbebenita/Broadway. Copyright (c) 2011, Project Authors
+  (see AUTHORS there). BSD 3-Clause License; see LICENSE there.
+
+h264-live-player
+  apps/web/src/ws-scrcpy/vendor/h264-live-player/, based on
+  https://github.com/131/h264-live-player at commit 6966af8. Copyright (c)
+  2019, Project Authors (see AUTHORS there). BSD 3-Clause License; see LICENSE
+  there.
+
+tinyh264
+  apps/web/src/ws-scrcpy/vendor/tinyh264/, based on
+  https://github.com/udevbe/tinyh264 at commit caf7142. Copyright (c) 2019
+  Erik De Rijcke. ISC License; see LICENSE there.
+
+shadcn/ui
+  The components in apps/web/src/components/ui/ were generated from
+  https://github.com/shadcn-ui/ui, and some were then modified. Copyright (c)
+  2023 shadcn. MIT License; see apps/web/src/components/ui/LICENSE.md.
+
+scrcpy server
+  apps/web/scrcpy/scrcpy-server.jar (version 1.19-ws5) is built from
+  https://github.com/regulad/scrcpy at commit 02173c8, on the branch
+  feature/websocket-v1.19.x. That is a fork of NetrisTV's WebSocket version of
+  https://github.com/Genymobile/scrcpy. Copyright (C) 2018 Genymobile;
+  Copyright (C) 2018-2021 Romain Vimont. Apache License 2.0; see
+  apps/web/scrcpy/LICENSE.
+
+Android apps
+  apps/web/android/ holds unmodified builds that are installed on the Android
+  devices Doppelganger runs:
+  - ChromePublic.apk and SystemWebView.apk are Chromium 129.0.6614.0, under a
+    BSD-style license, with components under other licenses, including the
+    GNU LGPL. Source:
+    https://chromium.googlesource.com/chromium/src/+/refs/tags/129.0.6614.0
+  - F-Droid.apk is the F-Droid client 1.17.0, under the GNU GPL version 3 or
+    later. Source: https://gitlab.com/fdroid/fdroidclient/-/tree/1.17.0
+
+Pheidippides launcher icons
+  The launcher icons of the apps in pheidippides/ use the Android robot. The
+  Android robot is reproduced or modified from work created and shared by
+  Google and used according to terms described in the Creative Commons 3.0
+  Attribution License.
+
+
+Downloaded when building
+------------------------
+
+Inter
+  The site's typeface, downloaded from Google Fonts when the site is built
+  and served with it. Copyright 2016 The Inter Project Authors
+  (https://github.com/rsms/inter). SIL Open Font License 1.1.
+
+npm packages
+  The Docker image contains the npm packages that apps/web depends on, each
+  with its own license file in node_modules. The site's /licenses page lists
+  them. Two need attribution here:
+  - caniuse-lite, by Ben Briggs, with data from https://caniuse.com by Alexis
+    Deveria. Creative Commons Attribution 4.0 International License.
+  - @img/sharp-libvips, the libvips image library and its dependencies, built
+    for sharp. GNU Lesser General Public License version 3 or later.
