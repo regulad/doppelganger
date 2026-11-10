@@ -7,6 +7,8 @@ import allRedroidImagesJson from "./redroid-images.json"; // generated from redr
 export interface RedroidImage {
   name: string;
   description: string;
+  // The image's key: devices store it as their redroidImage, so it never
+  // changes.
   imageName: string;
   usable: boolean; // if an image is allowed to be deployed
   premium: boolean; // if a paid membership is required to use the image

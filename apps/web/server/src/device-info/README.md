@@ -12,3 +12,8 @@ The catalog is `redroid-images.json5`, which is the file to edit.
 imports and git ignores. The dev, build, server:build, test and type-check
 scripts run it first; run it yourself after an edit if one of them is already
 running, or if your editor reports the JSON missing.
+
+`imageName` is an image's key: a device stores it as its `redroid_image`, so it
+never changes. An image that is no longer offered stays in the list under its
+`imageName`, with `usable: false` and the reason in a comment beside it, so that
+devices made from it still resolve.

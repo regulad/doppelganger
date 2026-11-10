@@ -14,6 +14,16 @@ describe("Redroid Images Tests", () => {
     expect(allRedroidImages).toEqual(JSON5.parse(catalogSource));
   });
 
+  it("should give the reason beside each usable: false", () => {
+    const lines = catalogSource
+      .split("\n")
+      .filter((line) => /^\s*"usable":\s*false\b/.test(line));
+    expect(lines.length).toBe(
+      allRedroidImages.filter((image) => !image.usable).length,
+    );
+    lines.forEach((line) => expect(line).toMatch(/\/\/\s*\S/));
+  });
+
   // Existing test...
   it("usable images should have androidSdkVersion >= 29", () => {
     allRedroidImages.forEach((image) => {
@@ -34,6 +44,11 @@ describe("Redroid Images Tests", () => {
       expect(image).toHaveProperty("gms");
       expect(image).toHaveProperty("androidSdkVersion");
     });
+  });
+
+  it("image names should be unique, as devices are keyed by them", () => {
+    const imageNames = allRedroidImages.map((image) => image.imageName);
+    expect(new Set(imageNames).size).toBe(imageNames.length);
   });
 
   // Test for At Least One Usable Free Image

@@ -7,6 +7,11 @@
 // It keeps the JSON style of the redroid-images.json it was renamed from
 // (quoted keys, no trailing commas), so that git blame follows its lines back.
 //
+// A device stores its image's imageName, so an entry is never removed and its
+// imageName never changes. An image that is no longer offered is kept with
+// `usable: false`, and the reason beside it:
+//   - no audio: audio passthrough needs Android 12 (see redroid-images.test.ts)
+//
 // The fields are described in redroid-images.ts.
 [
   {
@@ -40,7 +45,7 @@
     "name": "AOSP Android 11",
     "description": "Android Open Source Project (AOSP) Android 11.0.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:11.0.0-latest",
-    "usable": false,
+    "usable": false, // no audio
     "premium": false,
     "gms": false,
     "androidSdkVersion": 30
@@ -49,7 +54,7 @@
     "name": "AOSP Android 10",
     "description": "Android Open Source Project (AOSP) Android 10.0.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:10.0.0-latest",
-    "usable": false,
+    "usable": false, // no audio
     "premium": false,
     "gms": false,
     "androidSdkVersion": 29
@@ -58,7 +63,7 @@
     "name": "AOSP Android 9",
     "description": "Android Open Source Project (AOSP) Android 9.0.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:9.0.0-latest",
-    "usable": false,
+    "usable": false, // no audio
     "premium": false,
     "gms": false,
     "androidSdkVersion": 28
@@ -67,7 +72,7 @@
     "name": "AOSP Android 8.1",
     "description": "Android Open Source Project (AOSP) Android 8.1.0. No Play Store. Audio is not supported using this image.",
     "imageName": "redroid/redroid:8.1.0-latest",
-    "usable": false,
+    "usable": false, // no audio
     "premium": false,
     "gms": false,
     "androidSdkVersion": 27
@@ -76,7 +81,7 @@
     "name": "Play Store Android 11",
     "description": "Android 11 with the Play Store installed, fully-featured and ready to go. Audio is not supported using this image.",
     "imageName": "abing7k/redroid:a11_gapps_arm",
-    "usable": false,
+    "usable": false, // no audio
     "premium": false,
     "gms": true,
     "androidSdkVersion": 30
@@ -85,7 +90,7 @@
     "name": "Play Store Android 10",
     "description": "Android 10 with the Play Store installed, fully-featured and ready to go. Audio is not supported using this image.",
     "imageName": "cr.regulad.xyz/regulad/redroid-script:10.0.0-gapps-latest",
-    "usable": false,
+    "usable": false, // no audio
     "premium": false,
     "gms": true,
     "androidSdkVersion": 29
@@ -104,7 +109,7 @@
     "name": "Play Store Android 13",
     "description": "Android 13 with the Play Store installed, fully-featured and ready to go. DEBUG: Doesn't show Vending in launcher.",
     "imageName": "cr.regulad.xyz/regulad/redroid-script:13.0.0-gapps-latest",
-    "usable": false,
+    "usable": false, // doesn't show Vending in the launcher
     "premium": true,
     "gms": true,
     "androidSdkVersion": 33

@@ -3,8 +3,17 @@
  */
 
 import { SampleDeviceSpecs } from "%/device-info/device-specs.ts";
-import { defaultRedroidImage } from "%/device-info/redroid-images.ts";
-import { createDockerTemplateFromView } from "@/utils/docker/docker-compose-moustache-formatting.ts";
+import allRedroidImages, {
+  defaultRedroidImage,
+} from "%/device-info/redroid-images.ts";
+import {
+  createDockerTemplateFromView,
+  getInsertableDeviceForView,
+} from "@/utils/docker/docker-compose-moustache-formatting.ts";
+import {
+  completeImageName,
+  getDockerImageInfo,
+} from "@/utils/docker/docker-image-parsing.ts";
 import Ajv from "ajv-draft-04";
 import addFormats from "ajv-formats";
 import { stringify as stringifyYaml, parse as yamlParse } from "yaml";
@@ -85,4 +94,23 @@ describe("createView", () => {
     const valid = validate(parsedYaml);
     expect(valid).toBe(true);
   }, 60_000); // Adjust timeout as necessary
+
+  const specs = { dpi: 160, width: 720, height: 1280 };
+
+  it("should store each image's imageName unchanged, as devices are keyed by it", async () => {
+    const view = await createView(defaultRedroidImage, 30, specs);
+    allRedroidImages.forEach((image) => {
+      // as initializeDevice does
+      const dockerImageInfo = getDockerImageInfo(
+        completeImageName(image.imageName, true),
+      );
+      const device = getInsertableDeviceForView(
+        view,
+        dockerImageInfo,
+        "owner",
+        "device",
+      );
+      expect(device.redroidImage).toBe(image.imageName);
+    });
+  });
 });
