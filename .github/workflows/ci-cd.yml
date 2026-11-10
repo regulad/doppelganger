@@ -33,7 +33,7 @@ env:
 
 jobs:
   check:
-    runs-on: "ubuntu-latest-m"
+    runs-on: "ubuntu-latest"
     name: Check
     permissions:
       contents: read
@@ -85,10 +85,10 @@ jobs:
         with:
           run_install: false
 
-      - name: Setup Node.js 22.4.0
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: ">=22.4.0"
+          node-version: "22" # as in apps/web engines and its Dockerfile
           cache: "pnpm"
 
       - name: Install dependencies with pnpm
@@ -104,7 +104,7 @@ jobs:
           pnpx turbo run lint type-check test
 
   build-android:
-    runs-on: "ubuntu-latest-m"
+    runs-on: "ubuntu-latest"
     name: Build ${{ matrix.tag }}
     needs:
       - check
@@ -148,10 +148,10 @@ jobs:
         with:
           run_install: false
 
-      - name: Setup Node.js 22.4.0
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: ">=22.4.0"
+          node-version: "22" # as in apps/web engines and its Dockerfile
           cache: "pnpm"
 
       - name: Build via turbo
@@ -168,7 +168,7 @@ jobs:
 
   build-docker:
     # GitHub does not yet offer native building on arm64 (https://github.blog/changelog/2023-10-30-accelerate-your-ci-cd-with-arm-based-hosted-runners-in-github-actions/)
-    runs-on: "ubuntu-latest-m"
+    runs-on: "ubuntu-latest"
     name: Build ${{ matrix.tag }}
     needs:
       - build-android
@@ -278,7 +278,7 @@ jobs:
   # deploy:
   #   needs:
   #     - build-docker
-  #   runs-on: "ubuntu-latest-m"
+  #   runs-on: "ubuntu-latest"
   #   steps:
   #     # Deploy changes on production server
   #     - name: Deploy changes to prod
