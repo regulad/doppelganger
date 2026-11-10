@@ -193,7 +193,7 @@
     "content:build": "contentlayer2 build",
     "start": "pm2 start ecosystem.config.json --no-daemon",
     "lint": "next lint --max-warnings 0",
-    "type-check": "pnpm run catalog:generate && tsc --noEmit --project tsconfig.json",
+    "type-check": "pnpm run catalog:generate && pnpm run db:generate && pnpm run content:build && pnpm run licenses:check && tsc --noEmit --project tsconfig.json",
     "test": "pnpm run catalog:generate && jest",
     "test:watch": "pnpm run catalog:generate && jest --watch",
     "ui:add": "pnpx shadcn-ui@latest add"
