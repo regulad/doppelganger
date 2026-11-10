@@ -2,6 +2,7 @@
   "name": "pheidippides-administrate",
   "version": "1.0.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "build": "flock /tmp/pheidippides-administrate ./gradlew --no-daemon --console=plain clean assembleDebug",
     "lint": "flock /tmp/pheidippides-administrate ./gradlew --no-daemon --console=plain clean lint",

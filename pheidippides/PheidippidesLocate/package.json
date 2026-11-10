@@ -2,6 +2,7 @@
   "name": "pheidippides-locate",
   "version": "1.0.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "build": "flock /tmp/pheidippides-locate ./gradlew --no-daemon --console=plain clean assembleDebug",
     "lint": "flock /tmp/pheidippides-locate ./gradlew --no-daemon --console=plain clean lint",

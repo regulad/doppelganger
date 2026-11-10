@@ -5,9 +5,7 @@
 This is the frontend/backend code for the Doppelganger project.
 [See the Notion writeup for the whole project here.](https://regulad.notion.site/Writeup-0bb2fa8bc5854264aa18157ad602b74a?pvs=4)
 
-Because this is a commercial project, it is not licensed for reuse or attribution. However, you are welcome to look at the code and use it for inspiration for your own projects. Some select modules are licensed under the MIT license, and those are noted in the code.
-
-Illegal reuse/rehosting will be met with a DMCA takedown request, and litigation if necessary. Do the right thing.
+Doppelganger is free software under the GNU Affero General Public License, version 3 or later: see [LICENSE](../../LICENSE). If you run a modified version as a network service, the AGPL requires you to offer its users the modified source. Third-party code it includes keeps its own license: see [NOTICE](../../NOTICE).
 
 ## Weird notes
 
