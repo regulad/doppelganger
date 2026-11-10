@@ -55,6 +55,14 @@ describe("Redroid Images Tests", () => {
     expect(new Set(imageNames).size).toBe(imageNames.length);
   });
 
+  it("image names should name a tag, not a digest", () => {
+    // a device keeps the digest it was made from, in its compose file
+    allRedroidImages.forEach((image) => {
+      expect(image.imageName).not.toContain("@");
+      expect(image.imageName).toMatch(/:[\w][\w.-]*$/);
+    });
+  });
+
   it("the default image should be usable and free", () => {
     const defaultRedroidImage = getDefaultRedroidImage(true)!;
     expect(defaultRedroidImage.usable).toBe(true);
@@ -62,7 +70,9 @@ describe("Redroid Images Tests", () => {
   });
 
   it("should not deploy images that need ashmem to a host without it", () => {
-    const ashmemImage = { ...getDefaultRedroidImage(true)!, memfd: false };
+    const ashmemImage = allRedroidImages.find(
+      (image) => image.usable && !image.memfd,
+    )!;
     expect(isDeployable(ashmemImage, true)).toBe(true);
     expect(isDeployable(ashmemImage, false)).toBe(false);
     expect(isDeployable({ ...ashmemImage, memfd: true }, false)).toBe(true);
@@ -71,6 +81,15 @@ describe("Redroid Images Tests", () => {
     const defaultRedroidImage = getDefaultRedroidImage(false);
     expect(defaultRedroidImage).not.toBeNull();
     expect(defaultRedroidImage!.memfd).toBe(true);
+  });
+
+  it("only Android 16 and newer should need the host's ashmem", () => {
+    // Android 16 needs ashmem on any kernel without Android's memfd patches
+    allRedroidImages.forEach((image) => {
+      if (image.usable) {
+        expect(image.memfd).toBe(image.androidSdkVersion < 36);
+      }
+    });
   });
 
   // Test for At Least One Usable Free Image

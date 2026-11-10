@@ -8,18 +8,80 @@
 // (quoted keys, no trailing commas), so that git blame follows its lines back.
 //
 // A device stores its image's imageName, so an entry is never removed and its
-// imageName never changes. An image that is no longer offered is kept with
-// `usable: false`, and the reason beside it:
+// imageName never changes. An imageName names a tag, not a digest: a rebuild
+// overwrites the tag, and a device keeps the digest it was made from. An image
+// that is no longer offered is kept with `usable: false`, and the reason
+// beside it:
 //   - no audio: audio passthrough needs Android 12 (see redroid-images.test.ts)
 //
 // The fields are described in redroid-images.ts.
 [
   {
+    "name": "Play Store Android 16",
+    "description": "Android 16 with the Play Store installed, fully-featured and ready to go.",
+    "imageName": "cr.regulad.xyz/regulad/redroid-script:16.0.0-gapps-latest",
+    "usable": true,
+    "premium": true,
+    "gms": true,
+    "memfd": false,
+    "androidSdkVersion": 36
+  },
+  {
+    "name": "Play Store Android 16 (64-bit only)",
+    "description": "Android 16 with the Play Store installed, fully-featured and ready to go. Runs 64-bit apps only: apps that ship only 32-bit native code will not install.",
+    "imageName": "cr.regulad.xyz/regulad/redroid-script:16.0.0_64only-gapps-latest",
+    "usable": true,
+    "premium": true,
+    "gms": true,
+    "memfd": false,
+    "androidSdkVersion": 36
+  },
+  {
+    "name": "Play Store Android 15",
+    "description": "Android 15 with the Play Store installed, fully-featured and ready to go.",
+    "imageName": "cr.regulad.xyz/regulad/redroid-script:15.0.0-gapps-latest",
+    "usable": true,
+    "premium": true,
+    "gms": true,
+    "memfd": true,
+    "androidSdkVersion": 35
+  },
+  {
+    "name": "Play Store Android 15 (64-bit only)",
+    "description": "Android 15 with the Play Store installed, fully-featured and ready to go. Runs 64-bit apps only: apps that ship only 32-bit native code will not install.",
+    "imageName": "cr.regulad.xyz/regulad/redroid-script:15.0.0_64only-gapps-latest",
+    "usable": true,
+    "premium": true,
+    "gms": true,
+    "memfd": true,
+    "androidSdkVersion": 35
+  },
+  {
+    "name": "Play Store Android 14",
+    "description": "Android 14 with the Play Store installed, fully-featured and ready to go.",
+    "imageName": "cr.regulad.xyz/regulad/redroid-script:14.0.0-gapps-latest",
+    "usable": true,
+    "premium": false,
+    "gms": true,
+    "memfd": true,
+    "androidSdkVersion": 34
+  },
+  {
+    "name": "Play Store Android 14 (64-bit only)",
+    "description": "Android 14 with the Play Store installed, fully-featured and ready to go. Runs 64-bit apps only: apps that ship only 32-bit native code will not install.",
+    "imageName": "cr.regulad.xyz/regulad/redroid-script:14.0.0_64only-gapps-latest",
+    "usable": true,
+    "premium": false,
+    "gms": true,
+    "memfd": true,
+    "androidSdkVersion": 34
+  },
+  {
     "name": "AOSP Android 14",
     "description": "Android Open Source Project (AOSP) Android 14.0.0. No Play Store.",
     "imageName": "redroid/redroid:14.0.0-latest",
     "usable": true,
-    "premium": true,
+    "premium": false,
     "gms": false,
     "memfd": true,
     "androidSdkVersion": 34

@@ -1,6 +1,7 @@
 // image sources:
 // - https://github.com/remote-android/redroid-doc
 // - https://github.com/abing7k/redroid-script
+// - https://github.com/regulad/redroid-script (cr.regulad.xyz; built and boot-tested in CI)
 
 import allRedroidImagesJson from "./redroid-images.json"; // generated from redroid-images.json5, the file to edit
 
@@ -8,7 +9,7 @@ export interface RedroidImage {
   name: string;
   description: string;
   // The image's key: devices store it as their redroidImage, so it never
-  // changes.
+  // changes. It names a tag; a device keeps the digest it was made from.
   imageName: string;
   usable: boolean; // if an image is allowed to be deployed
   premium: boolean; // if a paid membership is required to use the image
@@ -28,15 +29,14 @@ export function isDeployable(
   return image.usable && (image.memfd || hostHasAshmem);
 }
 
-// the last free image in the list that the host can deploy
+// the first free image in the list that the host can deploy
 export function getDefaultRedroidImage(
   hostHasAshmem: boolean,
 ): RedroidImage | null {
   return (
-    allRedroidImages
-      .toReversed()
-      .find((image) => isDeployable(image, hostHasAshmem) && !image.premium) ??
-    null
+    allRedroidImages.find(
+      (image) => isDeployable(image, hostHasAshmem) && !image.premium,
+    ) ?? null
   );
 }
 

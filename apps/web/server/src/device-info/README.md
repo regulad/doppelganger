@@ -14,11 +14,17 @@ scripts run it first; run it yourself after an edit if one of them is already
 running, or if your editor reports the JSON missing.
 
 `imageName` is an image's key: a device stores it as its `redroid_image`, so it
-never changes. An image that is no longer offered stays in the list under its
-`imageName`, with `usable: false` and the reason in a comment beside it, so that
-devices made from it still resolve.
+never changes. It names a tag, such as `…/redroid-script:14.0.0-gapps-latest`,
+which the redroid-script CI overwrites with each rebuild; a device's compose
+file pins the digest the tag had when the device was made. An image that is no
+longer offered stays in the list under its `imageName`, with `usable: false` and
+the reason in a comment beside it, so that devices made from it still resolve.
 
 `memfd` starts the image with `androidboot.use_memfd=true`. Images without it
-use ashmem, which the host's kernel must provide (`ashmem_linux`). If the host's
-`/proc/misc` lists no `ashmem`, those images are not offered or deployed
-(`isDeployable`).
+use ashmem, which the host's kernel must provide (`ashmem_linux`). Android 16
+needs ashmem on any kernel without Android's memfd patches, so only the Android
+16 images go without `memfd`. If the host's `/proc/misc` lists no `ashmem`,
+those images are not offered or deployed (`isDeployable`).
+
+The regulad/redroid-script CI boot-tests every image on ashmem only, not on
+memfd.

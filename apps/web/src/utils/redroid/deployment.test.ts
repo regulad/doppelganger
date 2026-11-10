@@ -123,6 +123,13 @@ describe("createView", () => {
     });
   });
 
+  it("should pin the digest that an image's tag has now", async () => {
+    for (const image of allRedroidImages.filter((image) => image.usable)) {
+      const view = await createView(image, 30, specs);
+      expect(view.redroidImage).toBe(`${image.imageName}@sha256:digest`);
+    }
+  });
+
   it("should boot images on memfd only if they are marked memfd", async () => {
     expect(defaultRedroidImage.memfd).toBe(true);
     expect(await redroidCommandFor(defaultRedroidImage)).toContain(
