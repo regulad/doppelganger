@@ -1,3 +1,11 @@
 {
   plugins: ["prettier-plugin-organize-imports", "@prettier/plugin-xml"],
+  overrides: [
+    {
+      // keeps the JSON style of the redroid-images.json it was renamed from,
+      // so that git blame follows its lines back
+      files: "apps/web/server/src/device-info/redroid-images.json5",
+      options: { quoteProps: "preserve", trailingComma: "none" },
+    },
+  ],
 }

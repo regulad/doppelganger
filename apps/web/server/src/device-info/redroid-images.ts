@@ -2,7 +2,7 @@
 // - https://github.com/remote-android/redroid-doc
 // - https://github.com/abing7k/redroid-script
 
-import allRedroidImagesJson from "./redroid-images.json";
+import allRedroidImagesJson from "./redroid-images.json"; // generated from redroid-images.json5, the file to edit
 
 export interface RedroidImage {
   name: string;

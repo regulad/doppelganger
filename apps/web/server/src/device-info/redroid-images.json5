@@ -1,3 +1,13 @@
+// The redroid images that devices are made from.
+//
+// This is the file to edit. `pnpm catalog:generate` writes redroid-images.json
+// from it, which the code imports and git ignores; the dev, build,
+// server:build, test and type-check scripts run it first.
+//
+// It keeps the JSON style of the redroid-images.json it was renamed from
+// (quoted keys, no trailing commas), so that git blame follows its lines back.
+//
+// The fields are described in redroid-images.ts.
 [
   {
     "name": "AOSP Android 14",

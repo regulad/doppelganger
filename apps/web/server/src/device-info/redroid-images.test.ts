@@ -1,6 +1,19 @@
+import JSON5 from "json5";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import allRedroidImages from "./redroid-images.ts";
 
+const catalogSource = readFileSync(
+  join(__dirname, "redroid-images.json5"),
+  "utf-8",
+);
+
 describe("Redroid Images Tests", () => {
+  it("should be generated from redroid-images.json5", () => {
+    // if not, run pnpm catalog:generate
+    expect(allRedroidImages).toEqual(JSON5.parse(catalogSource));
+  });
+
   // Existing test...
   it("usable images should have androidSdkVersion >= 29", () => {
     allRedroidImages.forEach((image) => {

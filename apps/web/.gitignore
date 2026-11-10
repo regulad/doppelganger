@@ -56,3 +56,6 @@ public/sitemap*.xml
 
 # contentlayer
 .contentlayer
+
+# generated from redroid-images.json5 by `pnpm catalog:generate`
+server/src/device-info/redroid-images.json
