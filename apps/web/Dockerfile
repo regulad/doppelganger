@@ -11,24 +11,26 @@ WORKDIR /usr/src/app
 #   - bufferutil
 #   - prisma
 # Empty line delineates direct deps from transitive deps
+# Pinned to the minor version only: Alpine keeps just the newest build of each
+# package, so a full pin (=~3.5.4-r0) stops resolving at its next security fix.
 RUN apk add --no-cache \
-    git=~2.49.1-r0 \
-    bash=~5.2.37-r0 \
-    docker-cli=~28.3.3-r3 \
-    docker-cli-compose=~2.36.2-r3 \
-    curl=~8.14.1-r2 \
-    android-tools=~35.0.2-r14 \
+    git=~2.49 \
+    bash=~5.2 \
+    docker-cli=~28.3 \
+    docker-cli-compose=~2.36 \
+    curl=~8.14 \
+    android-tools=~35.0 \
     \
-    autoconf=~2.72-r1 \
-    automake=~1.17-r1 \
-    zlib-dev=~1.3.1-r2 \
-    libpng-dev=~1.6.47-r0 \
-    build-base=~0.5-r3 \
-    vips-dev=~8.16.1-r0 \
-    python3-dev=~3.12.12-r0 \
-    py3-setuptools=~80.9.0-r0 \
-    py3-pip=~25.1.1-r0 \
-    openssl=~3.5.4-r0
+    autoconf=~2.72 \
+    automake=~1.17 \
+    zlib-dev=~1.4 \
+    libpng-dev=~1.6 \
+    build-base=~0.5 \
+    vips-dev=~8.16 \
+    python3-dev=~3.12 \
+    py3-setuptools=~80.9 \
+    py3-pip=~25.1 \
+    openssl=~3.5
 
 # Install pnpm
 # Randomly, some of the "build-time" dependencies are being omitted by pnpm when it collects dependencies.
