@@ -4,6 +4,7 @@ import {
   VOLUME_SIZE_LIMIT_BYTES,
 } from "%/constants.ts";
 import { getIsDeviceRunning } from "%/docker/device-state.ts";
+import { Device } from "%/generated/prisma/client.ts";
 import {
   getConnectionStatus,
   getCpuUsage,
@@ -11,7 +12,6 @@ import {
   getRunningStatus,
   getStorageUsedBytes,
 } from "@/utils/redroid/stats";
-import { Device } from "@prisma/client";
 
 jest.mock("%/docker/device-paths.ts", () => ({
   getDataDirOfDevice: jest.fn().mockReturnValue("/data/device"),

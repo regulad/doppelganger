@@ -1,5 +1,5 @@
 import doInitialDeviceSetup from "%/adb/initial-setup.ts";
-import { Device } from "@prisma/client";
+import { Device } from "%/generated/prisma/client";
 import * as Sentry from "@sentry/node";
 import { spawn } from "node:child_process";
 import { rm } from "node:fs/promises";

@@ -1,9 +1,9 @@
 "use client";
 
+import { Device } from "%/generated/prisma/browser.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { clientSideReloadWithToast } from "@/utils/toast-utils.ts";
-import { Device } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 import React, { useMemo, useState } from "react";
 import { LuLoader2, LuPower, LuPowerOff } from "react-icons/lu";

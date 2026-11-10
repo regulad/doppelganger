@@ -2,6 +2,7 @@
 
 import { getAdbUdidForDevice } from "%/device-info/device-info-utils.ts";
 import { getRedroidImage } from "%/device-info/redroid-images.ts";
+import type { Device } from "%/generated/prisma/browser.ts";
 import {
   LocationPutReturnType,
   LocationPutSendType,
@@ -25,7 +26,6 @@ import KeyEvent, {
 } from "@/ws-scrcpy/src/app/googDevice/android/KeyEvent";
 import Size from "@/ws-scrcpy/src/app/Size.ts";
 import VideoSettings from "@/ws-scrcpy/src/app/VideoSettings.ts";
-import type { Device } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 import { useOrientation } from "@uidotdev/usehooks";
 import { clsx } from "clsx";

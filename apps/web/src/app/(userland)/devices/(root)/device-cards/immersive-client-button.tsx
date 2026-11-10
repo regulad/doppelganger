@@ -1,3 +1,4 @@
+import { Device } from "%/generated/prisma/browser.ts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/alert-dialog.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
-import { Device } from "@prisma/client";
 import { LuExternalLink } from "react-icons/lu";
 import { Link } from "react-transition-progress/next";
 

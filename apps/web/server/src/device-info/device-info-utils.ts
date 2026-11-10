@@ -1,4 +1,4 @@
-import type { Device } from "@prisma/client";
+import type { Device } from "%/generated/prisma/client";
 
 export type DeviceSpecs = Pick<
   Device,

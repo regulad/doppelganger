@@ -4,8 +4,8 @@ import { getPrisma } from "%/database/prisma.ts";
 import { getDeviceForId } from "%/device-info/device-info.ts";
 import { destroyDevice } from "%/docker/device-state.ts";
 import { deviceApiEndpoint } from "%/endpoint-regex.ts";
+import { DeviceState } from "%/generated/prisma/client.ts";
 import { createClient } from "@/utils/supabase/server.ts";
-import { DeviceState } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(req: NextRequest): Promise<NextResponse> {

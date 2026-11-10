@@ -1,11 +1,11 @@
 import { BASE_ORIGIN } from "%/constants.ts";
 import { getDeviceForId } from "%/device-info/device-info.ts";
 import { deviceApiEndpoint } from "%/endpoint-regex.ts";
+import { Device } from "%/generated/prisma/client.ts";
 import getStaticUrlForImageDataUrl from "@/app/api/render/path.ts";
 import { getDeviceIsActive } from "@/utils/devices.ts";
 import getOneSignalClient from "@/utils/onesignal/onesignal-server.ts";
 import * as OneSignal from "@onesignal/node-onesignal";
-import { Device } from "@prisma/client";
 import * as Sentry from "@sentry/node";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

@@ -1,5 +1,6 @@
 "use client";
 
+import { Device } from "%/generated/prisma/browser.ts";
 import { Button } from "@/components/ui/button.tsx";
 import {
   Dialog,
@@ -9,7 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog.tsx";
 import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
-import { Device } from "@prisma/client";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { LuSettings2 } from "react-icons/lu";
 

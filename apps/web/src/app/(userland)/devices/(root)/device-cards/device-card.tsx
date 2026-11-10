@@ -24,6 +24,7 @@ import { clsx } from "clsx";
 import { useEffect, useState } from "react";
 
 import { getRedroidImage } from "%/device-info/redroid-images.ts";
+import { Device, DeviceState } from "%/generated/prisma/browser.ts";
 import DeleteDeviceButton from "@/app/(userland)/devices/(root)/device-cards/delete-device-button.tsx";
 import DesktopClientButton from "@/app/(userland)/devices/(root)/device-cards/desktop-client-button.tsx";
 import DeviceInfoPageButton from "@/app/(userland)/devices/(root)/device-cards/device-info-page-button.tsx";
@@ -35,7 +36,6 @@ import { getSnapshotUrlOfDevice } from "@/app/api/devices/[id]/snapshot/path.ts"
 import { Button } from "@/components/ui/button.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { toTitleCase } from "@/utils/misc.ts";
-import { Device, DeviceState } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { LuMousePointer2 } from "react-icons/lu";
 

@@ -1,7 +1,7 @@
 import { DEVICE_ACTIVE_TIMEOUT } from "%/constants.ts";
 import { getPrisma } from "%/database/prisma.ts";
+import { Device } from "%/generated/prisma/client.ts";
 import fixDateFromPrisma from "@/app/api/cron/util.ts";
-import { Device } from "@prisma/client";
 import { User } from "@supabase/supabase-js";
 
 export function getDevicesForUser(user: User): Promise<Device[]> {

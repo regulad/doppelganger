@@ -1,5 +1,5 @@
 import { AdbDevice, readFullStreamIntoBuffer } from "%/adb/adb-device.ts";
-import { Device } from "@prisma/client";
+import { Device } from "%/generated/prisma/client";
 import * as Sentry from "@sentry/node";
 import ApkReader, { ManifestObject } from "adbkit-apkreader";
 // import { globStream } from "glob"; // glob doesn't webpack

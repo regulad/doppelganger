@@ -5,6 +5,7 @@ import { AdbDevice } from "%/adb/adb-device.ts";
 import { getIsSetupComplete } from "%/adb/initial-setup.ts";
 import { getDeviceForId } from "%/device-info/device-info.ts";
 import { getRedroidImage } from "%/device-info/redroid-images.ts";
+import { Device } from "%/generated/prisma/browser.ts";
 import {
   ClientSideHasGrantedLocationPermissionChecklistItem,
   ClientSideIsPwaChecklistItem,
@@ -23,7 +24,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { createClient } from "@/utils/supabase/server.ts";
-import { Device } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 import { Suspense } from "react";
 

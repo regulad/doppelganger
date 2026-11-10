@@ -2,6 +2,7 @@ import { getPrisma } from "%/database/prisma.ts";
 import { getRedroidImage, isDeployable } from "%/device-info/redroid-images.ts";
 import { bringUpDevice } from "%/docker/device-state.ts";
 import { hostHasAshmem } from "%/docker/host-kernel.ts";
+import { Device } from "%/generated/prisma/client.ts";
 import { newDeviceFormSchema } from "@/app/(userland)/devices/(root)/device-pages/new-device-form/new-device-form-schema.ts";
 import { getDevicesForUser } from "@/utils/devices.ts";
 import { initializeDevice } from "@/utils/redroid/deployment.ts";
@@ -12,7 +13,6 @@ import {
   SubscriptionStatus,
 } from "@/utils/subscriptions.ts";
 import { createClient } from "@/utils/supabase/server.ts";
-import { Device } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export interface NewDeviceResponse {

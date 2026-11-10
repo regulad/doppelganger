@@ -1,5 +1,5 @@
 import { getDefaultRedroidHostname } from "%/device-info/device-info-utils";
-import { Device } from "@prisma/client";
+import { Device } from "%/generated/prisma/client";
 import { findUpSync } from "find-up";
 import path from "path";
 import { AdbDevice } from "./adb-device";

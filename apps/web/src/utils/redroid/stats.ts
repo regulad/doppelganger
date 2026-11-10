@@ -9,13 +9,13 @@ import {
   getIsDeviceRunning,
   getRedroidContainerName,
 } from "%/docker/device-state.ts";
+import { Device } from "%/generated/prisma/client.ts";
 import { ignoreNumberRejection } from "%/utils/promise-utils.ts";
 import {
   getCpuUsageOfDockerContainerCpus,
   getMemoryUsageOfDockerContainerBytes,
   getTotalDiskUsageOfDirectoryBytes,
 } from "@/utils/docker/resource-utils.ts";
-import { Device } from "@prisma/client";
 
 /**
  * Retrieves the running status of the device.

@@ -1,3 +1,4 @@
+import { Device } from "%/generated/prisma/browser.ts";
 import pwaClickHandler from "@/app/(userland)/devices/pwa-click-handler.ts";
 import DeviceClientWithButtons from "@/components/client/device-client-with-buttons.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -10,7 +11,6 @@ import {
 } from "@/components/ui/dialog.tsx";
 import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
-import { Device } from "@prisma/client";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { useRouter } from "next/navigation";
 import { LuMousePointer2 } from "react-icons/lu";

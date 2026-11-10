@@ -1,6 +1,7 @@
 "use client";
 
 import { getRedroidImage } from "%/device-info/redroid-images.ts";
+import type { Device } from "%/generated/prisma/browser.ts";
 import { Breadcrumbs } from "@/app/(userland)/devices/multiview/breadcrumbs.tsx";
 import {
   DEFAULT_COLUMNS,
@@ -33,7 +34,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable.tsx";
-import type { Device } from "@prisma/client";
 import { ChevronsUpDown, Minus, Plus } from "lucide-react";
 import { Fragment, useState } from "react";
 import { LuRefreshCw } from "react-icons/lu";

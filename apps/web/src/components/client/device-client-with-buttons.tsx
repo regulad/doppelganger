@@ -1,5 +1,6 @@
 "use client";
 
+import type { Device } from "%/generated/prisma/browser.ts";
 import DeviceClient, {
   DeviceClientHandle,
 } from "@/components/client/device-client.tsx";
@@ -7,7 +8,6 @@ import MaxWidthHardlimiter from "@/components/max-width-hardlimiter.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
-import type { Device } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 import { clsx } from "clsx";
 import { ReactNode, RefObject, useEffect, useRef, useState } from "react";

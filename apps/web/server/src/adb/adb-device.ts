@@ -2,9 +2,9 @@ import { createAdbClient } from "%/adb/adb.ts";
 import RobustClient, { DEFAULT_ADB_TIMEOUT } from "%/adb/robust-client.ts";
 import { getAdbUdidForDevice } from "%/device-info/device-info-utils";
 import { getRedroidImage } from "%/device-info/redroid-images";
+import { Device } from "%/generated/prisma/client";
 import { type Client } from "@devicefarmer/adbkit";
 import { retry } from "@lifeomic/attempt";
-import { Device } from "@prisma/client";
 import { spawn } from "child_process";
 import { Duplex } from "node:stream";
 

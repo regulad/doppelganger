@@ -1,5 +1,6 @@
 "use client";
 
+import { Device } from "%/generated/prisma/browser.ts";
 import pwaClickHandler from "@/app/(userland)/devices/pwa-click-handler.ts";
 import { getSnapshotUrlOfDevice } from "@/app/api/devices/[id]/snapshot/path.ts";
 import DeviceClientWithButtons from "@/components/client/device-client-with-buttons.tsx";
@@ -10,7 +11,6 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog.tsx";
-import { Device } from "@prisma/client";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

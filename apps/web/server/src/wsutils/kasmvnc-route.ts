@@ -4,9 +4,9 @@ import {
   getTargetVncWebsocketUrlForDevice,
 } from "%/device-info/device-info-utils";
 import { audioWsEndpoint, kasmVncWsEndpoint } from "%/endpoint-regex";
+import { Device } from "%/generated/prisma/client";
 import { METRICrealtimeVncStreams } from "%/metrics";
 import { createClient } from "%/supabase/ro-server";
-import { Device } from "@prisma/client";
 import * as Sentry from "@sentry/node";
 import { IncomingMessage } from "node:http";
 import { WebSocket as WsWebSocket } from "ws";

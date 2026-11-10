@@ -1,5 +1,6 @@
 "use client";
 
+import type { Device } from "%/generated/prisma/browser.ts";
 import { Button } from "@/components/ui/button.tsx";
 import {
   Dialog,
@@ -22,7 +23,6 @@ import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { clientSideReloadWithToast } from "@/utils/toast-utils.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Device } from "@prisma/client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { LuLoader2 } from "react-icons/lu";

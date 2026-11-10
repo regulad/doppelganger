@@ -5,12 +5,12 @@
  * - Generating the docker-compose file from a view
  * - Deploying the docker-compose file
  */
+import { Device } from "%/generated/prisma/client.ts";
 import {
   CUID,
   DockerImageInfo,
   PathFriendlyString,
 } from "@/utils/docker/docker-image-parsing.ts";
-import { Device } from "@prisma/client";
 import Mustache from "mustache";
 import { readFile } from "node:fs/promises";
 

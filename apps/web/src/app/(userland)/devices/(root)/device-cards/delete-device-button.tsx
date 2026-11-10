@@ -1,5 +1,6 @@
 "use client";
 
+import { Device } from "%/generated/prisma/browser.ts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +16,6 @@ import { Button } from "@/components/ui/button.tsx";
 import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { clientSideRedirectWithToast } from "@/utils/toast-utils.ts";
-import { Device } from "@prisma/client";
 import React, { useMemo, useState } from "react";
 import { HiOutlineTrash } from "react-icons/hi2";
 import { LuLoader2 } from "react-icons/lu";

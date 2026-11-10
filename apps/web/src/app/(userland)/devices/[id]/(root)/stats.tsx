@@ -2,6 +2,7 @@
 
 // DeviceStats Components
 import { getDeviceForId } from "%/device-info/device-info.ts";
+import { Device } from "%/generated/prisma/browser.ts";
 import { StatItemSkeleton } from "@/app/(userland)/devices/[id]/(root)/skeletons.tsx";
 import NotFound from "@/app/not-found.tsx";
 import {
@@ -17,7 +18,6 @@ import {
   getStorageUsedBytes,
 } from "@/utils/redroid/stats.ts";
 import { createClient } from "@/utils/supabase/server.ts";
-import { Device } from "@prisma/client";
 import { Cpu, HardDrive, MemoryStick } from "lucide-react";
 import { ElementType, Suspense } from "react";
 

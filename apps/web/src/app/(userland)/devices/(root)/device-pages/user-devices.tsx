@@ -1,9 +1,9 @@
 import { getIsDeviceRunning } from "%/docker/device-state.ts";
+import { Device } from "%/generated/prisma/browser.ts";
 import { DeviceCard } from "@/app/(userland)/devices/(root)/device-cards/device-card.tsx";
 import NoDevicesCard from "@/app/(userland)/devices/(root)/device-pages/no-devices-card.tsx";
 import { getDevicesForUser } from "@/utils/devices.ts";
 import { createClient } from "@/utils/supabase/server.ts";
-import { Device } from "@prisma/client";
 // import "array.prototype.tosorted/auto"; // cannot shim at compile time
 import shimSorted from "array.prototype.tosorted/shim";
 import NotFound from "next/dist/client/components/not-found-error";
