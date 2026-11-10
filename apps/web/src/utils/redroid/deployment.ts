@@ -68,6 +68,7 @@ export async function createView(
     redroidImageDataBasePath: getPathFriendlyStringForDockerImageInfo(
       completeDockerImageInfo,
     ),
+    redroidMemfd: selectedImage.memfd,
     redroidFps: fps,
     redroidDpi: specs.dpi,
     redroidWidth: specs.width,

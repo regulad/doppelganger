@@ -13,6 +13,7 @@ export interface RedroidImage {
   usable: boolean; // if an image is allowed to be deployed
   premium: boolean; // if a paid membership is required to use the image
   gms: boolean; // if the image has Google Mobile Services & requires GMS init
+  memfd: boolean; // if the image boots with androidboot.use_memfd=true; if not, it uses the host's ashmem
   androidSdkVersion: number;
 }
 

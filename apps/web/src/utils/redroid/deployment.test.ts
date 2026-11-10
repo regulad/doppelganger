@@ -5,6 +5,7 @@
 import { SampleDeviceSpecs } from "%/device-info/device-specs.ts";
 import allRedroidImages, {
   defaultRedroidImage,
+  RedroidImage,
 } from "%/device-info/redroid-images.ts";
 import {
   createDockerTemplateFromView,
@@ -96,6 +97,12 @@ describe("createView", () => {
   }, 60_000); // Adjust timeout as necessary
 
   const specs = { dpi: 160, width: 720, height: 1280 };
+  async function redroidCommandFor(image: RedroidImage): Promise<string[]> {
+    const view = await createView(image, 30, specs);
+    const parsedYaml = yamlParse(await createDockerTemplateFromView(view));
+    expect(validate(parsedYaml)).toBe(true);
+    return parsedYaml.services.redroid.command;
+  }
 
   it("should store each image's imageName unchanged, as devices are keyed by it", async () => {
     const view = await createView(defaultRedroidImage, 30, specs);
@@ -112,5 +119,17 @@ describe("createView", () => {
       );
       expect(device.redroidImage).toBe(image.imageName);
     });
+  });
+
+  it("should boot images on memfd only if they are marked memfd", async () => {
+    expect(defaultRedroidImage.memfd).toBe(true);
+    expect(await redroidCommandFor(defaultRedroidImage)).toContain(
+      "androidboot.use_memfd=true",
+    );
+
+    const ashmemImage = { ...defaultRedroidImage, memfd: false };
+    expect(await redroidCommandFor(ashmemImage)).not.toContain(
+      "androidboot.use_memfd=true",
+    );
   });
 });

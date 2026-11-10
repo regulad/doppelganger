@@ -17,3 +17,6 @@ running, or if your editor reports the JSON missing.
 never changes. An image that is no longer offered stays in the list under its
 `imageName`, with `usable: false` and the reason in a comment beside it, so that
 devices made from it still resolve.
+
+`memfd` starts the image with `androidboot.use_memfd=true`. Images without it
+use ashmem, which the host's kernel must provide (`ashmem_linux`).

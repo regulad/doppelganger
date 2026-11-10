@@ -44,6 +44,7 @@ export interface DockerComposeMoustacheView extends Partial<Device> {
   // this is where all of the files live
   baseDir: string; // ex: /mnt/doppelganger (no trailing slash!)
   redroidImageDataBasePath: PathFriendlyString; // includes the sha256 hash for pinning
+  redroidMemfd: boolean; // passes androidboot.use_memfd=true
 
   redroidFps: number;
   redroidDpi: number;

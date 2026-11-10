@@ -42,6 +42,7 @@ describe("Redroid Images Tests", () => {
       expect(image).toHaveProperty("usable");
       expect(image).toHaveProperty("premium");
       expect(image).toHaveProperty("gms");
+      expect(image).toHaveProperty("memfd");
       expect(image).toHaveProperty("androidSdkVersion");
     });
   });
