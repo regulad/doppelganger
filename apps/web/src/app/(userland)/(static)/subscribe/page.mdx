@@ -1,4 +1,4 @@
-import { Pricing22 } from "../../../../components/relume/pricing-22";
+import { PricingTable } from "../../../../components/site/pricing-table";
 import { Button } from "../../../../components/ui/button";
 import { Link } from "react-transition-progress/next";
 import { LuArrowRight } from "react-icons/lu";
@@ -18,16 +18,16 @@ export const metadata = {
   title: "Premium",
 };
 
-<Pricing22
-  tagline="Time to get serious."
+<PricingTable
+  eyebrow="Time to get serious."
   heading="Doppelganger Premium"
   description="Unlock the full potential of Doppelganger with a Doppelganger premium plan. With paid options starting at $9.99/mo, there's a plan for everyone."
-  pricingPlans={[
+  plans={[
     {
-      planName: "Free",
+      name: "Free",
       monthlyPrice: "$0",
       description: "Experience the core product for free.",
-      button: (
+      action: (
         <Button asChild>
           <Link href="/devices">
             Get Started
@@ -37,11 +37,11 @@ export const metadata = {
       ),
     },
     {
-      planName: "Plus",
+      name: "Plus",
       monthlyPrice: "$9.99",
       description:
         "Unlock better integrations and unbridled functionality for one device.",
-      button: (
+      action: (
         <Button asChild>
           <Link
             href={`/api/stripe/get-checkout-session?priceId=${PLUS_STRIPE_PRODUCT}`}
@@ -53,11 +53,11 @@ export const metadata = {
       ),
     },
     {
-      planName: "Pro",
+      name: "Pro",
       monthlyPrice: "$14.99",
       description:
         "Unlock the full potential of Doppelganger's multiple deivces.",
-      button: (
+      action: (
         <Button asChild>
           <Link
             href={`/api/stripe/get-checkout-session?priceId=${PRO_STRIPE_PRODUCT}`}
@@ -69,7 +69,7 @@ export const metadata = {
       ),
     },
   ]}
-  buttons={
+  actions={
     <>
       <Button asChild>
         <Link href="/devices">
@@ -97,29 +97,29 @@ export const metadata = {
       </Button>
     </>
   }
-  featureCategories={[
+  featureGroups={[
     {
       title: "Devices",
       features: [
         {
-          text: "Maximum number of devices",
-          items: [MAX_DEVICES_FREE, MAX_DEVICES_PLUS, MAX_DEVICES_PRO],
+          label: "Maximum number of devices",
+          values: [MAX_DEVICES_FREE, MAX_DEVICES_PLUS, MAX_DEVICES_PRO],
         },
         {
-          text: (
+          label: (
             <Link className="shadcn-link" href="/types">
               Device Types Available
             </Link>
           ),
-          items: ["Limited", "Limited", "All"],
+          values: ["Limited", "Limited", "All"],
         },
         {
-          text: "Device FPS",
-          items: [FREE_MAX_FPS, PLUS_MAX_FPS, PRO_MAX_FPS],
+          label: "Device FPS",
+          values: [FREE_MAX_FPS, PLUS_MAX_FPS, PRO_MAX_FPS],
         },
         {
-          text: "Always-on devices",
-          items: [
+          label: "Always-on devices",
+          values: [
             "",
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
@@ -131,104 +131,104 @@ export const metadata = {
       title: "Integrations",
       features: [
         {
-          text: "Pheidippides: smooth, low-latency, native-like experience",
-          items: [
+          label: "Pheidippides: smooth, low-latency, native-like experience",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Audio Pass-Through (iOS excluded)",
-          items: [
+          label: "Audio Pass-Through (iOS excluded)",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: (
+          label: (
             <Link className="shadcn-link" href="/multiview">
               Multiview: use multiple devices at once
             </Link>
           ),
-          items: ["", "", <BiCheck className="size-6" />],
+          values: ["", "", <BiCheck className="size-6" />],
         },
         {
-          text: "Clipboard Pass-through (desktop)",
-          items: [
+          label: "Clipboard Pass-through (desktop)",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Automatic Device Rotation (mobile)",
-          items: [
+          label: "Automatic Device Rotation (mobile)",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Manual Device Rotation (desktop)",
-          items: [
+          label: "Manual Device Rotation (desktop)",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Notification Pass-through",
-          items: [
+          label: "Notification Pass-through",
+          values: [
             "",
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Location Pass-through",
-          items: [
+          label: "Location Pass-through",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         /*{
-          text: "Contacts Pass-through (coming soon)",
-          items: [
+          label: "Contacts Pass-through (coming soon)",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Camera Roll Pass-through (coming soon)",
-          items: [
+          label: "Camera Roll Pass-through (coming soon)",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Calendar Pass-through (coming soon)",
-          items: [
+          label: "Calendar Pass-through (coming soon)",
+          values: [
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Camera Pass-through (coming soon)",
-          items: [
+          label: "Camera Pass-through (coming soon)",
+          values: [
             "",
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,
           ],
         },
         {
-          text: "Microphone Pass-through (coming soon)",
-          items: [
+          label: "Microphone Pass-through (coming soon)",
+          values: [
             "",
             <BiCheck className="size-6" />,
             <BiCheck className="size-6" />,

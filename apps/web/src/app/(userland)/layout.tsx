@@ -1,7 +1,7 @@
 import NavbarButtons from "@/app/(userland)/navbar-buttons.tsx";
-import { LogoMiniHero } from "@/components/logo.tsx";
-import { Footer3 } from "@/components/relume/footer-3.tsx";
-import { Navbar1 } from "@/components/relume/navbar-1.tsx";
+import { LogoBigHero, LogoMiniHero } from "@/components/logo.tsx";
+import { SiteFooter } from "@/components/site/site-footer.tsx";
+import { SiteNavbar } from "@/components/site/site-navbar.tsx";
 import { ReactNode } from "react";
 import { BiLogoInstagram, BiLogoLinkedinSquare } from "react-icons/bi";
 import { FaDiscord, FaXTwitter } from "react-icons/fa6";
@@ -9,9 +9,9 @@ import { ProgressBar } from "react-transition-progress";
 
 export function ConfiguredNavbar() {
   return (
-    <Navbar1
+    <SiteNavbar
       logo={<LogoMiniHero />}
-      navLinks={[
+      links={[
         {
           url: "/devices",
           title: "My Devices",
@@ -29,89 +29,91 @@ export function ConfiguredNavbar() {
           title: "Premium",
         },
       ]}
-      buttons={<NavbarButtons />}
+      actions={<NavbarButtons />}
     />
   );
 }
 
 export function ConfiguredFooter() {
   return (
-    <Footer3
-      footerText="© 2025 Nefum LLC. All rights reserved. Any data uploaded or generated on our services is to be treated as insecure. Doppelganger is not responsible for the loss or compromise of any data. Doppelganger is best used for low-risk data, including but not limited to rewards apps, games, social media, and websites. Banking apps and similar high-security tasks may be blocked from running in Doppelganger environments."
-      address={{
-        label: "Address:",
-        value: "7 Beverly Road, Livingston NJ, US, 07039",
-      }}
-      contact={{
-        label: "Contact:",
-        phone: "+1 (908) 656-8176",
-        email: "doppelganger@regulad.xyz",
-      }}
-      columnLinks={[
+    <SiteFooter
+      logo={<LogoBigHero className="inline-flex items-center" />}
+      contactDetails={[
         {
-          links: [
-            {
-              title: "About Us",
-              url: "/about",
-            },
-            {
-              title: "Contact Us",
-              url: "/contact",
-            },
-            {
-              title: "Support",
-              url: "/support",
-            },
-            {
-              title: "Contact",
-              url: "/contact",
-            },
-          ],
+          label: "Address:",
+          lines: ["7 Beverly Road, Livingston NJ, US, 07039"],
         },
         {
-          links: [
-            {
-              title: "Device Types",
-              url: "/types",
-            },
-            {
-              title: "Requirements",
-              url: "/tech",
-            },
-            {
-              title: "Open Source",
-              url: "/opensource",
-            },
-            {
-              title: "Premium",
-              url: "/subscribe",
-            },
-            {
-              title: "Multiview",
-              url: "/multiview",
-            },
-          ],
+          label: "Contact:",
+          lines: ["+1 (908) 656-8176", "doppelganger@regulad.xyz"],
         },
       ]}
-      socialMediaLinks={[
+      notice="© 2025 Nefum LLC. All rights reserved. Any data uploaded or generated on our services is to be treated as insecure. Doppelganger is not responsible for the loss or compromise of any data. Doppelganger is best used for low-risk data, including but not limited to rewards apps, games, social media, and websites. Banking apps and similar high-security tasks may be blocked from running in Doppelganger environments."
+      linkColumns={[
+        [
+          {
+            title: "About Us",
+            url: "/about",
+          },
+          {
+            title: "Contact Us",
+            url: "/contact",
+          },
+          {
+            title: "Support",
+            url: "/support",
+          },
+          {
+            title: "Contact",
+            url: "/contact",
+          },
+        ],
+        [
+          {
+            title: "Device Types",
+            url: "/types",
+          },
+          {
+            title: "Requirements",
+            url: "/tech",
+          },
+          {
+            title: "Open Source",
+            url: "/opensource",
+          },
+          {
+            title: "Premium",
+            url: "/subscribe",
+          },
+          {
+            title: "Multiview",
+            url: "/multiview",
+          },
+        ],
+      ]}
+      socialLinks={[
         {
+          label: "Discord",
           url: "https://discord.gg/k7TDVvRkSq",
           icon: <FaDiscord className="size-6" />,
         },
         {
+          label: "Instagram",
           url: "https://www.instagram.com/pewahle/",
           icon: <BiLogoInstagram className="size-6" />,
         },
         {
+          label: "X",
           url: "https://x.com/regulad_",
           icon: <FaXTwitter className="size-6 p-0.5" />,
         },
         {
+          label: "LinkedIn",
           url: "https://www.linkedin.com/in/parker-wahle/",
           icon: <BiLogoLinkedinSquare className="size-6" />,
         },
       ]}
-      footerLinks={[
+      legalLinks={[
         {
           title: "Terms of Service",
           url: "/tos",

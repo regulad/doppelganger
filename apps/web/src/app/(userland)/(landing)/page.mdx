@@ -1,4 +1,4 @@
-import { Header1 } from "../../../components/relume/header-1";
+import { HeroSection } from "../../../components/site/hero-section";
 import DarkLightComponent from "../../../components/dark-light-component";
 import Image from "next/image";
 import { Link } from "react-transition-progress/next";
@@ -6,20 +6,20 @@ import darkModeHeaderImage from "./dark mode iphone 15 mockup-left.png";
 import lightModeHeaderImage from "./light mode iphone 15 mockup-left.png";
 import { Button } from "../../../components/ui/button";
 import ScrollerButton from "./scroller-button";
-import { Layout245 } from "../../../components/relume/layout-245";
+import { FeatureSection } from "../../../components/site/feature-section";
 import { AiOutlineTeam } from "react-icons/ai";
 import { MdDevicesOther } from "react-icons/md";
 import { BsSignpostSplit } from "react-icons/bs";
 import { LuArrowRight } from "react-icons/lu";
 
-<Header1
+<HeroSection
   heading={
     <>
       Android, on <strong>any</strong> device.
     </>
   }
   description="Supercharge your efficiency with a second phone in the cloud, accessible anytime, anywhere. Break free from device limitations, use apps exactly how you want, and dominate your digital workflow."
-  image={
+  media={
     // must use priority since this will be the LCP
     <DarkLightComponent
       dark={
@@ -42,7 +42,7 @@ import { LuArrowRight } from "react-icons/lu";
       }
     />
   }
-  buttons={
+  actions={
     <>
       <Button asChild>
         <Link href={"/signup"}>
@@ -55,11 +55,11 @@ import { LuArrowRight } from "react-icons/lu";
   }
 />
 
-<Layout245
-  tagline="We've all been there."
+<FeatureSection
+  eyebrow="We've all been there."
   heading="That one app that doesn't have a website, that second account you need notifications from, or that game that doesn't support your current phone."
   description="Access any app, game, or service with Doppelganger—a rich Android experience in your browser. Enjoy seamless integration of location, notifications, and more. There's no need for a second phone. Privacy and security come first. Your app needs are just a click away."
-  sections={[
+  features={[
     {
       heading:
         "Stay up-to-date with your second accounts and maintain work-life balance.",
@@ -80,7 +80,7 @@ import { LuArrowRight } from "react-icons/lu";
       icon: <AiOutlineTeam className="h-12 w-12" />,
     },
   ]}
-  buttons={
+  actions={
     <>
       <Button asChild>
         <Link href={"/types"}>
