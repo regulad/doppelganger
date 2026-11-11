@@ -16,6 +16,12 @@ on:
     branches: ["master"]
   workflow_dispatch:
 
+# A newer run on the same branch or PR cancels the one in progress, rather
+# than both building and publishing.
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
