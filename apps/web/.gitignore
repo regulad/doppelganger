@@ -51,7 +51,7 @@ src/app/(userland)/(contained)/licenses/licenses.json
 android/*/
 
 # downloaded by scripts/download-android-apps.sh
-android/F-Droid.apk
+android/*.apk
 
 # sitemap outputs
 public/robots.txt

@@ -61,13 +61,6 @@ scrcpy server
   Copyright (C) 2018-2021 Romain Vimont. Apache License 2.0; see
   apps/web/scrcpy/LICENSE.
 
-Chromium
-  apps/web/android/ChromePublic.apk and SystemWebView.apk are unmodified
-  builds of Chromium 129.0.6614.0, installed on the Android devices
-  Doppelganger runs. Chromium is under a BSD-style license, with components
-  under other licenses, including the GNU LGPL. Source:
-  https://chromium.googlesource.com/chromium/src/+/refs/tags/129.0.6614.0
-
 Pheidippides launcher icons
   The launcher icons of the apps in pheidippides/ use the Android robot. The
   Android robot is reproduced or modified from work created and shared by
@@ -83,6 +76,13 @@ F-Droid
   1.17.0 from f-droid.org, unmodified, to be installed on the Android devices
   Doppelganger runs. GNU GPL version 3 or later. Source:
   https://gitlab.com/fdroid/fdroidclient/-/tree/1.17.0
+
+Chromium
+  The same script downloads ChromePublic.apk and SystemWebView.apk, Chromium
+  158.0.8127.0, from Chromium's official snapshot build 1727462, unmodified,
+  to be installed on the same devices. Chromium is under a BSD-style license,
+  with components under other licenses, including the GNU LGPL. Source:
+  https://chromium.googlesource.com/chromium/src/+/88c3ce436c686bd2114720debffedcb893ca464a
 
 Inter
   The site's typeface, downloaded from Google Fonts when the site is built

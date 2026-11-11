@@ -45,4 +45,23 @@ if ! verified "$dest/F-Droid.apk" "$fdroid_sha256"; then
   place "$dest/F-Droid.apk.part" "$dest/F-Droid.apk" "$fdroid_sha256"
 fi
 
+# Chromium 158.0.8127.0 for arm64: ChromePublic and SystemWebView from the
+# official snapshot build of Chromium commit 88c3ce43 (main@{#1727462}),
+# built 2026-10-27. Both need Android 10 or later.
+chromium_snapshot=1727462
+chrome_public_sha256=2ce8c967bf8bc2c522a8b3eb4af395447b25df33aee37d4da38e1c61b739e9fa
+system_webview_sha256=d730c5b885f7a6226fcc5d0312b06f3060bcd9cf263952910d8a025e8c80ae16
+if ! verified "$dest/ChromePublic.apk" "$chrome_public_sha256" \
+  || ! verified "$dest/SystemWebView.apk" "$system_webview_sha256"; then
+  echo "Downloading Chromium snapshot $chromium_snapshot..."
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+  curl -fsSL -o "$tmp/chrome-android.zip" \
+    "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Android_Arm64/$chromium_snapshot/chrome-android.zip"
+  unzip -o -q "$tmp/chrome-android.zip" \
+    chrome-android/apks/ChromePublic.apk chrome-android/apks/SystemWebView.apk -d "$tmp"
+  place "$tmp/chrome-android/apks/ChromePublic.apk" "$dest/ChromePublic.apk" "$chrome_public_sha256"
+  place "$tmp/chrome-android/apks/SystemWebView.apk" "$dest/SystemWebView.apk" "$system_webview_sha256"
+fi
+
 echo "The Android apps in $dest are in place."

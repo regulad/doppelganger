@@ -46,4 +46,4 @@ public/workers/
 .env.sentry-build-plugin
 
 # the image downloads and checks these itself; see the Dockerfile
-android/F-Droid.apk
+android/*.apk
