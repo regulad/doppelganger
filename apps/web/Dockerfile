@@ -55,14 +55,18 @@ RUN bash scripts/download-android-apps.sh android
 # NODE_ENV is unset during install-time because pnpm needs to install both regular dependencies and devDependencies for the build
 COPY package.json pnpm-lock.yaml ./
 ENV NODE_ENV=production
-RUN NODE_ENV= pnpm install --frozen-lockfile --shamefully-hoist
+# The pnpm store is a cache mount, so a changed lockfile downloads only what's new
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    NODE_ENV= pnpm install --frozen-lockfile --shamefully-hoist
 
 # Copy the rest of the application code
 COPY . .
 
 # Build the application
 ARG SENTRY_RELEASE
+# Next.js keeps its build cache in a cache mount, which CI carries between runs
 RUN --mount=type=secret,id=sentry_token \
+    --mount=type=cache,id=next-cache,target=/usr/src/app/.next/cache \
     export NODE_OPTIONS="--max-old-space-size=4096" \
     && export SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentry_token) \
     && export SENTRY_RELEASE=$SENTRY_RELEASE \

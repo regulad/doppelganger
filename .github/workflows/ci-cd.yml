@@ -24,7 +24,6 @@ env:
   # turbo
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
-  TURBO_REMOTE_ONLY: true
   # java, gradle & android
   JAVA_VERSION: "17"
   DISTRIBUTION: "oracle"
@@ -71,13 +70,15 @@ jobs:
         with:
           cmdline-tools-version: 13114758
 
-      # - name: Cache turbo build setup
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: .turbo
-      #     key: ${{ runner.os }}-turbo-${{ github.sha }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-turbo-
+      # turbo's local cache, kept between runs; the remote cache is used too
+      # when TURBO_TOKEN is set
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-check-${{ github.sha }}
+          restore-keys: |
+            turbo-check-
 
       # Run CI tasks
       - uses: pnpm/action-setup@v4
@@ -153,6 +154,16 @@ jobs:
         with:
           node-version: "22" # as in apps/web engines and its Dockerfile
           cache: "pnpm"
+
+      # turbo's local cache, kept between runs; the remote cache is used too
+      # when TURBO_TOKEN is set
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ matrix.tag }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ matrix.tag }}-
 
       - name: Build via turbo
         run: pnpx turbo build --filter=${{ matrix.tag }}
@@ -233,6 +244,31 @@ jobs:
           pattern: pheidippides-*
           path: apps/web/android
 
+      # The Next.js build cache lives in a BuildKit cache mount (next-cache in
+      # the Dockerfile). Layer caches don't keep cache mounts, so it is
+      # carried between runs through the Actions cache instead.
+      - name: Cache the Next.js build cache
+        id: next-cache
+        uses: actions/cache@v4
+        with:
+          path: next-cache
+          key: next-cache-${{ env.PLATFORM_PAIR }}-${{ github.sha }}
+          restore-keys: |
+            next-cache-${{ env.PLATFORM_PAIR }}-
+
+      - name: Load the Next.js build cache into BuildKit
+        uses: reproducible-containers/buildkit-cache-dance@5422eac04292c961a382e0f584ea0f03ad9da723 # v3.4.0
+        with:
+          builder: ${{ steps.setup-buildx.outputs.name }}
+          cache-map: |
+            {
+              "next-cache": {
+                "target": "/usr/src/app/.next/cache",
+                "id": "next-cache"
+              }
+            }
+          skip-extraction: ${{ steps.next-cache.outputs.cache-hit }}
+
       # Build, and push by digest except on PR
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
@@ -243,8 +279,10 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}
-          cache-from: type=gha,scope=web-${{ env.PLATFORM_PAIR }}
-          cache-to: type=gha,scope=web-${{ env.PLATFORM_PAIR }},mode=max
+          # Layers are cached in GHCR, one cache image per platform: the image
+          # is several GB, too big for the 10 GB Actions cache. PRs read it.
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache-web-${{ env.PLATFORM_PAIR }}
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref={0}/{1}:buildcache-web-{2},mode=max,image-manifest=true,oci-mediatypes=true', env.REGISTRY, env.IMAGE_NAME, env.PLATFORM_PAIR) || '' }}
           secrets: |
             sentry_token=${{ secrets.SENTRY_AUTH_TOKEN }}
           build-args: |
