@@ -75,6 +75,9 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 13114758
+          # the default, "tools platform-tools", fails: Google's SDK
+          # repository no longer has the legacy tools package
+          packages: "platform-tools"
 
       # turbo's local cache, kept between runs; the remote cache is used too
       # when TURBO_TOKEN is set
@@ -149,6 +152,9 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 13114758
+          # the default, "tools platform-tools", fails: Google's SDK
+          # repository no longer has the legacy tools package
+          packages: "platform-tools"
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
