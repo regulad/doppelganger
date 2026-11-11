@@ -61,15 +61,12 @@ scrcpy server
   Copyright (C) 2018-2021 Romain Vimont. Apache License 2.0; see
   apps/web/scrcpy/LICENSE.
 
-Android apps
-  apps/web/android/ holds unmodified builds that are installed on the Android
-  devices Doppelganger runs:
-  - ChromePublic.apk and SystemWebView.apk are Chromium 129.0.6614.0, under a
-    BSD-style license, with components under other licenses, including the
-    GNU LGPL. Source:
-    https://chromium.googlesource.com/chromium/src/+/refs/tags/129.0.6614.0
-  - F-Droid.apk is the F-Droid client 1.17.0, under the GNU GPL version 3 or
-    later. Source: https://gitlab.com/fdroid/fdroidclient/-/tree/1.17.0
+Chromium
+  apps/web/android/ChromePublic.apk and SystemWebView.apk are unmodified
+  builds of Chromium 129.0.6614.0, installed on the Android devices
+  Doppelganger runs. Chromium is under a BSD-style license, with components
+  under other licenses, including the GNU LGPL. Source:
+  https://chromium.googlesource.com/chromium/src/+/refs/tags/129.0.6614.0
 
 Pheidippides launcher icons
   The launcher icons of the apps in pheidippides/ use the Android robot. The
@@ -80,6 +77,12 @@ Pheidippides launcher icons
 
 Downloaded when building
 ------------------------
+
+F-Droid
+  apps/web/scripts/download-android-apps.sh downloads the F-Droid client
+  1.17.0 from f-droid.org, unmodified, to be installed on the Android devices
+  Doppelganger runs. GNU GPL version 3 or later. Source:
+  https://gitlab.com/fdroid/fdroidclient/-/tree/1.17.0
 
 Inter
   The site's typeface, downloaded from Google Fonts when the site is built

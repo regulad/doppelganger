@@ -178,7 +178,7 @@
   ],
   "scripts": {
     "init": "git submodule update --init --recursive",
-    "android:fetch": "bash scripts/download-scrcpy-server.sh & bash scripts/download-fdroid.sh",
+    "android:fetch": "bash scripts/download-scrcpy-server.sh & bash scripts/download-android-apps.sh",
     "db:generate": "prisma generate",
     "catalog:generate": "node scripts/generate-redroid-images.mjs",
     "db:migrate": "dotenvx run --env-file=.env.local -- prisma migrate dev",

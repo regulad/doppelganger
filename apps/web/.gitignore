@@ -50,6 +50,9 @@ src/app/(userland)/(contained)/licenses/licenses.json
 # temporary built android files
 android/*/
 
+# downloaded by scripts/download-android-apps.sh
+android/F-Droid.apk
+
 # sitemap outputs
 public/robots.txt
 public/sitemap*.xml

@@ -43,6 +43,12 @@ RUN npm install -g pnpm@8.15.5 \
 # headers node-gyp downloads from unofficial-builds.nodejs.org at install time
 ENV npm_config_nodedir=/usr/local
 
+# The third-party APKs installed on every device, checked against pinned
+# hashes. Fetched before the app is copied in, so this layer is reused until
+# the script changes.
+COPY scripts/download-android-apps.sh scripts/
+RUN bash scripts/download-android-apps.sh android
+
 # Install project dependencies
 # The weirdness of this one file building like a monolithic project separate of the monorepo 
 # exists because this project was bolted into a monorepo when building apks in parallel in the project became neccesary
