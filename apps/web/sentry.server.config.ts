@@ -3,7 +3,11 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+// deprecated in favor of @sentry/node-native's eventLoopBlockIntegration, a
+// native addon; @sentry/nextjs no longer re-exports it
+import { anrIntegration } from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
+import { dataCollection } from "./sentry.data-collection.ts";
 
 Sentry.init({
   dsn: "https://c16d073a0fdaea2761e0f3f26ad856e7@o4506961510596608.ingest.us.sentry.io/4507558058721280",
@@ -12,15 +16,18 @@ Sentry.init({
   integrations: [
     // Add our Profiling integration
     nodeProfilingIntegration(),
-    Sentry.anrIntegration({ captureStackTrace: true }),
+    anrIntegration({ captureStackTrace: true }),
   ],
 
   // Adjust this value in production, or use tracesSampler for greater control
   tracesSampleRate: 1,
 
-  // Set sampling rate for profiling
-  // This is relative to tracesSampleRate
-  profilesSampleRate: 1.0,
+  // Profile every session, while a trace is active (session-based profiling
+  // replaced v8's per-transaction profilesSampleRate in v11)
+  profileSessionSampleRate: 1.0,
+  profileLifecycle: "trace",
+
+  dataCollection,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,

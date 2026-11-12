@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { dataCollection } from "../sentry.data-collection.ts";
 
 Sentry.init({
   dsn: "https://c16d073a0fdaea2761e0f3f26ad856e7@o4506961510596608.ingest.us.sentry.io/4507558058721280",
@@ -38,10 +39,13 @@ Sentry.init({
     // }),
   ],
 
-  // Set profilesSampleRate to 1.0 to profile every transaction.
-  // Since profilesSampleRate is relative to tracesSampleRate,
-  // the final profiling rate can be computed as tracesSampleRate * profilesSampleRate
-  // For example, a tracesSampleRate of 0.5 and profilesSampleRate of 0.5 would
-  // results in 25% of transactions being profiled (0.5*0.5=0.25)
-  profilesSampleRate: 1.0,
+  // Profile every session, while a trace is active (session-based profiling
+  // replaced v8's per-transaction profilesSampleRate in v11)
+  profileSessionSampleRate: 1.0,
+  profileLifecycle: "trace",
+
+  dataCollection,
 });
+
+// Traces client-side navigations
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

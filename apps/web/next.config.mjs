@@ -1,6 +1,6 @@
 // @ts-check
 import withMdxFactory from "@next/mdx";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import { withContentlayer } from "next-contentlayer2";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
@@ -72,7 +72,6 @@ const nextConfig = {
   serverExternalPackages: [
     // we load these in our server functions, if i ever split this won't be required
     "@sentry/node",
-    "@sentry/utils",
   ],
   // coding assistance for routes
   typedRoutes: true,
@@ -136,20 +135,24 @@ const sentryConfig = withSentryConfig(nextConfig, {
   // side errors will fail.
   tunnelRoute: "/monitoring",
 
-  // Hides source maps from generated client bundles
-  hideSourceMaps: true,
+  // Client source maps are hidden by default since Sentry v9 (hideSourceMaps
+  // was removed)
   sourcemaps: {
     deleteSourcemapsAfterUpload: true,
   },
 
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
+  webpack: {
+    // Automatically tree-shake Sentry logger statements to reduce bundle size
+    treeshake: {
+      removeDebugLogging: true,
+    },
 
-  // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-  // See the following for more information:
-  // https://docs.sentry.io/product/crons/
-  // https://vercel.com/docs/cron-jobs
-  automaticVercelMonitors: true,
+    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+    // See the following for more information:
+    // https://docs.sentry.io/product/crons/
+    // https://vercel.com/docs/cron-jobs
+    automaticVercelMonitors: true,
+  },
 });
 
 const mdxConfig = withMdxFactory({
