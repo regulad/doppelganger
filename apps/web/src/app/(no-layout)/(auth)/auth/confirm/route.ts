@@ -1,4 +1,4 @@
-/* eslint-disable -- https://supabase.com/docs/guides/auth/server-side/nextjs */
+// https://supabase.com/docs/guides/auth/server-side/nextjs
 
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";

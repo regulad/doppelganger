@@ -6,6 +6,30 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkToc from "remark-toc";
 
+// From Next.js 16.2, webpack builds compile MDX pages outside the React Server
+// Components layer, then reject their `export const metadata` as if they were
+// Client Components (vercel/next.js#91735; Turbopack is unaffected). This gives
+// the MDX rule's SWC loader that layer on the server, as the upstream fix
+// (vercel/next.js#95057) does. The loader entry is copied rather than changed
+// in place, as other rules may share it. Remove this once a release fixes it.
+const pinMdxToServerComponents = (rules) => {
+  for (const rule of rules) {
+    if (!rule || typeof rule !== "object") continue;
+    if (rule.test instanceof RegExp && rule.test.test("page.mdx")) {
+      const uses = Array.isArray(rule.use) ? rule.use : [rule.use];
+      rule.use = uses.map((entry) =>
+        typeof entry?.loader === "string" &&
+        entry.loader.includes("next-swc-loader") &&
+        entry.options?.bundleLayer == null
+          ? { ...entry, options: { ...entry.options, bundleLayer: "rsc" } }
+          : entry,
+      );
+    }
+    if (Array.isArray(rule.oneOf)) pinMdxToServerComponents(rule.oneOf);
+    if (Array.isArray(rule.rules)) pinMdxToServerComponents(rule.rules);
+  }
+};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // for sentry profiling
@@ -88,6 +112,7 @@ const nextConfig = {
         },
         ...config.module.rules,
       ];
+      pinMdxToServerComponents(config.module.rules);
     }
     config.module.rules = [
       {
@@ -99,11 +124,6 @@ const nextConfig = {
     return config;
   },
   // turbopack is too experimental; let's not use it
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true, // already checked by pre-commit, saves time in docker builds
-  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

@@ -21,7 +21,8 @@ const dev = process.env.NODE_ENV !== "production";
 const port = parseInt(process.env.PORT || "", 10) || 3000;
 const hostname = process.env.HOSTNAME || "0.0.0.0";
 // when using middleware `hostname` and `port` must be provided below
-const app = next({ dev, hostname, port });
+// Next.js 16 defaults to Turbopack, which ignores next.config's webpack setup
+const app = next({ dev, hostname, port, webpack: true });
 const handle = app.getRequestHandler();
 
 // note for future me, so I don't even try it: next-ws (https://github.com/apteryxxyz/next-ws) is TERRIBLE
