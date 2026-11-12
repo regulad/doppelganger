@@ -6,7 +6,7 @@ import { getSubscriptionStatus } from "@/utils/stripe/utils.ts";
 import { createClient } from "@/utils/supabase/server.ts";
 
 export async function NewDeviceButtonServer() {
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();

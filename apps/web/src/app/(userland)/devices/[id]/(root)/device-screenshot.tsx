@@ -24,7 +24,7 @@ export default async function DeviceScreenshot({
   if (!device) {
     return <NotFound />;
   }
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();

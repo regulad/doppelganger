@@ -17,8 +17,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { useEffect, useRef, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { LuLoader2 } from "react-icons/lu";
 import { Link } from "react-transition-progress/next";
 
@@ -39,7 +39,7 @@ function SignupButton() {
 }
 
 export default function SignupForm() {
-  const [state, dispatch] = useFormState(signup, INITIAL_SIGNUP_FORM_STATE);
+  const [state, dispatch] = useActionState(signup, INITIAL_SIGNUP_FORM_STATE);
   const [enteredPassword, setEnteredPassword] = useState("");
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);

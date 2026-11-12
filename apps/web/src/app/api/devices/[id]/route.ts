@@ -19,7 +19,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({}, { status: 404 });
   }
 
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();

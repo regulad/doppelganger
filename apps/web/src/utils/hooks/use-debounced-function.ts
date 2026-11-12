@@ -10,7 +10,9 @@ function useDebouncedFunction<T extends (...args: any[]) => void>(
   delay: number,
 ): T {
   const funcRef = useRef(func);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const isOnTimeoutRef = useRef(false);
 
   useEffect(() => {

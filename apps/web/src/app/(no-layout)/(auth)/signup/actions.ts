@@ -33,7 +33,7 @@ export async function signup(
   previousState: SignupFormState,
   formData: FormData,
 ): Promise<SignupFormState> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const validatedParsedFormData = UsernamePasswordSignupSchema.safeParse(
     Object.fromEntries(formData.entries()),

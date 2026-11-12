@@ -24,7 +24,7 @@ export default function FillingAspectRatio({
 }: Readonly<{
   aspectRatio: number;
   children?: ReactNode;
-  innerContainerRef: RefObject<HTMLDivElement>;
+  innerContainerRef: RefObject<HTMLDivElement | null>;
   className?: string;
 }>): ReactNode {
   const outerContainerRef = useRef<HTMLDivElement>(null);

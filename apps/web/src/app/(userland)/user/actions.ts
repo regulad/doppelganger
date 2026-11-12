@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/server.ts";
 
 export default async function handleDeleteUser() {
   const prisma = getPrisma();
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
     error,

@@ -1,19 +1,13 @@
-import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import BrowserCheckAlertSkeleton from "./browser-check-alert-skeleton.tsx";
+import BrowserCheckAlert from "./browser-check-alert.tsx";
 
-const BrowserCheckAlertContent = dynamic(
-  () => import("./browser-check-alert.tsx"),
-  {
-    ssr: false,
-    loading: () => <BrowserCheckAlertSkeleton />,
-  },
-);
-
+// BrowserCheckAlert is a Server Component (it reads the request's
+// user-agent), so it streams in behind the skeleton
 export default function BrowserCheckAlertFallback() {
   return (
     <Suspense fallback={<BrowserCheckAlertSkeleton />}>
-      <BrowserCheckAlertContent />
+      <BrowserCheckAlert />
     </Suspense>
   );
 }

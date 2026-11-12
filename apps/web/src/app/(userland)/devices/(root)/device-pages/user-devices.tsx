@@ -6,18 +6,18 @@ import { getDevicesForUser } from "@/utils/devices.ts";
 import { createClient } from "@/utils/supabase/server.ts";
 // import "array.prototype.tosorted/auto"; // cannot shim at compile time
 import shimSorted from "array.prototype.tosorted/shim";
-import NotFound from "next/dist/client/components/not-found-error";
+import { notFound } from "next/navigation";
 
 export default async function UserDevices() {
   shimSorted();
 
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    return <NotFound />;
+    notFound();
   }
 
   const clientDevices = (await getDevicesForUser(user)).toSorted(

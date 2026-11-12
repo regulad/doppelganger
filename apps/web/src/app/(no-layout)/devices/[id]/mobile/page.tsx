@@ -3,33 +3,34 @@ import CornerBackButton from "@/app/(no-layout)/devices/[id]/mobile/corner-back-
 import ISpinner from "@/app/(no-layout)/devices/[id]/mobile/ispinner.tsx";
 import DeviceClient from "@/components/client/device-client.tsx";
 import { createClient } from "@/utils/supabase/server.ts";
-import NotFound from "next/dist/client/components/not-found-error";
+import { notFound } from "next/navigation";
 // import "./ios-client.css";
 // there is never a reason to manually hide the cursor because the cursor will not show in the WKWebView;
 // the cursor we view is from
 
 export default async function Page({
-  params: { id },
+  params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const deviceInfo = await getDeviceForId(id);
 
   if (!deviceInfo) {
-    return <NotFound />;
+    notFound();
   }
 
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
 
   // user will never be null here, but just put in the check for safety
   if (!user) {
-    return <NotFound />;
+    notFound();
   }
   if (!deviceInfo || deviceInfo.ownerId !== user.id) {
-    return <NotFound />;
+    notFound();
   }
 
   return (

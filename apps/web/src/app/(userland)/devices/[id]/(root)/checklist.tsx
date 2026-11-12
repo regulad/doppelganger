@@ -127,7 +127,7 @@ export async function DeviceChecklist({
   if (!device) {
     return <NotFound />;
   }
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();

@@ -19,7 +19,7 @@ function LoggedOutNavbarButtons(): ReactNode {
 }
 
 export default async function NavbarButtons() {
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();

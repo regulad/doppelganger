@@ -40,7 +40,7 @@ const interactionEvents = [
  * @param ref The Element to watch
  */
 export default function useInteractedWithAtLeastOnce(
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
 ): boolean {
   const [interacted, setInteracted] = useState(false);
 

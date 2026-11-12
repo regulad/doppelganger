@@ -1,4 +1,5 @@
 "use client";
+import type { JSX } from "react";
 
 import { useEffectiveTheme } from "@/utils/hooks/use-effective-theme.ts";
 

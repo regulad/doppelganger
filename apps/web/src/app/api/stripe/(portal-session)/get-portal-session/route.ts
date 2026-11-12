@@ -12,7 +12,7 @@ export async function GET(): Promise<NextResponse> {
   const prisma = getPrisma();
 
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: userError,

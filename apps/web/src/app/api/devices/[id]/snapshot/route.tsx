@@ -11,7 +11,7 @@ export async function GET(
 ): Promise<NextResponse | ImageResponse> {
   const id = req.nextUrl.pathname.match(deviceApiEndpoint)![1];
 
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();

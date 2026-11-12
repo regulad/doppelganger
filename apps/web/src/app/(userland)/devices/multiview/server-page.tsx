@@ -50,7 +50,7 @@ function NoPremiumCard() {
 }
 
 export async function PopulatedPage() {
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
     error,

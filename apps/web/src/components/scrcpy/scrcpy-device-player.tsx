@@ -62,7 +62,7 @@ export interface ScrcpyDevicePlayerHandle {
   getKeyboardCapture: () => boolean;
   setKeyboardCapture: (capture: boolean) => void;
 
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
   streamClientRef: MutableRefObject<StreamClientScrcpy | null>;
 }
 

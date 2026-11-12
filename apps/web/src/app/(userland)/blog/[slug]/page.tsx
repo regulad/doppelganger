@@ -3,6 +3,7 @@ import { allPosts } from "contentlayer/generated";
 import { Metadata } from "next";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { notFound } from "next/navigation";
+import { use } from "react";
 
 type PostParams = { slug: string };
 
@@ -15,9 +16,10 @@ export async function generateStaticParams(): Promise<PostParams[]> {
 export async function generateMetadata({
   params,
 }: {
-  params: PostParams;
+  params: Promise<PostParams>;
 }): Promise<Metadata> {
-  const post = allPosts.find((post) => post.slug === params.slug);
+  const { slug } = await params;
+  const post = allPosts.find((post) => post.slug === slug);
   if (!post) return { title: "Post Not Found" };
 
   return {
@@ -33,8 +35,9 @@ export async function generateMetadata({
   };
 }
 
-export default function PostPage({ params }: { params: PostParams }) {
-  const post = allPosts.find((post) => post.slug === params.slug);
+export default function PostPage({ params }: { params: Promise<PostParams> }) {
+  const { slug } = use(params);
+  const post = allPosts.find((post) => post.slug === slug);
 
   if (!post) {
     notFound();

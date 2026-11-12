@@ -22,8 +22,9 @@ export const metadata: Metadata = {
 
 // Main Page Component
 export default async function Page({
-  params: { id: deviceId },
-}: Readonly<{ params: { id: string } }>) {
+  params,
+}: Readonly<{ params: Promise<{ id: string }> }>) {
+  const { id: deviceId } = await params;
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <Suspense fallback={<DeviceBreadcrumbSkeleton deviceId={deviceId} />}>

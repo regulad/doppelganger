@@ -67,15 +67,15 @@ const nextConfig = {
   experimental: {
     // do not disable it
     forceSwcTransforms: true,
-    // ignore sentry utils from server action bundling
-    serverComponentsExternalPackages: [
-      // we load these in our server functions, if i ever split this won't be required
-      "@sentry/node",
-      "@sentry/utils",
-    ],
-    // coding assistance for routes
-    typedRoutes: true,
   },
+  // ignore sentry utils from server action bundling
+  serverExternalPackages: [
+    // we load these in our server functions, if i ever split this won't be required
+    "@sentry/node",
+    "@sentry/utils",
+  ],
+  // coding assistance for routes
+  typedRoutes: true,
   // https://nextjs.org/docs/pages/api-reference/next-config-js/reactStrictMode
   reactStrictMode: true,
   // https://nextjs.org/docs/app/api-reference/next-config-js/webpack

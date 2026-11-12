@@ -25,7 +25,7 @@ export async function login(
   previousState: LoginFormState,
   formData: FormData,
 ): Promise<LoginFormState> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const validatedParsedFormData = UsernamePasswordLoginSchema.safeParse(
     Object.fromEntries(formData.entries()),

@@ -28,8 +28,8 @@ export function SupportedBrowsersList() {
   );
 }
 
-export default function BrowserCheckAlert() {
-  const headersList = headers();
+export default async function BrowserCheckAlert() {
+  const headersList = await headers();
   const userAgent = headersList.get("user-agent") || "";
 
   const parser = new UAParser(userAgent);

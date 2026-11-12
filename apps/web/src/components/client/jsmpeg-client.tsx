@@ -18,11 +18,11 @@ export default function JSMpegClient({
   containerRef,
   jsmpegWsUrlString,
 }: Readonly<{
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   jsmpegWsUrlString: string;
 }>): ReactNode {
   const audioCanvasRef = useRef<HTMLCanvasElement>(null);
-  const jsmpegPlayerRef = useRef<Player | null>();
+  const jsmpegPlayerRef = useRef<Player | null>(null);
 
   const { toast } = useToast();
 

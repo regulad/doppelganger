@@ -15,7 +15,7 @@ export interface OneSignalHashReturn {
  * @constructor
  */
 export async function GET(): Promise<NextResponse<OneSignalHashReturn>> {
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
 
   const {
     data: { user },

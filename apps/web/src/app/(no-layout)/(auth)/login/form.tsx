@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { LuLoader2 } from "react-icons/lu";
 import { Link } from "react-transition-progress/next";
 
@@ -36,7 +37,7 @@ function LoginButton() {
 }
 
 export default function LoginForm() {
-  const [state, dispatch] = useFormState(login, INITIAL_LOGIN_FORM_STATE);
+  const [state, dispatch] = useActionState(login, INITIAL_LOGIN_FORM_STATE);
 
   return (
     <form action={dispatch} aria-describedby="overall-error">

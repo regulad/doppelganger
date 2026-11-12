@@ -26,7 +26,7 @@ export async function POST(
 ): Promise<NextResponse<NewDeviceResponse>> {
   const prisma = getPrisma();
 
-  const supabaseClient = createClient();
+  const supabaseClient = await createClient();
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();

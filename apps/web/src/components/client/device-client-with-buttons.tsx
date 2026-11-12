@@ -63,7 +63,7 @@ function ButtonbarButton({
 }
 
 interface ButtonBarProps {
-  clientRef: RefObject<DeviceClientHandle>;
+  clientRef: RefObject<DeviceClientHandle | null>;
   fullScreenHandle: FullScreenHandle;
 
   optionalAudio?: boolean;
