@@ -111,7 +111,7 @@ jobs:
             exit 1
           fi
           ./scripts/verify-clean-commit.sh
-          pnpx turbo run lint type-check test
+          pnpm exec turbo run lint type-check test
 
   build-android:
     runs-on: "ubuntu-latest"
@@ -177,8 +177,10 @@ jobs:
           restore-keys: |
             turbo-${{ matrix.tag }}-
 
+      # this job doesn't install the workspace, so it fetches the turbo version
+      # the root package.json pins
       - name: Build via turbo
-        run: pnpx turbo build --filter=${{ matrix.tag }}
+        run: pnpm dlx "turbo@$(node -p 'require("./package.json").devDependencies.turbo')" build --filter=${{ matrix.tag }}
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_RELEASE: ${{ github.sha }}
