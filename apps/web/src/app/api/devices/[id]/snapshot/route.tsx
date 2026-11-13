@@ -51,58 +51,56 @@ export async function GET(
   } catch (e: unknown) {
     // the screencap is unavailable (we already retried)
     return new ImageResponse(
-      (
-        // taken from /public/noconnect.svg
+      // taken from /public/noconnect.svg
+      <div
+        style={{
+          background: "white",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <div
           style={{
-            background: "white",
-            width: "100%",
-            height: "100%",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            justifyContent: "center",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 100"
+            width="500px"
+            height="500px"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 100 100"
-              width="500px"
-              height="500px"
-            >
-              <rect x="35" y="30" width="30" height="40" rx="5" fill="gray" />
-              <rect x="40" y="20" width="5" height="15" fill="gray" />
-              <rect x="55" y="20" width="5" height="15" fill="gray" />
-              <path
-                d="M50 70 Q50 85 35 85"
-                stroke="gray"
-                strokeWidth="5"
-                fill="none"
-              />
-              <line
-                x1="25"
-                y1="25"
-                x2="75"
-                y2="75"
-                stroke="red"
-                strokeWidth="5"
-              />
-            </svg>
-            <p>Couldn&apos;t connect to {device.name}. Is it online?</p>
-            <p>No se pudo conectar a {device.name}. ¿Está en línea?</p>
-            <p>无法连接到 {device.name}。它在线吗？</p>
-            <p>Kann nicht mit {device.name} verbinden. Ist es online?</p>
-            <p>Non è possibile connettersi a {device.name}. È online?</p>
-            <p>Не удается подключиться к {device.name}. Он в сети?</p>
-          </div>
+            <rect x="35" y="30" width="30" height="40" rx="5" fill="gray" />
+            <rect x="40" y="20" width="5" height="15" fill="gray" />
+            <rect x="55" y="20" width="5" height="15" fill="gray" />
+            <path
+              d="M50 70 Q50 85 35 85"
+              stroke="gray"
+              strokeWidth="5"
+              fill="none"
+            />
+            <line
+              x1="25"
+              y1="25"
+              x2="75"
+              y2="75"
+              stroke="red"
+              strokeWidth="5"
+            />
+          </svg>
+          <p>Couldn&apos;t connect to {device.name}. Is it online?</p>
+          <p>No se pudo conectar a {device.name}. ¿Está en línea?</p>
+          <p>无法连接到 {device.name}。它在线吗？</p>
+          <p>Kann nicht mit {device.name} verbinden. Ist es online?</p>
+          <p>Non è possibile connettersi a {device.name}. È online?</p>
+          <p>Не удается подключиться к {device.name}. Он в сети?</p>
         </div>
-      ),
+      </div>,
       {
         width: device.redroidWidth,
         height: device.redroidHeight,

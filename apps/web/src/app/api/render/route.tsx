@@ -24,10 +24,8 @@ export async function GET(
     );
   }
   return new ImageResponse(
-    (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={i} alt="image" />
-    ),
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={i} alt="image" />,
     {
       width: dimensions.width,
       height: dimensions.height,
