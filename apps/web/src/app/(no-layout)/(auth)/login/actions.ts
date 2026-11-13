@@ -3,9 +3,9 @@
 import { FIRST_PAGE_PATHNAME } from "@/app/(no-layout)/(auth)/constants.ts";
 import { createClient } from "@/utils/supabase/server.ts";
 import { encodeQueryParams, encodeToastParams } from "@/utils/toast-utils.ts";
+import { z } from "@/utils/zod.ts";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
 const UsernamePasswordLoginSchema = z.object({
   email: z.string().email(),

@@ -67,6 +67,7 @@ import {
 import { cn } from "@/lib/utils.ts";
 import { getMaxFps, SubscriptionStatus } from "@/utils/subscriptions.ts";
 import { clientSideRedirectWithToast } from "@/utils/toast-utils.ts";
+import { z } from "@/utils/zod.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { ReactNode, useMemo, useState } from "react";
@@ -74,7 +75,6 @@ import { ControllerRenderProps, useForm, UseFormReturn } from "react-hook-form";
 import { LuCrown, LuInfo, LuLoader2, LuSettings } from "react-icons/lu";
 import { TbCashBanknoteOff } from "react-icons/tb";
 import { useMediaQuery } from "usehooks-ts";
-import { z } from "zod";
 
 type formType = z.infer<typeof newDeviceFormSchema>;
 

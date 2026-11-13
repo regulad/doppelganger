@@ -2,8 +2,8 @@ import { AdbDevice, readFullStreamIntoBuffer } from "%/adb/adb-device.ts";
 import { getDeviceForId } from "%/device-info/device-info.ts";
 import { deviceApiEndpoint } from "%/endpoint-regex.ts";
 import { createClient } from "@/utils/supabase/server.ts";
+import { z } from "@/utils/zod.ts";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
 const locationSchema = z.object({
   latitude: z.number(), // decimal degrees

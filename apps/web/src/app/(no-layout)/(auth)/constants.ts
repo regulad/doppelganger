@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/utils/zod.ts";
 
 export const FIRST_PAGE_PATHNAME = "/devices";
 export const zodPassword = z

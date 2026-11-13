@@ -22,12 +22,12 @@ import { Input } from "@/components/ui/input.tsx";
 import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
 import { clientSideReloadWithToast } from "@/utils/toast-utils.ts";
+import { z } from "@/utils/zod.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { LuLoader2 } from "react-icons/lu";
 import { TbEdit } from "react-icons/tb";
-import { z } from "zod";
 
 const formSchema = z.object({
   newName: z.string(),

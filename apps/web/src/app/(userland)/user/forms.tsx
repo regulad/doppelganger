@@ -32,10 +32,10 @@ import {
   clientSideRedirectWithToast,
   clientSideReloadWithToast,
 } from "@/utils/toast-utils.ts";
+import { z } from "@/utils/zod.ts";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LuLoader2 } from "react-icons/lu";
 import { Link } from "react-transition-progress/next";
-import { z } from "zod";
 import handleDeleteAccount from "./actions.ts";
 
 export function SubscriptionChangeForm() {
