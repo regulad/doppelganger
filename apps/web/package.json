@@ -110,7 +110,7 @@
     "remark-gfm": "^4.0.0",
     "remark-toc": "^9.0.0",
     "server-only": "^0.0.1",
-    "sharp": "^0.33.4",
+    "sharp": "^0.35.5",
     "stripe": "^16.6.0",
     "svg-inline-loader": "^0.8.2",
     "sylvester.js": "^0.1.1",
