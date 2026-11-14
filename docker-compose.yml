@@ -1,7 +1,7 @@
 name: "doppelganger"
 services:
   web:
-    image: "ghcr.io/nefum/doppelganger:web-latest"
+    image: "ghcr.io/regulad/doppelganger:web-latest"
     restart: unless-stopped
     hostname: "doppelganger"
     build:
