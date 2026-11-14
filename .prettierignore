@@ -10,6 +10,10 @@ apps/web/public/workers/
 apps/web/node_modules/
 apps/web/.next/
 apps/web/src/app/(userland)/(contained)/licenses/licenses.json
+# build outputs (apps/web/.gitignore ignores them, but prettier only reads the
+# root .gitignore): the prisma client and next-sitemap's output
+apps/web/server/src/generated/
+apps/web/public/sitemap*.xml
 
 **/.idea/
 **/.contentlayer/

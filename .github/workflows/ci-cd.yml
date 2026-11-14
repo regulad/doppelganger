@@ -104,12 +104,16 @@ jobs:
       - name: Install dependencies with pnpm
         run: pnpm install
 
+      # prettier --check lists the unformatted files and exits non-zero
+      - name: Check formatting
+        run: |
+          pnpm run format --check || {
+            echo "::error::Some files aren't formatted. Run 'pnpm run format --write' and commit the result."
+            exit 1
+          }
+
       - name: Turbo
         run: |
-          if pnpm run format --check | grep -q "Files were formatted"; then
-            echo "Formatting changes detected. Please run 'pnpx turbo run format' locally and commit the changes."
-            exit 1
-          fi
           ./scripts/verify-clean-commit.sh
           pnpm exec turbo run lint type-check test
 
