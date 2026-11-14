@@ -345,9 +345,6 @@ importers:
       '@types/dockerode':
         specifier: ^3.3.31
         version: 3.3.47
-      '@types/dockerode-compose':
-        specifier: ^1.4.1
-        version: 1.4.2
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.14
@@ -5601,12 +5598,6 @@ packages:
     dependencies:
       '@types/node': 20.19.43
       '@types/ssh2': 1.15.6
-    dev: true
-
-  /@types/dockerode-compose@1.4.2:
-    resolution: {integrity: sha512-7ce0kmixAZsRYR/sIX0loCjVjM6V1u87lLfNLCqpkHtOoQvLA58tbA7bbogSgWsCIUDzig6onmLYkVBgpEQAmQ==}
-    dependencies:
-      '@types/dockerode': 3.3.47
     dev: true
 
   /@types/dockerode@3.3.47:
