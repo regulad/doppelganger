@@ -4,7 +4,11 @@ import * as Sentry from "@sentry/node";
 import { spawn } from "node:child_process";
 import { rm } from "node:fs/promises";
 import { stderr as processStderr, stdout as processStdout } from "process";
-import { getRedroidContainerName, getScrcpyContainerName } from "./containers";
+import {
+  getContainerLogTail,
+  getRedroidContainerName,
+  getScrcpyContainerName,
+} from "./containers";
 import { getDockerComposeFilePath, getFoldersOfDevice } from "./device-paths";
 
 export { getRedroidContainerName, getScrcpyContainerName };
@@ -72,9 +76,33 @@ export async function bringUpDevice(device: Device): Promise<void> {
     }
   }
   // todo: kinggrand
-  doInitialDeviceSetup(device).catch((e) => {
-    Sentry.captureException(e);
+  doInitialDeviceSetup(device).catch(async (e) => {
     console.error("Error setting up device:", e.message);
+    // Setup fails most often because the device's Android never came up, and
+    // only its containers' logs say why
+    const logs = await Promise.all(
+      [
+        getRedroidContainerName(device.id),
+        getScrcpyContainerName(device.id),
+      ].map(async (name) => ({
+        name,
+        log: await getContainerLogTail(name).catch(
+          (logError: unknown) => `Couldn't read the log: ${logError}`,
+        ),
+      })),
+    );
+    Sentry.withScope((scope) => {
+      scope.setTag("device.id", device.id);
+      scope.setTag("device.image", device.redroidImage);
+      for (const { name, log } of logs) {
+        scope.addAttachment({
+          filename: `${name}.log`,
+          data: log,
+          contentType: "text/plain",
+        });
+      }
+      Sentry.captureException(e);
+    });
   });
 }
 
