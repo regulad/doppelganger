@@ -5,6 +5,7 @@ import createStripeClient from "@/utils/stripe/server.ts";
 import { createClient } from "@/utils/supabase/server.ts";
 import { getQueryForToast } from "@/utils/toast-utils.ts";
 import * as Sentry from "@sentry/nextjs";
+import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
 
     if (userError) {
-      Sentry.captureException(userError);
+      // A visitor who isn't signed in has no session, which Supabase
+      // reports as an error; only other failures are worth reporting
+      if (!isAuthSessionMissingError(userError)) {
+        Sentry.captureException(userError);
+      }
       return NextResponse.redirect(
         new URL(
           `/login${getQueryForToast({
