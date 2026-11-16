@@ -61,6 +61,23 @@ export async function GET(): Promise<NextResponse> {
       );
     }
 
+    // Doppelganger's own portal configuration, declared in homelab's
+    // tofu/stripe. The account's default portal belongs to regulad.xyz as a
+    // whole, so the portal isn't offered without it.
+    const configuration = process.env.STRIPE_PORTAL_CONFIGURATION;
+    if (!configuration) {
+      return NextResponse.redirect(
+        new URL(
+          `/user${getQueryForToast({
+            title: "Unavailable",
+            description:
+              "Subscription management isn't available right now. Please contact us to change or cancel your subscription.",
+          })}`,
+          BASE_ORIGIN,
+        ),
+      );
+    }
+
     const stripe = await createStripeClient();
 
     let stripeCustomer = await prisma.stripeCustomer.findUnique({
@@ -118,6 +135,7 @@ export async function GET(): Promise<NextResponse> {
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomer.stripeCustomerId,
+      configuration,
       return_url: new URL("/user", BASE_ORIGIN).toString(),
     });
 

@@ -38,7 +38,12 @@ import { LuLoader2 } from "react-icons/lu";
 import { Link } from "react-transition-progress/next";
 import handleDeleteAccount from "./actions.ts";
 
-export function SubscriptionChangeForm() {
+export function SubscriptionChangeForm({
+  portalAvailable,
+}: {
+  // whether the server has a customer portal to send the user to
+  portalAvailable: boolean;
+}) {
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -46,14 +51,16 @@ export function SubscriptionChangeForm() {
         <CardDescription>Change your subscription</CardDescription>
       </CardHeader>
       <CardContent>
-        <p>
-          To change or cancel your subscription, please visit the{" "}
-          <a href="/api/stripe/get-portal-session" className="shadcn-link">
-            subscription management page
-          </a>
-          .
-        </p>
-        <p className="mt-2">
+        {portalAvailable && (
+          <p>
+            To change or cancel your subscription, please visit the{" "}
+            <a href="/api/stripe/get-portal-session" className="shadcn-link">
+              subscription management page
+            </a>
+            .
+          </p>
+        )}
+        <p className={portalAvailable ? "mt-2" : undefined}>
           To sign up for a subscription, please visit the{" "}
           <Link href="/subscribe" className="shadcn-link">
             subscription page
