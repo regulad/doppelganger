@@ -1,4 +1,6 @@
 import { DeviceClient } from "%/adb/adb.ts";
+import { getDeviceContainerStates } from "%/docker/containers.ts";
+import { withSentryContext } from "%/sentry/error-context.ts";
 import { resolveOrDefaultValue } from "%/utils/promise-utils.ts";
 import {
   type Client,
@@ -38,9 +40,57 @@ export default class RobustClient extends DeviceClient {
     client: Client,
     serial: string,
     timeout: number = DEFAULT_ADB_TIMEOUT,
+    // The device this client talks to, so a failure can say what state its
+    // containers were in
+    readonly deviceId?: string,
   ) {
     super(client, serial);
     this.timeout = timeout;
+  }
+
+  /**
+   * Connects, then runs an operation, retrying both until they succeed or the
+   * timeout passes. A final failure carries Sentry context: the device, the
+   * operation, how many attempts it took and for how long, and what Docker
+   * says about the device's containers at that moment.
+   */
+  private async withConnection<T>(
+    operation: string,
+    run: () => Promise<T>,
+  ): Promise<T> {
+    const startedAt = Date.now();
+    let attempts = 0;
+    try {
+      return await retry(
+        async () => {
+          attempts++;
+          await this.connectRobust();
+          return run();
+        },
+        {
+          timeout: this.timeout,
+        },
+      );
+    } catch (error: unknown) {
+      const containers = this.deviceId
+        ? await getDeviceContainerStates(this.deviceId)
+        : undefined;
+      throw withSentryContext(error, {
+        tags: {
+          "adb.operation": operation,
+          ...(this.deviceId ? { "device.id": this.deviceId } : {}),
+        },
+        contexts: {
+          adb: {
+            serial: this.serial,
+            operation,
+            attempts,
+            elapsed_s: Math.round((Date.now() - startedAt) / 1000),
+          },
+          ...(containers ? { device_containers: containers } : {}),
+        },
+      });
+    }
   }
 
   async doConnect(): Promise<void> {
@@ -107,374 +157,136 @@ export default class RobustClient extends DeviceClient {
   // we can't define getState because it would cause a recursive call
 
   install(apk: string | Readable): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.install(apk);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("install", () => super.install(apk));
   }
 
   uninstall(packageName: string): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.uninstall(packageName);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("uninstall", () => super.uninstall(packageName));
   }
 
   shell(command: string | ArrayLike<WithToString>): Promise<Duplex> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.shell(command);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("shell", () => super.shell(command));
   }
 
   isInstalled(packageName: string): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.isInstalled(packageName);
-      },
-      {
-        timeout: this.timeout,
-      },
+    return this.withConnection("isInstalled", () =>
+      super.isInstalled(packageName),
     );
   }
 
   getProperties(): Promise<Record<string, string>> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.getProperties();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("getProperties", () => super.getProperties());
   }
 
   getFeatures(): Promise<Features> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.getFeatures();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("getFeatures", () => super.getFeatures());
   }
 
   getDHCPIpAddress(iface?: string): Promise<string> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.getDHCPIpAddress(iface);
-      },
-      {
-        timeout: this.timeout,
-      },
+    return this.withConnection("getDHCPIpAddress", () =>
+      super.getDHCPIpAddress(iface),
     );
   }
 
   forward(local: string, remote: string): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.forward(local, remote);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("forward", () => super.forward(local, remote));
   }
 
   listForwards(): Promise<Forward[]> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.listForwards();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("listForwards", () => super.listForwards());
   }
 
   reverse(remote: string, local: string): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.reverse(remote, local);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("reverse", () => super.reverse(remote, local));
   }
 
   listReverses(): Promise<Reverse[]> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.listReverses();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("listReverses", () => super.listReverses());
   }
 
   reboot(): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.reboot();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("reboot", () => super.reboot());
   }
 
   remount(): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.remount();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("remount", () => super.remount());
   }
 
   root(): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.root();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("root", () => super.root());
   }
 
   trackJdwp(): Promise<JdwpTracker> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.trackJdwp();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("trackJdwp", () => super.trackJdwp());
   }
 
   framebuffer(format?: string): Promise<FramebufferStreamWithMeta> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.framebuffer(format);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("framebuffer", () => super.framebuffer(format));
   }
 
   screencap(): Promise<Duplex> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.screencap();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("screencap", () => super.screencap());
   }
 
   openLocal(path: string): Promise<Duplex> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.openLocal(path);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("openLocal", () => super.openLocal(path));
   }
 
   openLog(name: string): Promise<Duplex> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.openLog(name);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("openLog", () => super.openLog(name));
   }
 
   openTcp(port: number): Promise<Duplex> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.openTcp(port);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("openTcp", () => super.openTcp(port));
   }
 
   openMonkey(port?: number): Promise<Duplex> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.openMonkey(port);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("openMonkey", () => super.openMonkey(port));
   }
 
   openLogcat(options?: { clear?: boolean }): Promise<Logcat> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.openLogcat(options);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("openLogcat", () => super.openLogcat(options));
   }
 
   openProcStat(): Promise<ProcStat> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.openProcStat();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("openProcStat", () => super.openProcStat());
   }
 
   clear(packageName: string): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.clear(packageName);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("clear", () => super.clear(packageName));
   }
 
   installRemote(packagePath: string): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.installRemote(packagePath);
-      },
-      {
-        timeout: this.timeout,
-      },
+    return this.withConnection("installRemote", () =>
+      super.installRemote(packagePath),
     );
   }
 
   startActivity(options: StartActivityOptions): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.startActivity(options);
-      },
-      {
-        timeout: this.timeout,
-      },
+    return this.withConnection("startActivity", () =>
+      super.startActivity(options),
     );
   }
 
   startService(options: StartServiceOptions): Promise<boolean> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.startService(options);
-      },
-      {
-        timeout: this.timeout,
-      },
+    return this.withConnection("startService", () =>
+      super.startService(options),
     );
   }
 
   syncService(): Promise<Sync> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.syncService();
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("syncService", () => super.syncService());
   }
 
   stat(path: string): Promise<Stats> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.stat(path);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("stat", () => super.stat(path));
   }
 
   readdir(path: string): Promise<Entry[]> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.readdir(path);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("readdir", () => super.readdir(path));
   }
 
   pull(path: string): Promise<PullTransfer> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        return super.pull(path);
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.withConnection("pull", () => super.pull(path));
   }
 }

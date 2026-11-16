@@ -4,7 +4,10 @@ import * as Sentry from "@sentry/node";
 import { spawn } from "node:child_process";
 import { rm } from "node:fs/promises";
 import { stderr as processStderr, stdout as processStdout } from "process";
+import { getRedroidContainerName, getScrcpyContainerName } from "./containers";
 import { getDockerComposeFilePath, getFoldersOfDevice } from "./device-paths";
+
+export { getRedroidContainerName, getScrcpyContainerName };
 
 export function runDockerCommand(
   command: string,
@@ -101,16 +104,6 @@ export async function getIsContainerRunning(
     console.error("Error checking container status:", error.message);
     throw error;
   }
-}
-
-export function getRedroidContainerName(
-  deviceId: string,
-): `${string}-redroid-1` {
-  return `${deviceId}-redroid-1`;
-}
-
-export function getScrcpyContainerName(deviceId: string): `${string}-scrcpy-1` {
-  return `${deviceId}-scrcpy-1`;
 }
 
 export async function getIsDeviceRunning(device: Device): Promise<boolean> {

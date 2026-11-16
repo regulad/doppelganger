@@ -52,7 +52,12 @@ export class AdbDevice {
   ) {
     this.tag = `[${this.udid}]`;
     this.adbClient = createAdbClient();
-    this.adbDeviceClient = new RobustClient(this.adbClient, this.udid, timeout);
+    this.adbDeviceClient = new RobustClient(
+      this.adbClient,
+      this.udid,
+      timeout,
+      device.id,
+    );
   }
 
   getIsConnected(): Promise<boolean> {

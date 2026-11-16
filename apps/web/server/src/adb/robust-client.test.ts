@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+import { readSentryContext } from "%/sentry/error-context.ts";
 import { type Client } from "@devicefarmer/adbkit";
 import RobustClient from "./robust-client.ts";
 
@@ -36,5 +37,20 @@ describe("ReconnectingAdbDeviceClient", () => {
     await expect(reconnectingClient.reboot()).rejects.toThrow(
       "Device is not connected",
     );
+  });
+
+  it("says what failed, and how, in the error's Sentry context", async () => {
+    jest.spyOn(reconnectingClient, "getIsConnected").mockResolvedValue(false);
+
+    const error = await reconnectingClient.reboot().catch((e: unknown) => e);
+    const { tags, contexts } = readSentryContext(error);
+    expect(tags).toEqual({ "adb.operation": "reboot" });
+    expect(contexts?.adb).toMatchObject({
+      serial,
+      operation: "reboot",
+      attempts: 3,
+    });
+    // no device ID, so no containers to ask Docker about
+    expect(contexts?.device_containers).toBeUndefined();
   });
 });
