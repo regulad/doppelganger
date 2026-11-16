@@ -3,6 +3,7 @@
     {
       "name": "server",
       "script": "dist/index.mjs",
+      "node_args": "--import ./dist/instrument.mjs",
       "instances": "max",
       "exec_mode": "cluster",
       "env": {

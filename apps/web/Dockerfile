@@ -64,14 +64,17 @@ COPY . .
 
 # Build the application
 ARG SENTRY_RELEASE
+# Kept for runtime too: the server's Sentry client is made before Next.js loads
+# (see server/src/instrument.ts), so it can't see the release that Next's build
+# injects, and reads SENTRY_RELEASE instead
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 # Next.js keeps its build cache in a cache mount, which CI carries between runs
 RUN --mount=type=secret,id=sentry_token \
     --mount=type=cache,id=next-cache,target=/usr/src/app/.next/cache \
     export NODE_OPTIONS="--max-old-space-size=4096" \
     && export SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentry_token) \
-    && export SENTRY_RELEASE=$SENTRY_RELEASE \
-    && export SENTRY_ORG=nefum \
-    && export SENTRY_PROJECT=doppelganger-front \
+    && export SENTRY_ORG=regulad \
+    && export SENTRY_PROJECT=doppelganger \
     && cp .env.local.public .env.local \
     && pnpm run db:generate \
     && pnpm run server:build \

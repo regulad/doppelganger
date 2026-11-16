@@ -1,6 +1,11 @@
 // This file configures the initialization of Sentry on the server.
 // The config you add here will be used whenever the server handles a request.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
+//
+// It sets up the one Sentry client of the server process, which Next.js runs
+// inside: the custom server loads it first, through server/src/instrument.ts,
+// and Next's own import of it (src/instrumentation.ts) then finds that client
+// and keeps it.
 
 import * as Sentry from "@sentry/nextjs";
 // deprecated in favor of @sentry/node-native's eventLoopBlockIntegration, a
@@ -8,9 +13,10 @@ import * as Sentry from "@sentry/nextjs";
 import { anrIntegration } from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import { dataCollection } from "./sentry.data-collection.ts";
+import { dsn } from "./sentry.dsn.ts";
 
 Sentry.init({
-  dsn: "https://c16d073a0fdaea2761e0f3f26ad856e7@o4506961510596608.ingest.us.sentry.io/4507558058721280",
+  dsn,
   enabled: process.env.NODE_ENV === "production",
 
   integrations: [
