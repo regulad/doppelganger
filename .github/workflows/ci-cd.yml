@@ -128,6 +128,10 @@ jobs:
     needs:
       - check
 
+    env:
+      # A step's if can't read secrets directly
+      HAS_SIGNING_KEY: ${{ secrets.SOPS_AGE_KEY != '' }}
+
     strategy:
       fail-fast: true
       matrix:
@@ -175,6 +179,33 @@ jobs:
         with:
           node-version: "22" # as in apps/web engines and its Dockerfile
           cache: "pnpm"
+
+      # Pheidippides' signing key is kept in pheidippides/signing.sops.yaml,
+      # encrypted to this repository's own age key (the SOPS_AGE_KEY secret) and
+      # Parker's. Signing every build with it lets each version install over the
+      # one before it. A run without the secret, such as a PR from a fork, builds
+      # with the default debug key instead.
+      - name: Install SOPS
+        if: env.HAS_SIGNING_KEY == 'true'
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/sops" https://github.com/getsops/sops/releases/download/v3.13.3/sops-v3.13.3.linux.amd64
+          echo "e5bec3346a873ae91d871550f3e698c1aad962aff462a080e40f25fde17fef6b  $RUNNER_TEMP/sops" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/sops"
+
+      - name: Decrypt the signing key
+        if: env.HAS_SIGNING_KEY == 'true'
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          secrets=pheidippides/signing.sops.yaml
+          password="$("$RUNNER_TEMP/sops" decrypt --extract '["password"]' "$secrets")"
+          echo "::add-mask::$password"
+          "$RUNNER_TEMP/sops" decrypt --extract '["keystore"]' "$secrets" | base64 -d > "$RUNNER_TEMP/pheidippides.p12"
+          {
+            echo "PHEIDIPPIDES_KEYSTORE=$RUNNER_TEMP/pheidippides.p12"
+            echo "PHEIDIPPIDES_KEY_ALIAS=$("$RUNNER_TEMP/sops" decrypt --extract '["alias"]' "$secrets")"
+            echo "PHEIDIPPIDES_KEYSTORE_PASSWORD=$password"
+          } >> "$GITHUB_ENV"
 
       # turbo's local cache, kept between runs; the remote cache is used too
       # when TURBO_TOKEN is set

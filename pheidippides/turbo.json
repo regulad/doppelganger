@@ -5,8 +5,16 @@
     "build": {
       "outputs": ["app/build/**", "build/**"],
       "cache": true,
-      "inputs": ["$TURBO_DEFAULT$"],
-      "env": ["SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT", "SENTRY_RELEASE"]
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/pheidippides/signing.sops.yaml"],
+      "env": [
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_RELEASE",
+        "PHEIDIPPIDES_KEYSTORE",
+        "PHEIDIPPIDES_KEY_ALIAS"
+      ],
+      "passThroughEnv": ["PHEIDIPPIDES_KEYSTORE_PASSWORD"]
     },
     "lint": {
       "outputs": ["app/build/reports/**"],

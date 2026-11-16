@@ -22,7 +22,29 @@ android {
         }
     }
 
+    // CI signs every build with Pheidippides' own key, decrypted from
+    // pheidippides/signing.sops.yaml, so each version installs over the one
+    // before it in place. Without it, builds use the default debug key, which
+    // each machine generates for itself.
+    val keystore = System.getenv("PHEIDIPPIDES_KEYSTORE")
+    if (keystore != null) {
+        signingConfigs {
+            create("pheidippides") {
+                storeFile = file(keystore)
+                // PKCS12 keeps one password for the store and its key
+                storePassword = System.getenv("PHEIDIPPIDES_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("PHEIDIPPIDES_KEY_ALIAS")
+                keyPassword = System.getenv("PHEIDIPPIDES_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
+        getByName("debug") {
+            if (keystore != null) {
+                signingConfig = signingConfigs.getByName("pheidippides")
+            }
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
