@@ -63,7 +63,7 @@ dependencies {
 }
 
 sentry {
-    org.set("nefum")
+    org.set("regulad")
     projectName.set("pheidippides-notify")
 
     // this will upload your source code to Sentry to show it as part of the stack traces
