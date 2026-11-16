@@ -3,6 +3,7 @@ import { getPrisma } from "%/database/prisma.ts";
 import { bringDownDevice, getIsDeviceRunning } from "%/docker/device-state.ts";
 import { Device } from "%/generated/prisma/client.ts";
 import { getDeviceIsActive } from "@/utils/devices.ts";
+import { reconcileSubscriptions } from "@/utils/stripe/reconcile.ts";
 import { getSubscriptionStatus } from "@/utils/stripe/utils.ts";
 import { SubscriptionStatus } from "@/utils/subscriptions.ts";
 import * as OneSignal from "@onesignal/node-onesignal";
@@ -89,8 +90,40 @@ async function handleOwner(ownerId: string, devices: Device[]): Promise<void> {
   await Promise.all(devicePromises);
 }
 
+// The cron runs every minute; reconciling with Stripe that often would only
+// repeat the webhook's work
+const RECONCILE_EVERY_MINUTES = 15;
+
+// Saves whatever the Stripe webhook missed. It runs before the devices are
+// checked, so a subscription that ended is seen in this same run.
+async function reconcileWithStripe(): Promise<void> {
+  if (new Date().getUTCMinutes() % RECONCILE_EVERY_MINUTES !== 0) {
+    return;
+  }
+
+  try {
+    await Sentry.startSpan(
+      { name: "Reconcile subscriptions with Stripe", op: "cron.stripe" },
+      async (span) => {
+        const result = await reconcileSubscriptions();
+        span.setAttributes({
+          "subscriptions.saved": result.saved,
+          "subscriptions.ended": result.ended,
+          "subscriptions.missing": result.missing,
+        });
+      },
+    );
+  } catch (e) {
+    // the devices are still checked against what the database holds
+    console.error("Failed to reconcile subscriptions with Stripe", e);
+    Sentry.captureException(e);
+  }
+}
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const prisma = getPrisma();
+
+  await reconcileWithStripe();
 
   const allDevices = await Sentry.startSpan(
     { name: "Load every device", op: "cron.db" },
