@@ -85,5 +85,8 @@ RUN --mount=type=secret,id=sentry_token \
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Define the command to run the app
+# The start script applies any pending database migrations (prisma migrate
+# deploy, which reads DIRECT_URL from the runtime environment) and only then
+# starts the server under pm2, so a failed migration keeps the app down rather
+# than running it against the wrong schema
 CMD ["pnpm", "run", "start"]

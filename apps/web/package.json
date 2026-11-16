@@ -185,7 +185,7 @@
     "precommit": "cd ../..; ./scripts/sync-legacy-dockerfile-lock.sh",
     "build": "pnpm run catalog:generate && next build --webpack && next-sitemap --config next-sitemap.config.mjs",
     "content:build": "contentlayer2 build",
-    "start": "pm2 start ecosystem.config.json --no-daemon",
+    "start": "prisma migrate deploy && pm2 start ecosystem.config.json --no-daemon",
     "lint": "eslint --max-warnings 0 src",
     "type-check": "pnpm run catalog:generate && pnpm run db:generate && pnpm run content:build && pnpm run licenses:check && tsc --noEmit --project tsconfig.json",
     "test": "pnpm run catalog:generate && jest",
