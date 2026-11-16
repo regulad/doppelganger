@@ -5,6 +5,7 @@
       "script": "dist/index.mjs",
       "node_args": "--import ./dist/instrument.mjs",
       "disable_source_map_support": true,
+      "pmx": false,
       "instances": "max",
       "exec_mode": "cluster",
       "env": {

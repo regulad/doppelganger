@@ -29,7 +29,6 @@
     "@next/third-parties": "16.4.3",
     "@onesignal/node-onesignal": "5.0.0-alpha-01",
     "@paralleldrive/cuid2": "^2.2.2",
-    "@pm2/io": "^6.1.0",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "@radix-ui/react-alert-dialog": "^1.1.1",
