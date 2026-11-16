@@ -411,22 +411,55 @@ jobs:
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
 
-  # deploy:
-  #   needs:
-  #     - build-docker
-  #   runs-on: "ubuntu-latest"
-  #   steps:
-  #     # Deploy changes on production server
-  #     - name: Deploy changes to prod
-  #       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-  #       uses: appleboy/ssh-action@v1.0.3
-  #       with:
-  #         host: ${{ secrets.SSH_HOST }}
-  #         username: ${{ secrets.SSH_USERNAME }}
-  #         key: ${{ secrets.SSH_KEY }}
-  #         port: ${{ secrets.SSH_PORT }}
-  #         script: |
-  #           cd ~/doppelganger
-  #           git pull
-  #           docker compose pull
-  #           docker compose up -d
+  # Tells doppelgangerhq.com to update now, rather than at its daily
+  # doppelganger-update.timer run. The host runs webhookd on loopback behind
+  # Tailscale Serve, and the tailnet policy lets only tag:ci-client-doppelganger
+  # reach it. So the job joins the tailnet as that tag, through a Tailscale
+  # federated identity that trusts this repository's master branch: its OIDC
+  # subject is repo:regulad@52430642/doppelganger@823433320:ref:refs/heads/master,
+  # the immutable form, which names the owner and repository by ID as well as by
+  # name. Version tags also move web-latest, but the identity doesn't trust them,
+  # so those wait for the daily timer.
+  #
+  # The hook starts doppelganger-update.service and answers at once: 200 means
+  # the update started. The service pulls and restarts the compose stack, and
+  # the web image is several GB, so production runs the new image a few minutes
+  # later. A failure doesn't fail the run, since the daily timer still picks the
+  # image up within a day. If a newer run cancels this one mid-call, the newer
+  # run deploys instead.
+  deploy:
+    runs-on: "ubuntu-latest"
+    name: Deploy web
+    if: github.ref == 'refs/heads/master'
+    needs:
+      - merge-docker
+    continue-on-error: true
+
+    permissions:
+      # Mints the GitHub OIDC token the federated identity accepts, so no
+      # long-lived Tailscale secret is stored
+      id-token: write
+
+    # Each step has a time limit, so a hang becomes an ordinary failure that
+    # continue-on-error absorbs, rather than running to GitHub's 6-hour default
+    steps:
+      - name: Join the tailnet
+        uses: tailscale/github-action@064b10558093f38325e838ddea35486bdc6b1d5c # v4.4.0
+        timeout-minutes: 3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:ci-client-doppelganger
+          hostname: doppelganger-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Start the update
+        timeout-minutes: 2
+        run: |
+          # The hook answers at once, so 30 seconds per attempt is plenty
+          if curl -fsS --connect-timeout 10 --max-time 30 --retry 3 --retry-connrefused \
+            -X POST "https://doppelgangerhq-com.tail11540.ts.net:8108/auto-update"; then
+            echo "Started the update on doppelgangerhq.com."
+          else
+            echo "::warning::Couldn't start the update on doppelgangerhq.com; its daily doppelganger-update.timer run will pick web-latest up."
+            exit 1
+          fi
