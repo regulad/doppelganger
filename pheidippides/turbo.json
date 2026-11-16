@@ -5,36 +5,18 @@
     "build": {
       "outputs": ["app/build/**", "build/**"],
       "cache": true,
-      "inputs": [
-        "app/src/**/*.java",
-        "app/src/**/*.xml",
-        "app/build.gradle.kts",
-        "build.gradle.kts",
-        "gradle.properties"
-      ],
+      "inputs": ["$TURBO_DEFAULT$"],
       "env": ["SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT", "SENTRY_RELEASE"]
     },
     "lint": {
       "outputs": ["app/build/reports/**"],
       "cache": true,
-      "inputs": [
-        "app/src/**/*.java",
-        "app/src/**/*.xml",
-        "app/build.gradle.kts",
-        "build.gradle.kts",
-        "gradle.properties"
-      ]
+      "inputs": ["$TURBO_DEFAULT$"]
     },
     "test": {
       "outputs": ["app/build/test-results/**"],
       "cache": true,
-      "inputs": [
-        "app/src/**/*.java",
-        "app/src/test/**/*.java",
-        "app/build.gradle.kts",
-        "build.gradle.kts",
-        "gradle.properties"
-      ]
+      "inputs": ["$TURBO_DEFAULT$"]
     }
   }
 }
