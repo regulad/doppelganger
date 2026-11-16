@@ -8,9 +8,7 @@ import {
   MAX_DEVICES_PLUS,
   MAX_DEVICES_PRO,
   PLUS_MAX_FPS,
-  PLUS_STRIPE_PRODUCT,
   PRO_MAX_FPS,
-  PRO_STRIPE_PRODUCT,
 } from "../../../../../server/src/constants";
 import { BiCheck } from "react-icons/bi";
 
@@ -43,9 +41,7 @@ export const metadata = {
         "Unlock better integrations and unbridled functionality for one device.",
       action: (
         <Button asChild>
-          <Link
-            href={`/api/stripe/get-checkout-session?priceId=${PLUS_STRIPE_PRODUCT}`}
-          >
+          <Link href={"/api/stripe/get-checkout-session?plan=plus"}>
             Subscribe
             <LuArrowRight className="ml-1 h-4 w-4" />
           </Link>
@@ -59,9 +55,7 @@ export const metadata = {
         "Unlock the full potential of Doppelganger's multiple deivces.",
       action: (
         <Button asChild>
-          <Link
-            href={`/api/stripe/get-checkout-session?priceId=${PRO_STRIPE_PRODUCT}`}
-          >
+          <Link href={"/api/stripe/get-checkout-session?plan=pro"}>
             Subscribe
             <LuArrowRight className="ml-1 h-4 w-4" />
           </Link>
@@ -79,7 +73,7 @@ export const metadata = {
       </Button>
       <Button asChild>
         <Link
-          href={`/api/stripe/get-checkout-session?priceId=${PLUS_STRIPE_PRODUCT}`}
+          href={"/api/stripe/get-checkout-session?plan=plus"}
           prefetch={false}
         >
           Subscribe
@@ -88,7 +82,7 @@ export const metadata = {
       </Button>
       <Button asChild>
         <Link
-          href={`/api/stripe/get-checkout-session?priceId=${PRO_STRIPE_PRODUCT}`}
+          href={"/api/stripe/get-checkout-session?plan=pro"}
           prefetch={false}
         >
           Subscribe

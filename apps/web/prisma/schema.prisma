@@ -80,6 +80,9 @@ model Subscription {
   stripePriceId        String
   stripeSubscriptionId String   @unique
   status               String
+  // PLUS or PRO, from the product of the subscription's price when it was
+  // last synced from Stripe; null when that isn't one of Doppelganger's plans
+  plan                 String?
   currentPeriodStart   DateTime
   currentPeriodEnd     DateTime
   createdAt            DateTime @default(now())

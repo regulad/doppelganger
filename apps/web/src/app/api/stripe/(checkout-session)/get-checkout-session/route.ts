@@ -1,6 +1,7 @@
 import { BASE_ORIGIN } from "%/constants.ts";
 import { getPrisma } from "%/database/prisma.ts";
 import { createStripeCustomer } from "@/app/api/stripe/(checkout-session)/stripe-customer.ts";
+import { getPlanFromParam, getPlanPrices } from "@/utils/stripe/plans.ts";
 import createStripeClient from "@/utils/stripe/server.ts";
 import { createClient } from "@/utils/supabase/server.ts";
 import { getQueryForToast } from "@/utils/toast-utils.ts";
@@ -20,14 +21,16 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       error: userError,
     } = await supabase.auth.getUser();
 
-    // Get priceId from query parameter
-    const priceId = req.nextUrl.searchParams.get("priceId");
-    if (!priceId) {
+    // The plan comes from the subscribe page's link. It names one of the paid
+    // plans rather than a price, since the Stripe account sells other
+    // products too.
+    const plan = getPlanFromParam(req.nextUrl.searchParams.get("plan"));
+    if (!plan) {
       return NextResponse.redirect(
         new URL(
           `/subscribe${getQueryForToast({
             title: "Invalid Request",
-            description: "No price ID provided. Please try again.",
+            description: "No plan chosen. Please try again.",
           })}`,
           BASE_ORIGIN,
         ),
@@ -45,7 +48,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           `/login${getQueryForToast({
             title: "Sign in",
             description: "Please sign in to start your subscription.",
-          })}&next=${encodeURIComponent(`/api/stripe/get-checkout-session?priceId=${priceId}`)}`,
+          })}&next=${encodeURIComponent(`/api/stripe/get-checkout-session?plan=${plan.toLowerCase()}`)}`,
           BASE_ORIGIN,
         ),
       );
@@ -57,7 +60,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           `/login${getQueryForToast({
             title: "Sign in",
             description: "Please sign in to start your subscription.",
-          })}&next=${encodeURIComponent(`/api/stripe/get-checkout-session?priceId=${priceId}`)}`,
+          })}&next=${encodeURIComponent(`/api/stripe/get-checkout-session?plan=${plan.toLowerCase()}`)}`,
           BASE_ORIGIN,
         ),
       );
@@ -107,6 +110,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     } else {
       stripeCustomer = await createStripeCustomer(user.email!, user.id);
     }
+
+    const { priceId } = (await getPlanPrices(stripe)).find(
+      (p) => p.plan === plan,
+    )!;
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

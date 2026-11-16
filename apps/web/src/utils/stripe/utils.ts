@@ -1,4 +1,3 @@
-import { PLUS_STRIPE_PRODUCT, PRO_STRIPE_PRODUCT } from "%/constants.ts";
 import { getPrisma } from "%/database/prisma.ts";
 import fixDateFromPrisma from "@/app/api/cron/util.ts";
 import { SubscriptionStatus } from "@/utils/subscriptions";
@@ -20,9 +19,9 @@ export async function getSubscriptionStatus(
       return SubscriptionStatus.FREE;
     }
 
-    // Find the most recent active subscription
-    const activeSubscription = stripeCustomer.Subscription.filter((sub) =>
-      ["active", "trialing"].includes(sub.status),
+    // Find the most recent active subscription to one of the paid plans
+    const activeSubscription = stripeCustomer.Subscription.filter(
+      (sub) => ["active", "trialing"].includes(sub.status) && sub.plan,
     ).sort(
       (a, b) =>
         fixDateFromPrisma(b.currentPeriodEnd).getTime() -
@@ -33,12 +32,12 @@ export async function getSubscriptionStatus(
       return SubscriptionStatus.FREE;
     }
 
-    // Map Stripe price ID to SubscriptionStatus
-    // You'll need to replace these with your actual Stripe price IDs
-    switch (activeSubscription.stripePriceId) {
-      case PLUS_STRIPE_PRODUCT:
+    // The plan was worked out from the subscription's product when it was
+    // synced from Stripe (utils/stripe/sync.ts), so this needs no Stripe call
+    switch (activeSubscription.plan) {
+      case SubscriptionStatus.PLUS:
         return SubscriptionStatus.PLUS;
-      case PRO_STRIPE_PRODUCT:
+      case SubscriptionStatus.PRO:
         return SubscriptionStatus.PRO;
       default:
         return SubscriptionStatus.FREE;

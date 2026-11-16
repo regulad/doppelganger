@@ -41,11 +41,8 @@ export const VOLUME_SIZE_LIMIT_BYTES = 17_179_869_184; // 16 GiB
 export const CPU_LIMIT_CPUS = 2.0;
 export const MEMORY_LIMIT_BYTES = 2_147_483_648; // 2 GiB
 
-export const PLUS_STRIPE_PRODUCT =
-  process.env.NODE_ENV === "production"
-    ? "price_1PjrjNJ5A6f1xaSscXx0SEBm"
-    : "price_1PjrmsJ5A6f1xaSssdFx6I3Y";
-export const PRO_STRIPE_PRODUCT =
-  process.env.NODE_ENV === "production"
-    ? "price_1PjrkeJ5A6f1xaSsYm8BjZDo"
-    : "price_1PjrneJ5A6f1xaSsxL86tS6i";
+// The lookup keys of the paid plans' prices, which homelab's tofu/stripe
+// declares in both live and test mode. The Stripe account is regulad.xyz's,
+// shared with other products, hence the prefix.
+export const PLUS_STRIPE_LOOKUP_KEY = "doppelganger_plus_monthly";
+export const PRO_STRIPE_LOOKUP_KEY = "doppelganger_pro_monthly";
