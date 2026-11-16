@@ -1,5 +1,9 @@
-// The DSN of the regulad/doppelganger Sentry project. Every part of the web app
-// reports there: the browser, the Next.js server and edge runtimes, and the
-// custom server.
-export const dsn =
-  "https://c16d073a0fdaea2761e0f3f26ad856e7@o4506961510596608.ingest.us.sentry.io/4507558058721280";
+// Where the web app reports to Sentry: the browser, the Next.js server and edge
+// runtimes, and the custom server. Unset or empty, Sentry stays off.
+//
+// Next.js writes NEXT_PUBLIC_ values into its bundles at build time, so the
+// browser and Next's own code keep the value from the build (.env.local.public,
+// copied to .env.local before `next build`). The custom server's Sentry client
+// (server/src/instrument.ts), which is the one the server process uses, reads
+// it when the process starts.
+export const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || undefined;

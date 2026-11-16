@@ -17,6 +17,10 @@ import { dsn } from "./sentry.dsn.ts";
 import { readSentryContext } from "./server/src/sentry/error-context.ts";
 import { describeProcessState } from "./server/src/sentry/process-state.ts";
 
+if (!dsn && process.env.NODE_ENV === "production") {
+  console.warn("NEXT_PUBLIC_SENTRY_DSN is not set, so Sentry is off");
+}
+
 Sentry.init({
   dsn,
   enabled: process.env.NODE_ENV === "production",
