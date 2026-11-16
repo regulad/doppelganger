@@ -140,6 +140,13 @@ const sentryConfig = withSentryConfig(nextConfig, {
   org: "regulad",
   project: "doppelganger",
 
+  // Off: in @sentry/nextjs 11.10 this plugin prepends a marker to each server
+  // entry bundle after webpack has written its source map, so every frame on
+  // that bundle's first line (all of its minified code) resolves to the wrong
+  // place. It only compiles tracing hooks into bundled packages (ioredis);
+  // the server's early Sentry setup instruments them at runtime instead.
+  buildTimeInstrumentation: false,
+
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
