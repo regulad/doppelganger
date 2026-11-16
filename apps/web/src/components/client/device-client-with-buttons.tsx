@@ -283,11 +283,14 @@ function ButtonBar({
 
       <ButtonbarButton
         onPress={() => {
-          if (fullScreenHandle.active) {
-            fullScreenHandle.exit();
-          } else {
-            fullScreenHandle.enter();
-          }
+          const toggle = fullScreenHandle.active
+            ? fullScreenHandle.exit()
+            : fullScreenHandle.enter();
+          // The browser can refuse, which rejects with "Permissions check
+          // failed"; that isn't an error of ours to report
+          toggle.catch((e: unknown) => {
+            console.warn("The browser refused to toggle fullscreen", e);
+          });
         }}
         label="Toggle Fullscreen"
       >
