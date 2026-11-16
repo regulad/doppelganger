@@ -51,6 +51,12 @@ model Device {
   lastConnectedAt DateTime?   @map(name: "last_connected_at")
   lastState       DeviceState @default(USABLE) @map(name: "last_state")
 
+  // Whether the device's Pheidippides apps are signed with their stable key
+  // (pheidippides/signing.sops.yaml), so new versions update them in place.
+  // Devices made before that key keep the Pheidippides apps they have; see
+  // server/src/adb/initial-setup.ts. New devices set it.
+  usesStableApks Boolean @default(false) @map(name: "uses_stable_apks")
+
   @@index([ownerId, id])
   @@map(name: "devices")
 }

@@ -97,5 +97,8 @@ export function getInsertableDeviceForView(
     redroidHeight: view.redroidHeight,
 
     redroidSecret: view.doppelgangerSecret,
+
+    // Its Pheidippides apps come from this build, signed with their stable key
+    usesStableApks: true,
   };
 }

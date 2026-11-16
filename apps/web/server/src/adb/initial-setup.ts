@@ -161,10 +161,7 @@ async function getIsPackageDebug(
   // prod dympsys: https://gist.github.com/regulad/48c4e192a9ad065ae5c5db8e9b209141
   //     flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
 
-  if (
-    packageName === "com.android.webview" ||
-    packageName.startsWith("xyz.regulad.pheidippides")
-  ) {
+  if (packageName === "com.android.webview") {
     // for systems that have webview, the default webview may be installed with debug keys if the aosp build is debuggable
     // we are writing the chrome webview over it, so we will need to uninstall the default webview
     return true;
@@ -296,6 +293,7 @@ async function uninstallPackageCompletely(
 async function installOrUpdateApkAndGrantAllPermissions(
   adbClient: RobustClient,
   apkPath: string,
+  usesStableApks: boolean,
 ): Promise<void> {
   // step 1: parse the apk to get the version, package name, and any requested permissions
   const apkReader = await ApkReader.open(apkPath);
@@ -309,40 +307,61 @@ async function installOrUpdateApkAndGrantAllPermissions(
   }
 
   // step 2: check if the apk is already installed or the same version
-  const shouldInstall = await determineIfPackageNeedsInstallation(
+  let shouldInstall = await determineIfPackageNeedsInstallation(
     adbClient,
     manifest,
   );
 
+  // A device made before the Pheidippides apps had a stable signing key
+  // carries copies signed with throwaway debug keys, which no new build can
+  // update in place. Replacing one means uninstalling it, which loses its data
+  // and, for Administrate, the device ownership a device with accounts can't
+  // get back. So such a device keeps the Pheidippides apps it has, and only
+  // gets ones it lacks.
+  if (
+    shouldInstall &&
+    isOurPackage &&
+    !usesStableApks &&
+    (await adbClient.isInstalled(packageName))
+  ) {
+    shouldInstall = false;
+  }
+
   // step 3: if not, install the apk
   // step 4: grant all requested permissions
   if (shouldInstall) {
-    // we use debug versions of the apps to enable logcat logging, so we need to uninstall to clear the keys
-    // https://stackoverflow.com/questions/71872027/how-to-fix-signatures-do-not-match-previously-installed-version-error
-    const appIsDebug = await getIsPackageDebug(adbClient, packageName).catch(
-      (e) => {
-        console.error(
-          "Failed to check if package is debug, assuming it is and continuing",
-          packageName,
-          e,
-        );
-        Sentry.captureException(e);
-        return true;
-      },
-    );
+    // Every Pheidippides build is signed with the same key, so a new version
+    // installs over the old one in place (pm install -r), keeping its data,
+    // permissions and device ownership. Other debug-signed packages have to be
+    // uninstalled first.
+    if (!isOurPackage) {
+      // we use debug versions of the apps to enable logcat logging, so we need to uninstall to clear the keys
+      // https://stackoverflow.com/questions/71872027/how-to-fix-signatures-do-not-match-previously-installed-version-error
+      const appIsDebug = await getIsPackageDebug(adbClient, packageName).catch(
+        (e) => {
+          console.error(
+            "Failed to check if package is debug, assuming it is and continuing",
+            packageName,
+            e,
+          );
+          Sentry.captureException(e);
+          return true;
+        },
+      );
 
-    if (appIsDebug) {
-      await uninstallPackageCompletely(adbClient, packageName).catch((e) => {
-        console.error(
-          "Failed to uninstall package, continuing",
-          packageName,
-          e,
-        );
-        Sentry.captureException(e);
-      });
+      if (appIsDebug) {
+        await uninstallPackageCompletely(adbClient, packageName).catch((e) => {
+          console.error(
+            "Failed to uninstall package, continuing",
+            packageName,
+            e,
+          );
+          Sentry.captureException(e);
+        });
+      }
+
+      await removeSafeguards(adbClient, packageName);
     }
-
-    await removeSafeguards(adbClient, packageName);
 
     // interesting node: without a stream, this will copy the app-debug.apk file to the device and then install it
     // now, there are multiple app-debug.apk files at the same time that will attempt to install at the same time
@@ -420,12 +439,14 @@ export default async function doInitialDeviceSetup(
   await Promise.all(
     apks.map(
       (apkPath) =>
-        installOrUpdateApkAndGrantAllPermissions(adbClient, apkPath).catch(
-          (e) => {
-            console.error("Failed to install apk", apkPath, e);
-            Sentry.captureException(e);
-          },
-        ), // don't propagate error
+        installOrUpdateApkAndGrantAllPermissions(
+          adbClient,
+          apkPath,
+          device.usesStableApks,
+        ).catch((e) => {
+          console.error("Failed to install apk", apkPath, e);
+          Sentry.captureException(e);
+        }), // don't propagate error
     ),
   );
 }
