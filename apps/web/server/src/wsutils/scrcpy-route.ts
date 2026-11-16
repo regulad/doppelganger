@@ -50,6 +50,15 @@ export async function handleDeviceStream(
   let targetWs: WsWebSocket;
 
   try {
+    // Also confirms the device still exists, past the cached lookup above,
+    // which can still return a device deleted a moment ago. A client can
+    // keep reconnecting to such a device, and each attempt would otherwise
+    // try to bring it up and start scrcpy on containers that are gone.
+    if (!(await updateDeviceLastConnected(deviceInfo.id))) {
+      ws.close(4404); // app: equiv to http 404
+      return;
+    }
+
     const deviceIsRunning = await getIsDeviceRunning(deviceInfo);
 
     if (!deviceIsRunning) {
@@ -76,7 +85,6 @@ export async function handleDeviceStream(
 
     const wsUrlString = getTargetWsScrcpyUrlForDevice(deviceInfo);
     const wsUrl = new URL(wsUrlString);
-    await updateDeviceLastConnected(deviceInfo.id);
     targetWs = await createWebSocketProxy(wsUrl, req, ws);
   } catch (e) {
     Sentry.captureException(e);

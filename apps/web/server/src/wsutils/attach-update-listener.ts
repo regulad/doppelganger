@@ -1,14 +1,21 @@
 import { getPrisma } from "%/database/prisma.ts";
+import * as Sentry from "@sentry/node";
 import { WebSocket as WsWebSocket } from "ws";
 
 const UPDATE_DB_INTERVAL = 60_000; // 60s
 
+/**
+ * Records that the device is being streamed. Returns false, rather than
+ * throwing, when the device no longer exists: it can be deleted while a
+ * client still streams it, and production's cached lookups can still return
+ * it for a moment after.
+ */
 export async function updateDeviceLastConnected(
   deviceId: string,
-): Promise<void> {
+): Promise<boolean> {
   const prisma = getPrisma();
 
-  await prisma.device.update({
+  const { count } = await prisma.device.updateMany({
     where: {
       id: deviceId,
     },
@@ -16,6 +23,7 @@ export async function updateDeviceLastConnected(
       lastConnectedAt: new Date(),
     },
   });
+  return count > 0;
 }
 
 export async function refreshStreamingDevice(
@@ -27,7 +35,11 @@ export async function refreshStreamingDevice(
     return;
   }
 
-  await updateDeviceLastConnected(deviceId);
+  if (!(await updateDeviceLastConnected(deviceId))) {
+    // the device was deleted while it streamed
+    ws.close(4404); // app: equiv to http 404
+    targetWs.close();
+  }
 }
 
 export function attachUpdateListener(
@@ -39,13 +51,12 @@ export function attachUpdateListener(
   // only write this for video streaming (scrcpy & kasmvnc)
 
   // setInterval runs it repeatedly
-  const refreshInterval = setInterval(
-    refreshStreamingDevice,
-    UPDATE_DB_INTERVAL,
-    ws,
-    targetWs,
-    deviceId,
-  );
+  const refreshInterval = setInterval(() => {
+    refreshStreamingDevice(ws, targetWs, deviceId).catch((e: unknown) => {
+      console.error("error refreshing a streaming device", e);
+      Sentry.captureException(e);
+    });
+  }, UPDATE_DB_INTERVAL);
   ws.on("close", () => {
     clearInterval(refreshInterval);
   });
