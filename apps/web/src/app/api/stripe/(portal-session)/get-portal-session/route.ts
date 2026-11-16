@@ -1,5 +1,6 @@
 import { BASE_ORIGIN } from "%/constants.ts";
 import { getPrisma } from "%/database/prisma.ts";
+import { isResourceMissing } from "@/utils/stripe/errors.ts";
 import createStripeClient from "@/utils/stripe/server.ts";
 import { createClient } from "@/utils/supabase/server.ts";
 import { getQueryForToast } from "@/utils/toast-utils.ts";
@@ -121,6 +122,20 @@ export async function GET(): Promise<NextResponse> {
         });
       }
     } catch (error) {
+      if (isResourceMissing(error)) {
+        // A customer from the deleted nefum account, which had no active
+        // subscriptions; there's nothing on the current account to manage
+        return NextResponse.redirect(
+          new URL(
+            `/user${getQueryForToast({
+              title: "No Subscription",
+              description:
+                "You don't have a subscription to manage. Subscribe today!",
+            })}`,
+            BASE_ORIGIN,
+          ),
+        );
+      }
       Sentry.captureException(error);
       return NextResponse.redirect(
         new URL(

@@ -17,7 +17,10 @@ jest.mock("@/utils/stripe/server.ts", () => ({
   __esModule: true,
   default: () => createStripeClient(),
 }));
-jest.mock("@sentry/nextjs", () => ({ captureException: jest.fn() }));
+const captureException = jest.fn();
+jest.mock("@sentry/nextjs", () => ({
+  captureException: (...args: unknown[]) => captureException(...args),
+}));
 
 import { GET } from "./route";
 
@@ -75,5 +78,27 @@ describe("opening the customer portal", () => {
 
     expect(createStripeClient).not.toHaveBeenCalled();
     expect(new URL(res.headers.get("location")!).pathname).toBe("/user");
+  });
+
+  it("tells a customer from the deleted account there's nothing to manage", async () => {
+    process.env.STRIPE_PORTAL_CONFIGURATION = "bpc_1";
+    createStripeClient.mockResolvedValue({
+      customers: {
+        retrieve: async () => {
+          throw Object.assign(new Error("No such customer: 'cus_old'"), {
+            code: "resource_missing",
+          });
+        },
+      },
+      billingPortal: { sessions: { create: createPortalSession } },
+    });
+
+    const res = await GET();
+
+    const location = new URL(res.headers.get("location")!);
+    expect(location.pathname).toBe("/user");
+    expect(location.search).toContain("No%20Subscription");
+    expect(createPortalSession).not.toHaveBeenCalled();
+    expect(captureException).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,5 @@
 import { getPrisma } from "%/database/prisma.ts";
+import { isResourceMissing } from "@/utils/stripe/errors.ts";
 import { getPlanPrices } from "@/utils/stripe/plans.ts";
 import createStripeClient from "@/utils/stripe/server.ts";
 import { saveSubscription, syncSubscription } from "@/utils/stripe/sync.ts";
@@ -49,7 +50,7 @@ export async function reconcileSubscriptions(): Promise<ReconcileResult> {
       await syncSubscription(stripe, stripeSubscriptionId, planPrices);
       result.ended++;
     } catch (err) {
-      if (!isMissing(err)) {
+      if (!isResourceMissing(err)) {
         throw err;
       }
       // The subscription isn't on this account, as with those from the
@@ -63,13 +64,4 @@ export async function reconcileSubscriptions(): Promise<ReconcileResult> {
   }
 
   return result;
-}
-
-function isMissing(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    err.code === "resource_missing"
-  );
 }

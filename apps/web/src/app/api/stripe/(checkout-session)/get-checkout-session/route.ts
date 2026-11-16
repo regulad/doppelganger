@@ -1,6 +1,7 @@
 import { BASE_ORIGIN } from "%/constants.ts";
 import { getPrisma } from "%/database/prisma.ts";
 import { createStripeCustomer } from "@/app/api/stripe/(checkout-session)/stripe-customer.ts";
+import { isResourceMissing } from "@/utils/stripe/errors.ts";
 import { getPlanFromParam, getPlanPrices } from "@/utils/stripe/plans.ts";
 import createStripeClient from "@/utils/stripe/server.ts";
 import { createClient } from "@/utils/supabase/server.ts";
@@ -100,7 +101,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           });
         }
       } catch (error) {
-        Sentry.captureException(error);
+        // A customer from the deleted nefum account is expected to be gone
+        if (!isResourceMissing(error)) {
+          Sentry.captureException(error);
+        }
         console.log(
           "Error retrieving Stripe customer, creating a new one:",
           error,
