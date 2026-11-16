@@ -120,14 +120,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       payment_method_types: ["card"],
       customer: stripeCustomer.stripeCustomerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: new URL(
-        `/devices${getQueryForToast({
-          title: "Success",
-          description:
-            "Your subscription was successful! Welcome to Doppelganger Premium!",
-        })}`,
-        BASE_ORIGIN,
-      ).toString(),
+      // checkout-complete saves the subscription, then shows the devices.
+      // Stripe fills in {CHECKOUT_SESSION_ID}.
+      success_url: `${BASE_ORIGIN}/api/stripe/checkout-complete?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: new URL(
         `/subscribe${getQueryForToast({
           title: "Canceled",
