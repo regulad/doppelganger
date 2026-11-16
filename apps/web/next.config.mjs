@@ -150,6 +150,14 @@ const sentryConfig = withSentryConfig(nextConfig, {
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
+  // Fail the build when creating the release or uploading source maps fails,
+  // which would otherwise only be logged (and not at all while silent).
+  // Without an auth token the plugin skips both with a warning instead, so
+  // builds without one still pass.
+  errorHandler: (err) => {
+    throw err;
+  },
+
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
