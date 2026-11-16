@@ -29,8 +29,14 @@ async function sendDeviceDeletedNotification(device: Device): Promise<void> {
   destinationNotification.web_url = `${BASE_ORIGIN}/subscribe`;
 }
 
+// The cron run has blocked the event loop for over 5 s at least once. Its
+// phases are spans, so a slow run's trace shows which one took the time.
+
 async function shutdownAbandonedDevice(device: Device): Promise<void> {
-  const deviceRunning = await getIsDeviceRunning(device);
+  const deviceRunning = await Sentry.startSpan(
+    { name: "Ask Docker whether the device is running", op: "cron.docker" },
+    () => getIsDeviceRunning(device),
+  );
 
   if (!deviceRunning) {
     return; // no need to process
@@ -43,7 +49,10 @@ async function shutdownAbandonedDevice(device: Device): Promise<void> {
   }
 
   // shutdown the device
-  await bringDownDevice(device.id);
+  await Sentry.startSpan(
+    { name: "Shut the device down", op: "cron.docker" },
+    () => bringDownDevice(device.id),
+  );
 
   // todo: kinggrand
   sendDeviceDeletedNotification(device).catch((e) => {
@@ -53,7 +62,10 @@ async function shutdownAbandonedDevice(device: Device): Promise<void> {
 }
 
 async function handleOwner(ownerId: string, devices: Device[]): Promise<void> {
-  const subscriptionStatus = await getSubscriptionStatus(ownerId);
+  const subscriptionStatus = await Sentry.startSpan(
+    { name: "Look up the owner's subscription", op: "cron.subscription" },
+    () => getSubscriptionStatus(ownerId),
+  );
 
   if (
     subscriptionStatus === SubscriptionStatus.PRO ||
@@ -64,7 +76,14 @@ async function handleOwner(ownerId: string, devices: Device[]): Promise<void> {
   }
 
   const devicePromises = devices.map((device) =>
-    shutdownAbandonedDevice(device),
+    Sentry.startSpan(
+      {
+        name: "Check whether a device should keep running",
+        op: "cron.device",
+        attributes: { "device.id": device.id },
+      },
+      () => shutdownAbandonedDevice(device),
+    ),
   );
 
   await Promise.all(devicePromises);
@@ -73,14 +92,18 @@ async function handleOwner(ownerId: string, devices: Device[]): Promise<void> {
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const prisma = getPrisma();
 
-  const allDevices = await prisma.device.findMany({
-    where: {
-      id:
-        process.env.NODE_ENV === "production"
-          ? { not: { endsWith: "staging" } }
-          : { endsWith: "staging" },
-    },
-  });
+  const allDevices = await Sentry.startSpan(
+    { name: "Load every device", op: "cron.db" },
+    () =>
+      prisma.device.findMany({
+        where: {
+          id:
+            process.env.NODE_ENV === "production"
+              ? { not: { endsWith: "staging" } }
+              : { endsWith: "staging" },
+        },
+      }),
+  );
 
   // group the devices by ownerId
   const devicesByOwner = allDevices.reduce(
@@ -94,9 +117,21 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     {} as Record<string, Device[]>,
   );
 
+  Sentry.getActiveSpan()?.setAttributes({
+    "devices.count": allDevices.length,
+    "owners.count": Object.keys(devicesByOwner).length,
+  });
+
   // handle each owner
   const devicePromises = Object.keys(devicesByOwner).map((ownerId) =>
-    handleOwner(ownerId, devicesByOwner[ownerId]),
+    Sentry.startSpan(
+      {
+        name: "Check an owner's devices",
+        op: "cron.owner",
+        attributes: { "devices.count": devicesByOwner[ownerId].length },
+      },
+      () => handleOwner(ownerId, devicesByOwner[ownerId]),
+    ),
   );
 
   await Promise.all(devicePromises);
