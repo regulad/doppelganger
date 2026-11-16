@@ -1,5 +1,6 @@
 import { getDefaultRedroidHostname } from "%/device-info/device-info-utils";
 import { Device } from "%/generated/prisma/client";
+import { withSentryContext } from "%/sentry/error-context";
 import { findUpSync } from "find-up";
 import path from "path";
 import { AdbDevice } from "./adb-device";
@@ -122,6 +123,48 @@ class ScrcpyAdbDevice extends AdbDevice {
   }
 }
 
+// Starts of the scrcpy server that this process hasn't finished, per device
+const startsInFlight = new Map<string, number>();
+
+// Settles with a command's output, or with why there is none: an unreachable
+// device would otherwise keep the ADB client retrying for minutes
+function settleWithin(command: Promise<string>, ms: number): Promise<string> {
+  return Promise.race([
+    command.catch((e: unknown) => `Couldn't run it: ${e}`),
+    new Promise<string>((resolve) =>
+      setTimeout(() => resolve(`No answer within ${ms / 1000} s`), ms).unref(),
+    ),
+  ]);
+}
+
+/**
+ * What holds the scrcpy server's port, and which app_process servers are
+ * running, when a start fails: "Address already in use" means another server
+ * got the port first.
+ */
+async function describeScrcpyPort(
+  adbDevice: AdbDevice,
+): Promise<Record<string, string>> {
+  const [listeners, servers] = await Promise.all([
+    settleWithin(
+      adbDevice.runShellCommandAdbKit(
+        `netstat -tlnp 2>/dev/null | grep ':${SCRCPY_WS_PORT} '`,
+      ),
+      10_000,
+    ),
+    settleWithin(
+      adbDevice.runShellCommandAdbKit(
+        `ps -A -o PID,STIME,ARGS | grep '[a]pp_process'`,
+      ),
+      10_000,
+    ),
+  ]);
+  return {
+    port_listeners: listeners || "none",
+    app_process_servers: servers || "none",
+  };
+}
+
 /**
  * Starts the scrcpy server on the device. Silently fails if the server is already running.
  * @param deviceInfo
@@ -137,29 +180,55 @@ export async function runScrcpyServerOnDevice(
     return; // server is already running; we are done
   }
 
-  await adbDevice.push(LOCAL_SCRCPY_SERVER_PATH, `${TEMP_PATH}${FILE_NAME}`);
-  const waitForServerPidParams: WaitForPidParams = {
-    tryCounter: 0,
-    processExited: false,
-    lookPidFile: true,
-  };
-  const scrcpyServerPromise = adbDevice.runShellCommandAdbKit(RUN_COMMAND);
-  const waitForServerPidPromise = adbDevice.waitForServerPid(
-    waitForServerPidParams,
-  );
+  const deviceId = deviceInfo.id;
+  const inFlightAtStart = (startsInFlight.get(deviceId) ?? 0) + 1;
+  startsInFlight.set(deviceId, inFlightAtStart);
+  try {
+    await adbDevice.push(LOCAL_SCRCPY_SERVER_PATH, `${TEMP_PATH}${FILE_NAME}`);
+    const waitForServerPidParams: WaitForPidParams = {
+      tryCounter: 0,
+      processExited: false,
+      lookPidFile: true,
+    };
+    const scrcpyServerPromise = adbDevice.runShellCommandAdbKit(RUN_COMMAND);
+    const waitForServerPidPromise = adbDevice.waitForServerPid(
+      waitForServerPidParams,
+    );
 
-  const pids = await Promise.race([
-    scrcpyServerPromise,
-    waitForServerPidPromise,
-  ]);
+    const pids = await Promise.race([
+      scrcpyServerPromise,
+      waitForServerPidPromise,
+    ]);
 
-  if (!Array.isArray(pids) || !pids.length) {
-    throw new Error(`Failed to start server ${pids}`);
+    if (!Array.isArray(pids) || !pids.length) {
+      throw new Error(`Failed to start server ${pids}`);
+    }
+
+    const pid = pids[0];
+
+    console.log(
+      `scrcpy server started on device ${adbDevice.udid} with pid ${pid}`,
+    );
+  } catch (error: unknown) {
+    // Starts in other pm2 workers don't show here; the pm2.instance tag on
+    // events from the same moment does
+    throw withSentryContext(error, {
+      tags: { "device.id": deviceId },
+      contexts: {
+        scrcpy: {
+          starts_in_flight_in_this_worker_at_start: inFlightAtStart,
+          starts_in_flight_in_this_worker_at_failure:
+            startsInFlight.get(deviceId) ?? 0,
+          ...(await describeScrcpyPort(adbDevice)),
+        },
+      },
+    });
+  } finally {
+    const remaining = (startsInFlight.get(deviceId) ?? 1) - 1;
+    if (remaining > 0) {
+      startsInFlight.set(deviceId, remaining);
+    } else {
+      startsInFlight.delete(deviceId);
+    }
   }
-
-  const pid = pids[0];
-
-  console.log(
-    `scrcpy server started on device ${adbDevice.udid} with pid ${pid}`,
-  );
 }
