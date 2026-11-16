@@ -16,11 +16,16 @@ on:
     branches: ["master"]
   workflow_dispatch:
 
-# A newer run on the same branch or PR cancels the one in progress, rather
-# than both building and publishing.
+# Serialize the pipeline per ref, across push, tag, PR and manual runs: one run
+# at a time, and every run finishes. Each run on master publishes web-latest,
+# restarts production and records a Sentry deploy, so none may be cancelled or
+# skipped. Pushes that arrive while a run is going wait in line (queue: max, up
+# to 100) and run in order. A push carrying several commits is still one run,
+# for the newest of them.
 concurrency:
   group: ci-cd-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
+  queue: max
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -425,8 +430,7 @@ jobs:
   # the update started. The service pulls and restarts the compose stack, and
   # the web image is several GB, so production runs the new image a few minutes
   # later. A failure doesn't fail the run, since the daily timer still picks the
-  # image up within a day. If a newer run cancels this one mid-call, the newer
-  # run deploys instead.
+  # image up within a day.
   deploy:
     runs-on: "ubuntu-latest"
     name: Deploy web
@@ -439,6 +443,11 @@ jobs:
       # Mints the GitHub OIDC token the federated identity accepts, so no
       # long-lived Tailscale secret is stored
       id-token: write
+
+    outputs:
+      # "true" once the hook has started the update; sentry-release records a
+      # deploy only then
+      started: ${{ steps.start.outputs.started }}
 
     # Each step has a time limit, so a hang becomes an ordinary failure that
     # continue-on-error absorbs, rather than running to GitHub's 6-hour default
@@ -453,13 +462,58 @@ jobs:
           hostname: doppelganger-deploy-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Start the update
+        id: start
         timeout-minutes: 2
         run: |
           # The hook answers at once, so 30 seconds per attempt is plenty
           if curl -fsS --connect-timeout 10 --max-time 30 --retry 3 --retry-connrefused \
             -X POST "https://doppelgangerhq-com.tail11540.ts.net:8108/auto-update"; then
             echo "Started the update on doppelgangerhq.com."
+            echo "started=true" >> "$GITHUB_OUTPUT"
           else
             echo "::warning::Couldn't start the update on doppelgangerhq.com; its daily doppelganger-update.timer run will pick web-latest up."
             exit 1
           fi
+
+  # Records each master build in Sentry. The build has already created the
+  # release, named by the commit hash as the SDK reports it, and uploaded its
+  # source maps. This job links the release's commits through Sentry's GitHub
+  # integration, so issues can name suspect commits, and records a production
+  # deploy if the deploy job started the update, marking when production was
+  # told to update. If that failed, no deploy is recorded: the daily timer
+  # delivers the image later, at a time this run can't know.
+  sentry-release:
+    runs-on: "ubuntu-latest"
+    name: Record the Sentry release
+    if: ${{ !cancelled() && needs.merge-docker.result == 'success' && github.ref == 'refs/heads/master' }}
+    needs:
+      - merge-docker
+      - deploy
+
+    permissions:
+      contents: read
+
+    steps:
+      # The whole history, so set_commits can find the commits since the
+      # previous release
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record the release
+        uses: getsentry/action-release@e6703d0b00208e0b3687ba660d18ab5af7892821 # v3.7.2
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: regulad
+          SENTRY_PROJECT: doppelganger
+        with:
+          release: ${{ github.sha }}
+          set_commits: auto
+          # Links a default number of commits, rather than failing, when the
+          # previous release has no commit in this history (none of the
+          # releases before this job had commits linked)
+          ignore_missing: true
+          # Empty skips the deploy
+          environment: ${{ needs.deploy.outputs.started == 'true' && 'production' || '' }}
