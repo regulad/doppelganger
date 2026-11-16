@@ -5,6 +5,22 @@ plugins {
     id("io.sentry.android.gradle") version "4.10.0"
 }
 
+// versionCode is the number of commits that touched this app, so every change
+// to it ships as a new, higher version: devices install a Pheidippides APK only
+// when its versionCode is higher than the one they have
+// (apps/web/server/src/adb/initial-setup.ts). The count needs the whole
+// history, so a shallow clone fails the build rather than count too few.
+fun git(vararg args: String): String =
+    providers.exec {
+        workingDir = rootDir
+        commandLine("git", *args)
+    }.standardOutput.asText.get().trim()
+
+check(git("rev-parse", "--is-shallow-repository") == "false") {
+    "versionCode counts this app's commits, which needs a full clone, not a shallow one"
+}
+val commitCount = git("rev-list", "--count", "HEAD", "--", ".").toInt()
+
 android {
     namespace = "xyz.regulad.pheidippides.locate"
     compileSdk = 34
@@ -13,7 +29,7 @@ android {
         applicationId = "xyz.regulad.pheidippides.locate"
         minSdk = 29
         targetSdk = 34
-        versionCode = 9
+        versionCode = commitCount
         versionName = "1.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
