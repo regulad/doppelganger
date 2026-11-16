@@ -65,25 +65,6 @@ jobs:
             exit 1
           fi
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v3
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.DISTRIBUTION }}
-          cache: gradle
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        # no need to pin version for gradle, it tries to get it from the wrapper by default
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 13114758
-          # the default, "tools platform-tools", fails: Google's SDK
-          # repository no longer has the legacy tools package
-          packages: "platform-tools"
-
       # turbo's local cache, kept between runs; the remote cache is used too
       # when TURBO_TOKEN is set
       - name: Cache turbo
@@ -117,16 +98,19 @@ jobs:
             exit 1
           }
 
+      # The Pheidippides apps are linted and tested in build-android, each on
+      # its own runner, rather than here, where their Gradle builds would run
+      # side by side and contend for the one Gradle daemon registry
       - name: Turbo
         run: |
           ./scripts/verify-clean-commit.sh
-          pnpm exec turbo run lint type-check test
+          pnpm exec turbo run lint type-check test --filter='!pheidippides-*'
 
+  # Lints, tests and builds each Pheidippides app on its own runner, in
+  # parallel with check. Its APK goes to build-docker as an artifact.
   build-android:
     runs-on: "ubuntu-latest"
     name: Build ${{ matrix.tag }}
-    needs:
-      - check
 
     env:
       # A step's if can't read secrets directly
@@ -218,7 +202,12 @@ jobs:
             turbo-${{ matrix.tag }}-
 
       # this job doesn't install the workspace, so it fetches the turbo version
-      # the root package.json pins
+      # the root package.json pins. Lint and test run first, in a step of their
+      # own: each starts with gradle clean, which would delete the APK if it
+      # ran after the build.
+      - name: Lint and test via turbo
+        run: pnpm dlx "turbo@$(node -p 'require("./package.json").devDependencies.turbo')" run lint test --filter=${{ matrix.tag }}
+
       - name: Build via turbo
         run: pnpm dlx "turbo@$(node -p 'require("./package.json").devDependencies.turbo')" build --filter=${{ matrix.tag }}
         env:
@@ -254,6 +243,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     name: Build web (${{ matrix.platform }})
     needs:
+      - check
       - build-android
 
     permissions:
