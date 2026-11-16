@@ -15,6 +15,7 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import { dataCollection } from "./sentry.data-collection.ts";
 import { dsn } from "./sentry.dsn.ts";
 import { readSentryContext } from "./server/src/sentry/error-context.ts";
+import { describeProcessState } from "./server/src/sentry/process-state.ts";
 
 Sentry.init({
   dsn,
@@ -38,6 +39,14 @@ Sentry.init({
     }
     if (contexts && Object.keys(contexts).length) {
       event.contexts = { ...event.contexts, ...contexts };
+    }
+    // An uncaught exception, which Sentry reports as fatal, often has no
+    // stack to say where it came from, so record what the process held
+    if (event.level === "fatal") {
+      event.contexts = {
+        ...event.contexts,
+        process_state: describeProcessState(hint.originalException),
+      };
     }
     return event;
   },
