@@ -231,6 +231,22 @@ jobs:
           name: ${{ matrix.tag }}
           path: ${{ matrix.context }}/app/build/outputs/apk/debug/app-debug.apk
 
+      # Sentry's Android SDK names its release <package>@<versionName>+<versionCode>.
+      # sentry-release-pheidippides records it.
+      - name: Name the Sentry release
+        run: |
+          jq -r '"\(.applicationId)@\(.elements[0].versionName)+\(.elements[0].versionCode)"' \
+            "$CONTEXT/app/build/outputs/apk/debug/output-metadata.json" > "$RUNNER_TEMP/sentry-release"
+          cat "$RUNNER_TEMP/sentry-release"
+        env:
+          CONTEXT: ${{ matrix.context }}
+
+      - name: Upload the Sentry release name
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentry-release-${{ matrix.tag }}
+          path: ${{ runner.temp }}/sentry-release
+
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than
     # under QEMU emulation. Each pushes its image by digest alone; merge-docker
@@ -545,6 +561,89 @@ jobs:
           # Links a default number of commits, rather than failing, when the
           # previous release has no commit in this history (none of the
           # releases before this job had commits linked)
+          ignore_missing: true
+          # Empty skips the deploy
+          environment: ${{ needs.deploy.outputs.started == 'true' && 'production' || '' }}
+
+  # Records each master build's Pheidippides versions in their own Sentry
+  # projects. A version reaches devices in the web image: new devices install
+  # it, and devices that take updates (devices.uses_stable_apks) install it the
+  # next time they start. So each new version gets a release, with its commits,
+  # and a production deploy if the deploy job started the update. A version
+  # Sentry already has is one an earlier build shipped, since versionCode only
+  # moves when the app changes, so it's skipped.
+  sentry-release-pheidippides:
+    runs-on: "ubuntu-latest"
+    name: Record ${{ matrix.tag }} in Sentry
+    if: ${{ !cancelled() && needs.merge-docker.result == 'success' && github.ref == 'refs/heads/master' }}
+    needs:
+      - merge-docker
+      - deploy
+
+    strategy:
+      matrix:
+        # package.json names, which are also the Sentry project slugs
+        tag:
+          - "pheidippides-notify"
+          - "pheidippides-locate"
+          - "pheidippides-administrate"
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download the release name
+        uses: actions/download-artifact@v4
+        with:
+          name: sentry-release-${{ matrix.tag }}
+          path: ${{ runner.temp }}/sentry-release
+
+      - name: Check whether Sentry has it
+        id: release
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          release="$(cat "$RUNNER_TEMP/sentry-release/sentry-release")"
+          echo "name=$release" >> "$GITHUB_OUTPUT"
+          status="$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+            "https://sentry.io/api/0/organizations/regulad/releases/$(jq -rn --arg v "$release" '$v | @uri')/")"
+          case "$status" in
+            404)
+              echo "new=true" >> "$GITHUB_OUTPUT"
+              echo "$release is new."
+              ;;
+            200)
+              echo "new=false" >> "$GITHUB_OUTPUT"
+              echo "$release is already in Sentry, so an earlier build shipped it."
+              ;;
+            *)
+              echo "::error::Sentry answered $status when asked for $release."
+              exit 1
+              ;;
+          esac
+
+      # The whole history, so set_commits can find the commits since the
+      # previous release
+      - name: Checkout repository
+        if: steps.release.outputs.new == 'true'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record the release
+        if: steps.release.outputs.new == 'true'
+        uses: getsentry/action-release@e6703d0b00208e0b3687ba660d18ab5af7892821 # v3.7.2
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: regulad
+          SENTRY_PROJECT: ${{ matrix.tag }}
+        with:
+          release: ${{ steps.release.outputs.name }}
+          set_commits: auto
+          # Links a default number of commits, rather than failing, when the
+          # previous release has no commit in this history
           ignore_missing: true
           # Empty skips the deploy
           environment: ${{ needs.deploy.outputs.started == 'true' && 'production' || '' }}
