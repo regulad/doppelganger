@@ -37,6 +37,15 @@ async function getInstalledVersionOfPackageOnClient(
   return BigInt(androidVersionRet.split("=")[1].split(" ")[0]);
 }
 
+/** What a shell command printed, trimmed */
+async function shellOutput(
+  adbClient: RobustClient,
+  command: string,
+): Promise<string> {
+  const output = await adbClient.shell(command).then(readFullStreamIntoBuffer);
+  return output.toString().trim();
+}
+
 /**
  * Performs special setup and starting for certain packages, mainly internal modules.
  * @param adbClient
@@ -66,12 +75,25 @@ async function doSpecialSetupAndStarting(
     await adbClient
       .shell("settings put secure mock_location 1")
       .then(readFullStreamIntoBuffer);
-    await adbClient
-      .shell(`appops set ${packageName} android:mock_location allow`)
-      .then(readFullStreamIntoBuffer);
+    const granted = await shellOutput(
+      adbClient,
+      `appops set ${packageName} android:mock_location allow`,
+    );
     await adbClient
       .shell(`settings put secure mock_location_app ${packageName}`)
       .then(readFullStreamIntoBuffer);
+    // appops set prints nothing when it works, and a command cut off before
+    // it ran returns nothing either, so the grant is read back
+    const mode = await shellOutput(
+      adbClient,
+      `appops get ${packageName} android:mock_location`,
+    );
+    if (!/MOCK_LOCATION: allow\b/.test(mode)) {
+      throw new Error(
+        `Locate isn't allowed to mock locations: appops get says "${mode}"` +
+          (granted ? `, and appops set said "${granted}"` : ""),
+      );
+    }
   } else if (packageName === "xyz.regulad.pheidippides.administrate") {
     await adbClient
       .shell(
