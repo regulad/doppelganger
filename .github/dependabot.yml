@@ -9,10 +9,11 @@
 # - the kotlin group: Compose's compiler (kotlinCompilerExtensionVersion) accepts only the one Kotlin version it was
 #   built for, so Kotlin moves together with it, by hand;
 # - the actions group, since workflow changes get a review;
-# - major updates, which come as PRs of their own;
+# - major updates, which come as PRs of their own, a Gradle one covering all three apps;
 # - security updates, which skip the cooldown.
 #
-# A dependency joins the first group it matches, so nextjs and kotlin come before npm and gradle.
+# A dependency matching more than one group joins the most specific. A group without patterns, such as npm or gradle,
+# outranks any wildcard pattern, so the groups held back for a person name their dependencies exactly.
 #
 # The cooldown holds each release back until it is two weeks old, so nothing ships while it's days old.
 version: 2
@@ -32,13 +33,14 @@ updates:
       nextjs:
         patterns:
           - "next"
-          - "@next/*"
+          - "@next/mdx"
+          - "@next/third-parties"
           - "eslint-config-next"
         update-types: ["minor", "patch"]
       npm:
         update-types: ["minor", "patch"]
 
-  # The three Pheidippides apps, in one PR across them.
+  # The three Pheidippides apps, each group in one PR across them.
   - package-ecosystem: "gradle"
     directories:
       - "/pheidippides/PheidippidesNotify"
@@ -54,10 +56,14 @@ updates:
     groups:
       kotlin:
         patterns:
-          - "org.jetbrains.kotlin*"
+          - "org.jetbrains.kotlin.android"
         update-types: ["minor", "patch"]
       gradle:
         update-types: ["minor", "patch"]
+      # A PR for each dependency's major update, rather than one for each app
+      gradle-major:
+        group-by: dependency-name
+        update-types: ["major"]
 
   # apps/web/Dockerfile's base image. Its apk pins follow the Alpine release in its tag.
   - package-ecosystem: "docker"
@@ -69,6 +75,10 @@ updates:
       timezone: "America/New_York"
     cooldown:
       default-days: 14
+    ignore:
+      # The image's Node is apps/web's (engines: ^22). Native addons such as cpu-features don't build on newer majors.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
     groups:
       docker:
         update-types: ["minor", "patch"]
