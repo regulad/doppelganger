@@ -73,7 +73,7 @@
     "dotenv": "^18.0.9",
     "dotenv-expand": "^11.0.6",
     "find-up": "^8.0.0",
-    "framer-motion": "^11.3.17",
+    "framer-motion": "^14.9.0",
     "globby": "^16.2.4",
     "h264-converter": "^0.1.4",
     "image-size": "2.0.4",
