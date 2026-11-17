@@ -39,6 +39,10 @@ updates:
       # would type APIs it lacks. Raise this with the runtime.
       - dependency-name: "@types/node"
         versions: [">= 23"]
+      # dotenv-expand 1000 runs command substitution while it expands: a $(...) in an env value becomes a shell command
+      # run at startup. The server's env files use no expansion at all, so that's risk without use; 13.x stays open.
+      - dependency-name: "dotenv-expand"
+        versions: [">= 1000"]
     groups:
       nextjs:
         patterns:
