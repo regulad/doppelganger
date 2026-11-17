@@ -18,8 +18,11 @@ import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.WorkerThread;
 import androidx.core.app.NotificationCompat;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +49,11 @@ public class NotificationRelayService extends NotificationListenerService {
     private final @NotNull String ENDPOINT_URL = DoppelgangerUtil.DOPPELGANGER_ORIGIN + String.format("/api/devices/%s/notification", DoppelgangerUtil.DOPPELGANGER_DEVICE_ID);
 
     private OkHttpClient client;
+
+    // Android delivers notifications on the main thread, and relaying one loads
+    // and encodes its icons, which Icon.loadDrawable expects off it. One thread
+    // keeps the notifications in the order they were posted.
+    private final ExecutorService relayExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     public void onCreate() {
@@ -84,10 +92,23 @@ public class NotificationRelayService extends NotificationListenerService {
     }
 
     @Override
+    public void onDestroy() {
+        relayExecutor.shutdown();
+        super.onDestroy();
+    }
+
+    @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         // This method is called whenever a notification is posted
         Log.d(TAG, "Notification received");
+        relayExecutor.execute(() -> relayNotification(sbn));
+    }
 
+    /**
+     * Sends a posted notification to Doppelganger's server.
+     */
+    @WorkerThread
+    private void relayNotification(final @NotNull StatusBarNotification sbn) {
         // Build a JsonableNotification object
         final @NotNull NotificationRelayService.JsonableNotification jsonableNotification = buildJsonableNotification(sbn);
 

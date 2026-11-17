@@ -22,7 +22,7 @@ val commitCount = git("rev-list", "--count", "HEAD", "--", ".").toInt()
 
 android {
     namespace = "xyz.regulad.pheidippides.locate"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "xyz.regulad.pheidippides.locate"
