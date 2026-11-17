@@ -29,6 +29,20 @@ const ONE_SIGNAL_PARAMS = {
 
 const OneSignalContext = createContext<boolean>(false);
 
+/**
+ * Whether a OneSignal call failed because the browser didn't load OneSignal's
+ * SDK from cdn.onesignal.com, usually because an ad blocker stopped it. Push
+ * notifications are then off for this visitor, which is theirs to choose, not
+ * an error. react-onesignal 3.0 ignored this silently; 3.5 rejects init and
+ * every later call with it.
+ */
+export function isOneSignalScriptBlocked(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message === "OneSignal script failed to load."
+  );
+}
+
 async function updateOneSignalUsingSupabase(user: User): Promise<void> {
   // although I have the code implemented to pass an HMAC on the server side, it can't be listened to on OneSignal's side because it is not yet working
   // therefore, the following notice still applies:
@@ -77,15 +91,8 @@ export default function OneSignalProvider({
         ) {
           console.warn(error);
           return;
-        } else if (
-          error instanceof Error &&
-          error.message === "OneSignal script failed to load."
-        ) {
-          // The browser didn't load OneSignal's SDK from cdn.onesignal.com,
-          // usually because an ad blocker stops it. Push notifications are then
-          // off for this visitor, which is theirs to choose, not an error.
-          // react-onesignal 3.0 ignored this silently; 3.5 rejects init and
-          // every later call, so OneSignal is left alone from here on.
+        } else if (isOneSignalScriptBlocked(error)) {
+          // OneSignal is left alone from here on
           console.warn(error);
           return false;
         }
