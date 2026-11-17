@@ -134,6 +134,29 @@ describe("ReconnectingAdbDeviceClient", () => {
     expect(installRemote).toHaveBeenCalledTimes(2);
   });
 
+  it("waits out adbd restarting when asked for root", async () => {
+    // adbd answers a root request that arrives mid-restart with nothing
+    const bootingClient = new RobustClient(mockClient, serial, 10_000);
+    jest.spyOn(bootingClient, "getIsConnected").mockResolvedValue(true);
+    const root = jest
+      .spyOn(DeviceClient.prototype, "root")
+      .mockRejectedValueOnce(new Error(""))
+      .mockResolvedValue(true);
+
+    await expect(bootingClient.root()).resolves.toBe(true);
+    expect(root).toHaveBeenCalledTimes(2);
+  });
+
+  it("takes adbd already running as root as done", async () => {
+    jest.spyOn(reconnectingClient, "getIsConnected").mockResolvedValue(true);
+    const root = jest
+      .spyOn(DeviceClient.prototype, "root")
+      .mockRejectedValue(new Error("adbd is already running as root"));
+
+    await expect(reconnectingClient.root()).resolves.toBe(true);
+    expect(root).toHaveBeenCalledTimes(1);
+  });
+
   it("gives any other failure three attempts", async () => {
     jest.spyOn(reconnectingClient, "getIsConnected").mockResolvedValue(true);
     const failure = Object.assign(

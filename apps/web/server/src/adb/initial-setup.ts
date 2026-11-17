@@ -45,12 +45,6 @@ async function doSpecialSetupAndStarting(
   adbClient: RobustClient,
   packageName: string,
 ): Promise<void> {
-  try {
-    await adbClient.root();
-  } catch (e: any) {
-    // ignore; just try or we are already root
-  }
-
   if (packageName === "xyz.regulad.pheidippides.notify") {
     await adbClient
       .shell(
@@ -392,6 +386,16 @@ async function setUpDevice(device: Device): Promise<void> {
   const adbClient = adbDevice.adbDeviceClient;
 
   await upsertSystemProperties(device);
+
+  // Some of the steps below need root. It's asked for once, before they run
+  // side by side: each request restarts adbd, so requests from each of them
+  // would keep cutting the others off.
+  try {
+    await adbClient.root();
+  } catch (e: unknown) {
+    // not every image allows it; the steps try without
+    console.warn("Couldn't restart adbd as root", e);
+  }
 
   // glob the apks in absoluteApksDir
   const apks = await getAllApks();

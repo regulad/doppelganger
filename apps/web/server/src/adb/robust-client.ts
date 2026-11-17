@@ -35,6 +35,8 @@ type PullTransfer = Resolved<"pull">;
 
 export const DEFAULT_ADB_TIMEOUT = 5 * 60 * 1_000; // so much time 🔥
 
+const ADBD_RESTARTING = "adbd closed the connection without a reply";
+
 type DeviceState = Device["type"];
 
 /**
@@ -51,7 +53,7 @@ export function isTransientAdbError(error: unknown): boolean {
   if (error.name === "PrematureEOFError") {
     return true;
   }
-  return /Device is not connected|Connection refused|ECONNREFUSED|ECONNRESET|EPIPE|failed to connect|Failure: '(closed|device offline|device still (connecting|authorizing))'|device '[^']*' not found/i.test(
+  return /Device is not connected|adbd closed the connection without a reply|Connection refused|ECONNREFUSED|ECONNRESET|EPIPE|failed to connect|Failure: '(closed|device offline|device still (connecting|authorizing))'|device '[^']*' not found/i.test(
     error.message,
   );
 }
@@ -280,8 +282,24 @@ export default class RobustClient extends DeviceClient {
     return this.withConnection("remount", () => this.direct.remount());
   }
 
+  /**
+   * Restarts adbd as root, resolving true once it's root, whether this
+   * restarted it or it already was. adbd answers a root request that arrives
+   * while it's restarting, as for another root request a moment before, with
+   * nothing at all, which adbkit throws as an Error without a message; that's
+   * waited out like any other device that can't be reached yet.
+   */
   root(): Promise<boolean> {
-    return this.withConnection("root", () => this.direct.root());
+    return this.withConnection("root", async () => {
+      try {
+        return await this.direct.root();
+      } catch (error: unknown) {
+        if (!(error instanceof Error)) throw error;
+        if (error.message.includes("already running as root")) return true;
+        if (error.message === "") throw new Error(ADBD_RESTARTING);
+        throw error;
+      }
+    });
   }
 
   trackJdwp(): Promise<JdwpTracker> {
