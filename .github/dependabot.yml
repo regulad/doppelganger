@@ -12,8 +12,9 @@
 # - major updates, which come as PRs of their own, a Gradle one covering all three apps;
 # - security updates, which skip the cooldown.
 #
-# A dependency matching more than one group joins the most specific. A group without patterns, such as npm or gradle,
-# outranks any wildcard pattern, so the groups held back for a person name their dependencies exactly.
+# The groups held back for a person name their dependencies exactly, and the npm and gradle groups exclude them by
+# the same names. Dependabot ranks a group without patterns above any wildcard pattern, and a job refreshing one group
+# takes every dependency that group contains, whatever other group it also belongs to.
 #
 # The cooldown holds each release back until it is two weeks old, so nothing ships while it's days old.
 version: 2
@@ -39,6 +40,11 @@ updates:
         update-types: ["minor", "patch"]
       npm:
         update-types: ["minor", "patch"]
+        exclude-patterns:
+          - "next"
+          - "@next/mdx"
+          - "@next/third-parties"
+          - "eslint-config-next"
 
   # The three Pheidippides apps, each group in one PR across them.
   - package-ecosystem: "gradle"
@@ -53,6 +59,11 @@ updates:
       timezone: "America/New_York"
     cooldown:
       default-days: 14
+    ignore:
+      # The apps compile against API 34 with Android Gradle plugin 8.2. androidx.core 1.15 needs API 35, and later
+      # releases need newer still, along with a newer plugin; a person raises those first, then lifts this.
+      - dependency-name: "androidx.core:core-ktx"
+        versions: [">= 1.15.0"]
     groups:
       kotlin:
         patterns:
@@ -60,6 +71,8 @@ updates:
         update-types: ["minor", "patch"]
       gradle:
         update-types: ["minor", "patch"]
+        exclude-patterns:
+          - "org.jetbrains.kotlin.android"
       # A PR for each dependency's major update, rather than one for each app
       gradle-major:
         group-by: dependency-name
