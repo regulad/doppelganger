@@ -1,5 +1,5 @@
 # Use an official Node runtime as a parent image
-FROM node:22-alpine3.22
+FROM node:26-alpine3.22
 
 # The image is built from the repository's root (the root .dockerignore keeps
 # the context to the web app and the workspace's manifests), so it can install
