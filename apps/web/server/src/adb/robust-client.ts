@@ -38,6 +38,25 @@ export const DEFAULT_ADB_TIMEOUT = 5 * 60 * 1_000; // so much time 🔥
 type DeviceState = Device["type"];
 
 /**
+ * Whether an ADB failure means the device can't be reached yet, as while its
+ * Android boots, rather than that the operation itself failed: adbd refusing
+ * or dropping the connection, adb's server reporting the device offline or
+ * missing, or a reply cut short (adbkit's PrematureEOFError, which is also what
+ * an install gets while Android's package manager isn't up yet).
+ */
+export function isTransientAdbError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  if (error.name === "PrematureEOFError") {
+    return true;
+  }
+  return /Device is not connected|Connection refused|ECONNREFUSED|ECONNRESET|EPIPE|failed to connect|Failure: '(closed|device offline|device still (connecting|authorizing))'|device '[^']*' not found/i.test(
+    error.message,
+  );
+}
+
+/**
  * Extention of the ADB client that proves a connection before running commands.
  * Useful for the edge and resource-constricted envuronments.
  */
@@ -57,10 +76,39 @@ export default class RobustClient extends DeviceClient {
   }
 
   /**
-   * Connects, then runs an operation, retrying both until they succeed or the
-   * timeout passes. A final failure carries Sentry context: the device, the
-   * operation, how many attempts it took and for how long, and what Docker
-   * says about the device's containers at that moment.
+   * Runs an attempt until it succeeds. A failure that means the device isn't
+   * reachable yet (isTransientAdbError), as while Android boots, is retried
+   * until this client's timeout has passed, backing off to 5 seconds between
+   * attempts; any other failure gets three attempts in all. @lifeomic/attempt's
+   * `timeout` bounds each attempt, not the whole retry, and its attempts
+   * default to three about 200 ms apart, so a device still booting used to
+   * fail in about two seconds, whatever the timeout said.
+   */
+  private retryUntilReachable<T>(attempt: () => Promise<T>): Promise<T> {
+    const deadline = Date.now() + this.timeout;
+    return retry(attempt, {
+      maxAttempts: 0, // until handleError stops it
+      delay: 250,
+      factor: 1.5,
+      maxDelay: 5_000,
+      timeout: this.timeout, // and no single attempt outlasts the whole wait
+      handleError: (error, context) => {
+        if (
+          isTransientAdbError(error)
+            ? Date.now() >= deadline
+            : context.attemptNum >= 2
+        ) {
+          context.abort();
+        }
+      },
+    });
+  }
+
+  /**
+   * Connects, then runs an operation, retrying both as retryUntilReachable
+   * does. A final failure carries Sentry context: the device, the operation,
+   * how many attempts it took and for how long, and what Docker says about the
+   * device's containers at that moment.
    */
   private async withConnection<T>(
     operation: string,
@@ -69,16 +117,11 @@ export default class RobustClient extends DeviceClient {
     const startedAt = Date.now();
     let attempts = 0;
     try {
-      return await retry(
-        async () => {
-          attempts++;
-          await this.connectRobust();
-          return run();
-        },
-        {
-          timeout: this.timeout,
-        },
-      );
+      return await this.retryUntilReachable(async () => {
+        attempts++;
+        await this.connectOnce();
+        return run();
+      });
     } catch (error: unknown) {
       const containers = this.deviceId
         ? await getDeviceContainerStates(this.deviceId)
@@ -107,27 +150,26 @@ export default class RobustClient extends DeviceClient {
     await this.client.connect(host, parseInt(port, 10));
   }
 
-  async connectRobust(): Promise<void> {
-    // keep trying to run connect until either the timeout is reached or the device is connected
-    const startTime = Date.now();
-    let connected = await this.getIsConnected();
-    if (connected) return;
+  /**
+   * Connects once, unless already connected, and on a new connection waits for
+   * Android to finish booting. Throws "Device is not connected", which
+   * retryUntilReachable waits out, while adbd isn't up yet.
+   */
+  private async connectOnce(): Promise<void> {
+    if (await this.getIsConnected()) return;
 
-    await retry(
-      async () => {
-        await this.doConnect();
-        connected = await this.getIsConnected();
-        if (!connected) {
-          throw new Error(`Device is not connected`);
-        }
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    await this.doConnect();
+    if (!(await this.getIsConnected())) {
+      throw new Error(`Device is not connected`);
+    }
 
     await this.waitForDevice();
     await this.waitBootComplete();
+  }
+
+  /** Connects, waiting out a device that isn't reachable yet. */
+  async connectRobust(): Promise<void> {
+    await this.retryUntilReachable(() => this.connectOnce());
   }
 
   async getIsConnected(): Promise<boolean> {
@@ -143,21 +185,16 @@ export default class RobustClient extends DeviceClient {
    * Get the state (moreso type) of the device after it has been connected
    */
   getStateRuntime(): Promise<"device" | "emulator"> {
-    return retry(
-      async () => {
-        await this.connectRobust();
-        const maybeState = await this.getState();
-        if (maybeState === "device" || maybeState === "emulator") {
-          return maybeState;
-        }
-        throw new Error(
-          `Device is not in a connected state, expected device or emulator but got ${maybeState}`,
-        );
-      },
-      {
-        timeout: this.timeout,
-      },
-    );
+    return this.retryUntilReachable(async () => {
+      await this.connectOnce();
+      const maybeState = await this.getState();
+      if (maybeState === "device" || maybeState === "emulator") {
+        return maybeState;
+      }
+      throw new Error(
+        `Device is not in a connected state, expected device or emulator but got ${maybeState}`,
+      );
+    });
   }
 
   /* overridden methods */

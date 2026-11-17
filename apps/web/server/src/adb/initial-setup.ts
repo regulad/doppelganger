@@ -6,6 +6,7 @@ import ApkReader, { ManifestObject } from "adbkit-apkreader";
 import { installOrReplace } from "%/adb/install-or-replace.ts";
 import RobustClient from "%/adb/robust-client.ts";
 import { BASE_ORIGIN } from "%/constants.ts";
+import { withSentryContext } from "%/sentry/error-context.ts";
 import { resolveOrDefaultValue } from "%/utils/promise-utils.ts";
 import AsyncLock from "async-lock";
 import { findUpSync } from "find-up";
@@ -397,7 +398,10 @@ export default async function doInitialDeviceSetup(
           device.usesStableApks,
         ).catch((e) => {
           console.error("Failed to install apk", apkPath, e);
-          Sentry.captureException(e);
+          // say which APK, as the ADB failure alone doesn't
+          Sentry.captureException(
+            withSentryContext(e, { tags: { apk: path.basename(apkPath) } }),
+          );
         }), // don't propagate error
     ),
   );

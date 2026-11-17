@@ -36,7 +36,9 @@ export async function GET(
     if (!deviceIsUp) {
       throw new Error("Device is down"); // skip to our backup plan
     }
-    const adbDevice = new AdbDevice(device);
+    // A device still booting is waited for, by the full timeout otherwise; the
+    // page shows the placeholder sooner and loads the screenshot once it's on
+    const adbDevice = new AdbDevice(device, 10_000);
     const screencapConnection = await adbDevice.adbDeviceClient.screencap();
     const screencapStream = screencapConnection as unknown as ReadableStream;
     // stream the bytes straight from device to response
