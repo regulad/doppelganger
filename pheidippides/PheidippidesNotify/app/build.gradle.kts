@@ -115,7 +115,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.15.0")
     implementation("com.squareup.okhttp3:okhttp:5.5.1")
 
-    implementation("androidx.core:core-ktx:1.10.1")
+    implementation("androidx.core:core-ktx:1.19.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.17")
