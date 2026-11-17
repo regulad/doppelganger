@@ -46,6 +46,21 @@ async function shellOutput(
   return output.toString().trim();
 }
 
+/** Whether a package is part of the device's system image */
+async function getIsSystemPackage(
+  adbClient: RobustClient,
+  packageName: string,
+): Promise<boolean> {
+  const output = await shellOutput(
+    adbClient,
+    `pm list packages -s ${packageName}`,
+  );
+  // pm matches the name as a substring, so each line is checked whole
+  return output
+    .split(/\r?\n/)
+    .some((line) => line.trim() === `package:${packageName}`);
+}
+
 /**
  * Performs special setup and starting for certain packages, mainly internal modules.
  * @param adbClient
@@ -325,7 +340,7 @@ async function installOrUpdateApkAndGrantAllPermissions(
     // keeping its data, permissions and, for Administrate, device ownership,
     // whenever both are signed with the same key. Every Pheidippides build is,
     // and so is each Chromium snapshot. A third-party copy signed with another
-    // key, such as an image's own WebView, is uninstalled and replaced.
+    // key is uninstalled and replaced, unless it's part of the device's image.
 
     // interesting node: without a stream, this will copy the app-debug.apk file to the device and then install it
     // now, there are multiple app-debug.apk files at the same time that will attempt to install at the same time
@@ -334,19 +349,28 @@ async function installOrUpdateApkAndGrantAllPermissions(
 
     // Other processes don't install on this device meanwhile: a device runs one
     // setup at a time (runDeviceSetupExclusively)
-    await thisProcessInstallLock.acquire(
+    const installed = await thisProcessInstallLock.acquire(
       `${adbFileName}-${adbClient.serial}`,
       async () => {
         if (isOurPackage) {
           await adbClient.install(apkPath);
-        } else {
-          await installOrReplace(
-            () => adbClient.install(apkPath),
-            () => uninstallPackageCompletely(adbClient, packageName),
-          );
+          return true;
         }
+        return installOrReplace(
+          () => adbClient.install(apkPath),
+          () => uninstallPackageCompletely(adbClient, packageName),
+          () => getIsSystemPackage(adbClient, packageName),
+        );
       },
     );
+    if (!installed) {
+      // Such as a redroid image's own WebView, which Chromium's can't replace;
+      // the device keeps working on the image's
+      console.info(
+        `Keeping the image's own ${packageName}, which ${adbFileName} can't replace: they're signed with different keys`,
+      );
+      return;
+    }
 
     await grantAllPermissionsOfPackage(adbClient, manifest);
   }

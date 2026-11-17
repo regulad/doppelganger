@@ -19,18 +19,31 @@ export function isSignatureMismatch(error: unknown): boolean {
  * Chromium snapshot is, for one. Only when Android refuses because the keys
  * differ does it replace the copy: `uninstall` removes it, losing its data, and
  * the APK is installed again.
+ *
+ * A copy built into the device's image can't be replaced that way:
+ * uninstalling a system app only removes its updates, and the image's own copy
+ * stays, still signed with its own key. That copy is kept, and the APK isn't
+ * installed.
+ *
+ * @returns false when the image's own copy was kept, otherwise true
  */
 export async function installOrReplace(
   install: () => Promise<unknown>,
   uninstall: () => Promise<unknown>,
-): Promise<void> {
+  isBuiltIntoImage: () => Promise<boolean>,
+): Promise<boolean> {
   try {
     await install();
+    return true;
   } catch (error) {
     if (!isSignatureMismatch(error)) {
       throw error;
     }
+    if (await isBuiltIntoImage()) {
+      return false;
+    }
     await uninstall();
     await install();
+    return true;
   }
 }
