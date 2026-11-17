@@ -4,6 +4,7 @@
 
 import { readSentryContext } from "%/sentry/error-context.ts";
 import { type Client, DeviceClient } from "@devicefarmer/adbkit";
+import { EventEmitter } from "node:events";
 import RobustClient, { isTransientAdbError } from "./robust-client.ts";
 
 const mockClient = {
@@ -101,6 +102,36 @@ describe("ReconnectingAdbDeviceClient", () => {
 
     await expect(bootingClient.install("app.apk")).resolves.toBe(true);
     expect(install).toHaveBeenCalledTimes(5);
+  });
+
+  it("pushes the APK again when its install is cut short", async () => {
+    // As while Android's package manager settles after boot. adbkit deletes
+    // the pushed APK whether its install worked or not, so a retry has to
+    // push it again rather than retry the install alone.
+    const bootingClient = new RobustClient(mockClient, serial, 10_000);
+    jest.spyOn(bootingClient, "getIsConnected").mockResolvedValue(true);
+    const push = jest
+      .spyOn(DeviceClient.prototype, "push")
+      .mockImplementation(async () => {
+        const transfer = new EventEmitter();
+        setImmediate(() => transfer.emit("end"));
+        return transfer as never;
+      });
+    const installRemote = jest
+      .spyOn(DeviceClient.prototype, "installRemote")
+      .mockRejectedValueOnce(
+        adbkitError(
+          "PrematureEOFError",
+          "Premature end of stream, needed 4 more bytes",
+        ),
+      )
+      .mockResolvedValue(true);
+
+    await expect(bootingClient.install("SystemWebView.apk")).resolves.toBe(
+      true,
+    );
+    expect(push).toHaveBeenCalledTimes(2);
+    expect(installRemote).toHaveBeenCalledTimes(2);
   });
 
   it("gives any other failure three attempts", async () => {

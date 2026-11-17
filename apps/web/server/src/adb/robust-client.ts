@@ -63,6 +63,16 @@ export function isTransientAdbError(error: unknown): boolean {
 export default class RobustClient extends DeviceClient {
   readonly timeout: number;
 
+  /**
+   * The same device, without this class's retries. Each operation runs on it,
+   * so a retry repeats the whole operation. adbkit's operations call the
+   * client's other methods as they go: install pushes the APK, then calls
+   * installRemote, which installs it and always deletes it. Run on this
+   * client, installRemote would retry on its own after the APK was deleted,
+   * and fail with "Can't open file".
+   */
+  private readonly direct: AdbDeviceClient;
+
   constructor(
     client: Client,
     serial: string,
@@ -73,6 +83,7 @@ export default class RobustClient extends DeviceClient {
   ) {
     super(client, serial);
     this.timeout = timeout;
+    this.direct = new DeviceClient(client, serial);
   }
 
   /**
@@ -202,136 +213,156 @@ export default class RobustClient extends DeviceClient {
   // we can't define getState because it would cause a recursive call
 
   install(apk: string | Readable): Promise<boolean> {
-    return this.withConnection("install", () => super.install(apk));
+    return this.withConnection("install", () => this.direct.install(apk));
   }
 
   uninstall(packageName: string): Promise<boolean> {
-    return this.withConnection("uninstall", () => super.uninstall(packageName));
+    return this.withConnection("uninstall", () =>
+      this.direct.uninstall(packageName),
+    );
   }
 
   shell(command: string | ArrayLike<WithToString>): Promise<Duplex> {
-    return this.withConnection("shell", () => super.shell(command));
+    return this.withConnection("shell", () => this.direct.shell(command));
   }
 
   isInstalled(packageName: string): Promise<boolean> {
     return this.withConnection("isInstalled", () =>
-      super.isInstalled(packageName),
+      this.direct.isInstalled(packageName),
     );
   }
 
   getProperties(): Promise<Record<string, string>> {
-    return this.withConnection("getProperties", () => super.getProperties());
+    return this.withConnection("getProperties", () =>
+      this.direct.getProperties(),
+    );
   }
 
   getFeatures(): Promise<Features> {
-    return this.withConnection("getFeatures", () => super.getFeatures());
+    return this.withConnection("getFeatures", () => this.direct.getFeatures());
   }
 
   getDHCPIpAddress(iface?: string): Promise<string> {
     return this.withConnection("getDHCPIpAddress", () =>
-      super.getDHCPIpAddress(iface),
+      this.direct.getDHCPIpAddress(iface),
     );
   }
 
   forward(local: string, remote: string): Promise<boolean> {
-    return this.withConnection("forward", () => super.forward(local, remote));
+    return this.withConnection("forward", () =>
+      this.direct.forward(local, remote),
+    );
   }
 
   listForwards(): Promise<Forward[]> {
-    return this.withConnection("listForwards", () => super.listForwards());
+    return this.withConnection("listForwards", () =>
+      this.direct.listForwards(),
+    );
   }
 
   reverse(remote: string, local: string): Promise<boolean> {
-    return this.withConnection("reverse", () => super.reverse(remote, local));
+    return this.withConnection("reverse", () =>
+      this.direct.reverse(remote, local),
+    );
   }
 
   listReverses(): Promise<Reverse[]> {
-    return this.withConnection("listReverses", () => super.listReverses());
+    return this.withConnection("listReverses", () =>
+      this.direct.listReverses(),
+    );
   }
 
   reboot(): Promise<boolean> {
-    return this.withConnection("reboot", () => super.reboot());
+    return this.withConnection("reboot", () => this.direct.reboot());
   }
 
   remount(): Promise<boolean> {
-    return this.withConnection("remount", () => super.remount());
+    return this.withConnection("remount", () => this.direct.remount());
   }
 
   root(): Promise<boolean> {
-    return this.withConnection("root", () => super.root());
+    return this.withConnection("root", () => this.direct.root());
   }
 
   trackJdwp(): Promise<JdwpTracker> {
-    return this.withConnection("trackJdwp", () => super.trackJdwp());
+    return this.withConnection("trackJdwp", () => this.direct.trackJdwp());
   }
 
   framebuffer(format?: string): Promise<FramebufferStreamWithMeta> {
-    return this.withConnection("framebuffer", () => super.framebuffer(format));
+    return this.withConnection("framebuffer", () =>
+      this.direct.framebuffer(format),
+    );
   }
 
   screencap(): Promise<Duplex> {
-    return this.withConnection("screencap", () => super.screencap());
+    return this.withConnection("screencap", () => this.direct.screencap());
   }
 
   openLocal(path: string): Promise<Duplex> {
-    return this.withConnection("openLocal", () => super.openLocal(path));
+    return this.withConnection("openLocal", () => this.direct.openLocal(path));
   }
 
   openLog(name: string): Promise<Duplex> {
-    return this.withConnection("openLog", () => super.openLog(name));
+    return this.withConnection("openLog", () => this.direct.openLog(name));
   }
 
   openTcp(port: number): Promise<Duplex> {
-    return this.withConnection("openTcp", () => super.openTcp(port));
+    return this.withConnection("openTcp", () => this.direct.openTcp(port));
   }
 
   openMonkey(port?: number): Promise<MonkeyClient> {
-    return this.withConnection("openMonkey", () => super.openMonkey(port));
+    return this.withConnection("openMonkey", () =>
+      this.direct.openMonkey(port),
+    );
   }
 
   openLogcat(options?: { clear?: boolean }): Promise<Logcat> {
-    return this.withConnection("openLogcat", () => super.openLogcat(options));
+    return this.withConnection("openLogcat", () =>
+      this.direct.openLogcat(options),
+    );
   }
 
   openProcStat(): Promise<ProcStat> {
-    return this.withConnection("openProcStat", () => super.openProcStat());
+    return this.withConnection("openProcStat", () =>
+      this.direct.openProcStat(),
+    );
   }
 
   clear(packageName: string): Promise<boolean> {
-    return this.withConnection("clear", () => super.clear(packageName));
+    return this.withConnection("clear", () => this.direct.clear(packageName));
   }
 
   installRemote(packagePath: string): Promise<boolean> {
     return this.withConnection("installRemote", () =>
-      super.installRemote(packagePath),
+      this.direct.installRemote(packagePath),
     );
   }
 
   startActivity(options: StartActivityOptions): Promise<boolean> {
     return this.withConnection("startActivity", () =>
-      super.startActivity(options),
+      this.direct.startActivity(options),
     );
   }
 
   startService(options: StartServiceOptions): Promise<boolean> {
     return this.withConnection("startService", () =>
-      super.startService(options),
+      this.direct.startService(options),
     );
   }
 
   syncService(): Promise<Sync> {
-    return this.withConnection("syncService", () => super.syncService());
+    return this.withConnection("syncService", () => this.direct.syncService());
   }
 
   stat(path: string): Promise<Stats> {
-    return this.withConnection("stat", () => super.stat(path));
+    return this.withConnection("stat", () => this.direct.stat(path));
   }
 
   readdir(path: string): Promise<Entry[]> {
-    return this.withConnection("readdir", () => super.readdir(path));
+    return this.withConnection("readdir", () => this.direct.readdir(path));
   }
 
   pull(path: string): Promise<PullTransfer> {
-    return this.withConnection("pull", () => super.pull(path));
+    return this.withConnection("pull", () => this.direct.pull(path));
   }
 }
