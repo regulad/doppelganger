@@ -10,6 +10,8 @@ export function loadEnvironment(): void {
     expand(
       config({
         path: envPath,
+        // dotenv 17 and later announce each load; the line above does already
+        quiet: true,
       }),
     );
   }
