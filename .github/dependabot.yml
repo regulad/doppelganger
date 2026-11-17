@@ -1,0 +1,87 @@
+# Dependabot keeps every pinned version current: the pnpm workspace's packages, the Pheidippides apps' Gradle
+# dependencies, the web image's base image, and GitHub Actions. Production's compose file lives in regulad/homelab,
+# which keeps its images current.
+#
+# Each ecosystem gets one PR a week grouping its minor and patch updates. workflows/dependabot-auto-merge.yml has GitHub
+# merge the npm, gradle and docker groups once CI passes, and a merge to master deploys. These wait for a person:
+# - the nextjs group: next.config.mjs's pinMdxToServerComponents works around a Next.js bug in the versions it was
+#   written against, so each Next.js update needs that checked;
+# - the kotlin group: Compose's compiler (kotlinCompilerExtensionVersion) accepts only the one Kotlin version it was
+#   built for, so Kotlin moves together with it, by hand;
+# - the actions group, since workflow changes get a review;
+# - major updates, which come as PRs of their own;
+# - security updates, which skip the cooldown.
+#
+# A dependency joins the first group it matches, so nextjs and kotlin come before npm and gradle.
+#
+# The cooldown holds each release back until it is two weeks old, so nothing ships while it's days old.
+version: 2
+
+updates:
+  # The pnpm workspace: the root's tools and apps/web, in the one lockfile, pnpm-lock.yaml.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "America/New_York"
+    cooldown:
+      default-days: 14
+    groups:
+      nextjs:
+        patterns:
+          - "next"
+          - "@next/*"
+          - "eslint-config-next"
+        update-types: ["minor", "patch"]
+      npm:
+        update-types: ["minor", "patch"]
+
+  # The three Pheidippides apps, in one PR across them.
+  - package-ecosystem: "gradle"
+    directories:
+      - "/pheidippides/PheidippidesNotify"
+      - "/pheidippides/PheidippidesLocate"
+      - "/pheidippides/PheidippidesAdministrate"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "America/New_York"
+    cooldown:
+      default-days: 14
+    groups:
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+        update-types: ["minor", "patch"]
+      gradle:
+        update-types: ["minor", "patch"]
+
+  # apps/web/Dockerfile's base image. Its apk pins follow the Alpine release in its tag.
+  - package-ecosystem: "docker"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "America/New_York"
+    cooldown:
+      default-days: 14
+    groups:
+      docker:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "America/New_York"
+    cooldown:
+      default-days: 14
+    groups:
+      actions:
+        update-types: ["minor", "patch"]
