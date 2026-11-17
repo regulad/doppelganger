@@ -23,7 +23,7 @@ export type DisplayCombinedInfo = {
 };
 
 interface StreamReceiverEvents {
-  video: ArrayBuffer;
+  video: Uint8Array;
   deviceMessage: DeviceMessage;
   displayInfo: DisplayCombinedInfo[];
   clientsStats: ClientsStats;
@@ -58,7 +58,11 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<
 
   private handleInitialInfo(data: ArrayBuffer): void {
     let offset = MAGIC_BYTES_INITIAL.length;
-    let nameBytes = new Uint8Array(data, offset, DEVICE_NAME_FIELD_LENGTH);
+    let nameBytes: Uint8Array = new Uint8Array(
+      data,
+      offset,
+      DEVICE_NAME_FIELD_LENGTH,
+    );
     offset += DEVICE_NAME_FIELD_LENGTH;
     let rest: Buffer = Buffer.from(new Uint8Array(data, offset));
     const displaysCount = rest.readInt32BE(0);
@@ -181,7 +185,7 @@ export class StreamReceiver<P extends ParamsStream> extends ManagerClient<
 
   public sendEvent(event: ControlMessage): void {
     if (this.ws && this.ws.readyState === this.ws.OPEN) {
-      this.ws.send(event.toBuffer());
+      this.ws.send(event.toBuffer() as Uint8Array<ArrayBuffer>);
     } else {
       this.events.push(event);
     }

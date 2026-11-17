@@ -14,7 +14,9 @@
     "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "baseUrl": ".",
+    // TypeScript 6 no longer loads every installed @types package; these are
+    // the ones that declare globals: Node's, Jest's, and *.mdx imports
+    "types": ["node", "jest", "mdx"],
     "plugins": [
       {
         "name": "next"

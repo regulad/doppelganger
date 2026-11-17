@@ -27,6 +27,7 @@ export class Message {
       buffer.writeUInt32LE(reasonBuffer.byteLength, 2);
       buffer.set(reasonBuffer, 6);
     }
+    // @ts-expect-error -- a Buffer, as Message's data has always been at times
     return new Message(MessageType.CloseChannel, id, buffer);
   }
 
@@ -69,7 +70,7 @@ export class Message {
     });
   }
 
-  public toBuffer(): ArrayBuffer {
+  public toBuffer(): Buffer {
     return Message.createBuffer(this.type, this.channelId, this.data);
   }
 }

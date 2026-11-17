@@ -38,7 +38,7 @@ export class Multiplexer
   readonly CLOSING = 2;
   readonly CLOSED = 3;
   public binaryType: BinaryType = "blob";
-  public readyState: number;
+  public readyState: WebSocket["readyState"];
   private channels: Map<
     number,
     { channel: Multiplexer; emitter: WebsocketEventEmitter }
@@ -184,7 +184,9 @@ export class Multiplexer
       if (ws instanceof Multiplexer) {
         this.storage.forEach((data) => ws.sendData(data));
       } else {
-        this.storage.forEach((data) => ws.send(data));
+        this.storage.forEach((data) =>
+          ws.send(data as Parameters<WebSocket["send"]>[0]),
+        );
       }
       this.storage.length = 0;
     };
@@ -259,7 +261,8 @@ export class Multiplexer
         if (this.ws instanceof Multiplexer) {
           this.ws.sendData(message);
         } else {
-          this.ws.send(message);
+          // createBuffer's Buffer.alloc is backed by a plain ArrayBuffer
+          this.ws.send(message as Uint8Array<ArrayBuffer>);
         }
         // @ts-expect-error -- stub
         this.emit("close", new CloseEventClass("close", { code, reason }));
@@ -277,6 +280,7 @@ export class Multiplexer
         data = Message.createBuffer(
           MessageType.RawStringData,
           this._id,
+          // @ts-expect-error -- a Buffer, which createBuffer copies from
           Buffer.from(data),
         );
       } else {
@@ -311,7 +315,7 @@ export class Multiplexer
       if (this.ws instanceof Multiplexer) {
         this.ws.sendData(data);
       } else {
-        this.ws.send(data);
+        this.ws.send(data as Parameters<WebSocket["send"]>[0]);
       }
     } else if (readyState === this.ws.CONNECTING) {
       this.storage.push(data);
@@ -351,6 +355,7 @@ export class Multiplexer
     }
     const id = this.getNextId();
     const channel = this._createChannel(id, true);
+    // @ts-expect-error -- a Buffer, which createBuffer copies from
     this.sendData(Message.createBuffer(MessageType.CreateChannel, id, data));
     return channel;
   }

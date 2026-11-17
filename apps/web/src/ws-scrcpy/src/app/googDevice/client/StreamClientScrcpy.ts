@@ -200,7 +200,7 @@ export class StreamClientScrcpy
     }
   };
 
-  public onVideo = (data: ArrayBuffer): void => {
+  public onVideo = (data: Uint8Array): void => {
     if (!this.player) {
       return;
     }
