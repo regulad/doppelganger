@@ -30,8 +30,8 @@ importers:
   apps/web:
     dependencies:
       '@cycjimmy/jsmpeg-player':
-        specifier: ^6.1.1
-        version: 6.1.6
+        specifier: ^7.0.0
+        version: 7.0.0
       '@devicefarmer/adbkit':
         specifier: ^4.0.1
         version: 4.0.1
@@ -1027,8 +1027,8 @@ packages:
     engines: {node: '>=20.19.0'}
     dev: true
 
-  /@cycjimmy/jsmpeg-player@6.1.6:
-    resolution: {integrity: sha512-D3ZfarlwDAltkBzmYaAAvARqRvgN4DmM70fbYwRECh9gpT8IRzLSxsXcR0uoPj/W3VtFeQjwA1QBj+rDpXiUzA==}
+  /@cycjimmy/jsmpeg-player@7.0.0:
+    resolution: {integrity: sha512-aPKrOKaon5ncMSN5ec2O6yqiIotPQr0KsSchIC4pnTnebA30bq4D3hKk4g4JynZzSIqBRWhd2TnyZh1vvTXxEA==}
     dev: false
 
   /@devicefarmer/adbkit-logcat@3.0.0:
