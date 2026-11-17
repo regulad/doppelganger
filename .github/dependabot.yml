@@ -64,11 +64,6 @@ updates:
       timezone: "America/New_York"
     cooldown:
       default-days: 14
-    ignore:
-      # The apps compile against API 34 with Android Gradle plugin 8.2. androidx.core 1.15 needs API 35, and later
-      # releases need newer still, along with a newer plugin; a person raises those first, then lifts this.
-      - dependency-name: "androidx.core:core-ktx"
-        versions: [">= 1.15.0"]
     groups:
       gradle:
         update-types: ["minor", "patch"]
