@@ -70,7 +70,7 @@ class DeviceOwnerDeviceTest {
     @Test
     fun sentryIsOnButNotReportingToProduction() {
         assertTrue(Sentry.isEnabled())
-        assertEquals("http://devicetest@127.0.0.1:9/0", Sentry.getCurrentHub().options.dsn)
+        assertEquals("http://devicetest@127.0.0.1:9/0", Sentry.getCurrentScopes().options.dsn)
     }
 
     private fun awaitUninstallBlocked(packageName: String, blocked: Boolean) {

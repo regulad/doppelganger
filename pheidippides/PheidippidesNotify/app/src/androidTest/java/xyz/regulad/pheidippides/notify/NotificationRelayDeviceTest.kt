@@ -48,7 +48,7 @@ class NotificationRelayDeviceTest {
     @Test
     fun sentryIsOnButNotReportingToProduction() {
         assertTrue(Sentry.isEnabled())
-        assertEquals(TEST_DSN, Sentry.getCurrentHub().options.dsn)
+        assertEquals(TEST_DSN, Sentry.getCurrentScopes().options.dsn)
     }
 
     /** Waits for the relayed notification [matches] picks out of all those relayed. */

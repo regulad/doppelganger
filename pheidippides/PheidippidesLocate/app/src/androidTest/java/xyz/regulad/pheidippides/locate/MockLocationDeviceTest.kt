@@ -52,7 +52,7 @@ class MockLocationDeviceTest {
     @Test
     fun sentryIsOnButNotReportingToProduction() {
         assertTrue(Sentry.isEnabled())
-        assertEquals("http://devicetest@127.0.0.1:9/0", Sentry.getCurrentHub().options.dsn)
+        assertEquals("http://devicetest@127.0.0.1:9/0", Sentry.getCurrentScopes().options.dsn)
     }
 
     /** The location route's command (apps/web/src/app/api/devices/[id]/location/route.ts). */
