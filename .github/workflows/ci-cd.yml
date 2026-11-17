@@ -368,7 +368,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       # The Pheidippides APKs from build-android
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         name: Download APKs
         with:
           pattern: pheidippides-*
@@ -456,7 +456,7 @@ jobs:
 
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: ${{ runner.temp }}/digests
           pattern: digests-web-*
@@ -658,7 +658,7 @@ jobs:
 
     steps:
       - name: Download the release name
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: sentry-release-${{ matrix.tag }}
           path: ${{ runner.temp }}/sentry-release
