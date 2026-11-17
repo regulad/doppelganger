@@ -68,7 +68,7 @@
     "cmdk": "^1.0.0",
     "contentlayer2": "^0.5.8",
     "cpu-features": "^0.0.10",
-    "date-fns": "^3.6.0",
+    "date-fns": "^4.4.0",
     "dockerode": "^5.0.1",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^11.0.6",
