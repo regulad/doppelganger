@@ -35,6 +35,10 @@ updates:
       # through. Lift this once typescript-eslint supports 7.
       - dependency-name: "typescript"
         versions: [">= 7"]
+      # @types/node describes the Node the site runs on, 22 (apps/web's engines and the image's node:22); a newer major
+      # would type APIs it lacks. Raise this with the runtime.
+      - dependency-name: "@types/node"
+        versions: [">= 23"]
     groups:
       nextjs:
         patterns:
