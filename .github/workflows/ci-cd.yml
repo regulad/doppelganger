@@ -68,7 +68,7 @@ jobs:
       # turbo's local cache, kept between runs; the remote cache is used too
       # when TURBO_TOKEN is set
       - name: Cache turbo
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .turbo/cache
           key: turbo-check-${{ github.sha }}
@@ -194,7 +194,7 @@ jobs:
       # turbo's local cache, kept between runs; the remote cache is used too
       # when TURBO_TOKEN is set
       - name: Cache turbo
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .turbo/cache
           key: turbo-${{ matrix.tag }}-${{ github.sha }}
@@ -381,7 +381,7 @@ jobs:
       # carried between runs through the Actions cache instead.
       - name: Cache the Next.js build cache
         id: next-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: next-cache
           key: next-cache-${{ env.PLATFORM_PAIR }}-${{ github.sha }}
