@@ -105,7 +105,7 @@
     "remark-toc": "^9.0.0",
     "server-only": "^0.0.1",
     "sharp": "^0.35.5",
-    "stripe": "^16.6.0",
+    "stripe": "^23.1.0",
     "svg-inline-loader": "^0.8.2",
     "sylvester.js": "^0.1.1",
     "tailwind-merge": "^2.4.0",
