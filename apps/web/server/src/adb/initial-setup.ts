@@ -7,6 +7,7 @@ import { installOrReplace } from "%/adb/install-or-replace.ts";
 import RobustClient from "%/adb/robust-client.ts";
 import { runDeviceSetupExclusively } from "%/adb/setup-lock.ts";
 import { BASE_ORIGIN } from "%/constants.ts";
+import { getIsDeviceStopped } from "%/docker/containers.ts";
 import { withSentryContext } from "%/sentry/error-context.ts";
 import { resolveOrDefaultValue } from "%/utils/promise-utils.ts";
 import AsyncLock from "async-lock";
@@ -406,8 +407,13 @@ async function setUpDevice(device: Device): Promise<void> {
           adbClient,
           apkPath,
           device.usesStableApks,
-        ).catch((e) => {
+        ).catch(async (e) => {
           console.error("Failed to install apk", apkPath, e);
+          // A device stopped partway through its setup fails the rest of it;
+          // its next start sets it up again
+          if (await getIsDeviceStopped(device.id)) {
+            return;
+          }
           // say which APK, as the ADB failure alone doesn't
           Sentry.captureException(
             withSentryContext(e, { tags: { apk: path.basename(apkPath) } }),

@@ -94,6 +94,19 @@ export async function getDeviceContainerStates(
 }
 
 /**
+ * Whether the device has been stopped: none of its containers is running, as
+ * after `docker compose down` removes them. False when Docker couldn't say.
+ */
+export async function getIsDeviceStopped(deviceId: string): Promise<boolean> {
+  const states = Object.values(await getDeviceContainerStates(deviceId));
+  return states.every(
+    (state) =>
+      state.missing ||
+      (state.status !== undefined && state.status !== "running"),
+  );
+}
+
+/**
  * The last lines a container logged, from both of its streams, interleaved by
  * Docker's timestamps.
  */

@@ -30,7 +30,11 @@ jest.mock("node:child_process", () => ({
   }),
 }));
 
-import { getContainerLogTail, getDeviceContainerStates } from "./containers";
+import {
+  getContainerLogTail,
+  getDeviceContainerStates,
+  getIsDeviceStopped,
+} from "./containers";
 
 const inspect = (name: string) =>
   `inspect --format {{json .State}}|{{.RestartCount}} ${name}`;
@@ -74,6 +78,39 @@ describe("getDeviceContainerStates", () => {
         inspectError: "Error: No such object: dev1-scrcpy-1",
       },
     });
+  });
+});
+
+const running = (name: string) =>
+  answers.set(inspect(name), {
+    code: 0,
+    stdout: JSON.stringify({ Status: "running", ExitCode: 0 }) + "|0\n",
+    stderr: "",
+  });
+const gone = (name: string) =>
+  answers.set(inspect(name), {
+    code: 1,
+    stdout: "",
+    stderr: `Error: No such object: ${name}\n`,
+  });
+
+describe("getIsDeviceStopped", () => {
+  it("says a device whose containers are gone is stopped", async () => {
+    gone("dev1-redroid-1");
+    gone("dev1-scrcpy-1");
+    expect(await getIsDeviceStopped("dev1")).toBe(true);
+  });
+
+  it("says a running device isn't", async () => {
+    running("dev1-redroid-1");
+    running("dev1-scrcpy-1");
+    expect(await getIsDeviceStopped("dev1")).toBe(false);
+  });
+
+  it("doesn't call a device stopped while one of its containers runs", async () => {
+    running("dev1-redroid-1");
+    gone("dev1-scrcpy-1");
+    expect(await getIsDeviceStopped("dev1")).toBe(false);
   });
 });
 
