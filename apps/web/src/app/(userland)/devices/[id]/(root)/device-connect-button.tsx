@@ -1,6 +1,7 @@
 "use server";
 
 import { getDeviceForId } from "%/device-info/device-info.ts";
+import { getDevicePowerState } from "%/docker/device-state.ts";
 import DeviceConnectButtonClient from "@/app/(userland)/devices/[id]/(root)/device-connect-button-client.tsx";
 import NotFound from "@/app/not-found.tsx";
 import { createClient } from "@/utils/supabase/server.ts";
@@ -21,5 +22,9 @@ export default async function DeviceConnectButton({
     return <NotFound />;
   }
 
-  return <DeviceConnectButtonClient device={device} />;
+  // no connecting until Android has booted; the power buttons refresh the
+  // page once it has
+  const booting = (await getDevicePowerState(device)) === "booting";
+
+  return <DeviceConnectButtonClient device={device} booting={booting} />;
 }

@@ -44,9 +44,11 @@ export default function DeviceQuickSettingsButton({
             Quick settings for {deviceInfo.name}
           </DialogDescription>
         </VisuallyHidden.Root>
+        {/* the device list knows only whether the containers run, not whether
+            Android has booted; the device's own page shows that */}
         <ClientDevicePowerStateButtons
           deviceInfo={deviceInfo}
-          deviceIsUp={deviceIsUp}
+          powerState={deviceIsUp ? "on" : "off"}
         />
       </DialogContent>
     </Dialog>

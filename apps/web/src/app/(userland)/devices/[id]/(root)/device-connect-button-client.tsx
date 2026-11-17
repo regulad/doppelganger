@@ -14,8 +14,12 @@ import {
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LuLoaderCircle } from "react-icons/lu";
 
-export default function DeviceConnectButtonClient(props: { device: Device }) {
+export default function DeviceConnectButtonClient(props: {
+  device: Device;
+  booting: boolean;
+}) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -31,8 +35,16 @@ export default function DeviceConnectButtonClient(props: { device: Device }) {
               }
             }}
             className="w-full"
+            disabled={props.booting}
           >
-            Connect to Device
+            {props.booting ? (
+              <>
+                <LuLoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                Android is starting…
+              </>
+            ) : (
+              "Connect to Device"
+            )}
           </Button>
         </div>
       </DialogTrigger>

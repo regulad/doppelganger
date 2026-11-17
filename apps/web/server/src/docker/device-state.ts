@@ -1,3 +1,4 @@
+import { getIsAndroidBooted } from "%/adb/adb-device.ts";
 import doInitialDeviceSetup from "%/adb/initial-setup.ts";
 import { Device } from "%/generated/prisma/client";
 import * as Sentry from "@sentry/node";
@@ -150,6 +151,26 @@ export async function getIsDeviceRunning(device: Device): Promise<boolean> {
   ]);
 
   return allPromises.every(Boolean);
+}
+
+/**
+ * "off" when the device's containers aren't running, "booting" while they are
+ * but Android hasn't finished starting (a minute or so after they come up),
+ * and "on" once it has.
+ */
+export type DevicePowerState = "off" | "booting" | "on";
+
+/**
+ * Whether the device is off, booting or on. Quick: Docker says whether its
+ * containers run, then Android is asked once whether it has finished booting.
+ */
+export async function getDevicePowerState(
+  device: Device,
+): Promise<DevicePowerState> {
+  if (!(await getIsDeviceRunning(device))) {
+    return "off";
+  }
+  return (await getIsAndroidBooted(device)) ? "on" : "booting";
 }
 
 /**

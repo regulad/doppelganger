@@ -37,6 +37,37 @@ export function readFullStreamIntoBuffer(stream: Duplex): Promise<Buffer> {
   });
 }
 
+/**
+ * Whether the device's Android has finished booting, from asking it once
+ * (sys.boot_completed) without retrying or waiting, unlike RobustClient: false
+ * while adbd isn't up yet or doesn't answer within `timeoutMs`.
+ */
+export async function getIsAndroidBooted(
+  device: Device,
+  timeoutMs: number = 3_000,
+): Promise<boolean> {
+  const udid = getAdbUdidForDevice(device);
+  const [host, port] = udid.split(":");
+  const client = createAdbClient();
+  const probe = (async () => {
+    await client.connect(host, parseInt(port, 10));
+    const output = await client
+      .getDevice(udid)
+      .shell("getprop sys.boot_completed")
+      .then(readFullStreamIntoBuffer);
+    return output.toString().trim() === "1";
+  })().catch(() => false);
+  let timer: NodeJS.Timeout | undefined;
+  const timedOut = new Promise<boolean>((resolve) => {
+    timer = setTimeout(() => resolve(false), timeoutMs);
+  });
+  try {
+    return await Promise.race([probe, timedOut]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // https://github.com/NetrisTV/ws-scrcpy/blob/29897e2cc5206631f79b7055f1385858572efe40/src/server/goog-device/Device.ts
 // https://github.com/NetrisTV/ws-scrcpy/blob/29897e2cc5206631f79b7055f1385858572efe40/src/server/goog-device/ScrcpyServer.ts
 export class AdbDevice {

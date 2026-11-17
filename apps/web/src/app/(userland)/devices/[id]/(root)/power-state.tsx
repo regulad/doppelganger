@@ -1,7 +1,7 @@
 "use server";
 
 import { getDeviceForId } from "%/device-info/device-info.ts";
-import { getIsDeviceRunning } from "%/docker/device-state.ts";
+import { getDevicePowerState } from "%/docker/device-state.ts";
 import { ClientDevicePowerStateButtons } from "@/app/(userland)/devices/[id]/(root)/client-power-state.tsx";
 import NotFound from "@/app/not-found.tsx";
 import { createClient } from "@/utils/supabase/server.ts";
@@ -22,12 +22,12 @@ export default async function DevicePowerStateButtons({
     return <NotFound />;
   }
 
-  const deviceIsUp = await getIsDeviceRunning(device);
+  const powerState = await getDevicePowerState(device);
 
   return (
     <ClientDevicePowerStateButtons
       deviceInfo={device}
-      deviceIsUp={deviceIsUp}
+      powerState={powerState}
     />
   );
 }
