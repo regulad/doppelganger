@@ -1,7 +1,7 @@
 import { PrismaClient } from "%/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import Redis from "ioredis";
 import { PrismaExtensionRedis } from "prisma-extension-redis";
+import { getRedis } from "./redis.ts";
 
 interface CustomNodeJsGlobal {
   __prisma: PrismaClient;
@@ -27,10 +27,8 @@ function createPrisma(): PrismaClient {
   // https://www.npmjs.com/package/prisma-extension-redis
   const cachedPrisma = prisma.$extends(
     PrismaExtensionRedis({
-      client: new Redis({
-        host: "redis",
-        port: 6379,
-      }),
+      // always there in production
+      client: getRedis()!,
       config: {
         type: "STRING",
         ttl: 60,

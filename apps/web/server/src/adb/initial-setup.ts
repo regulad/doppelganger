@@ -5,6 +5,7 @@ import ApkReader, { ManifestObject } from "adbkit-apkreader";
 // import { globStream } from "glob"; // glob doesn't webpack
 import { installOrReplace } from "%/adb/install-or-replace.ts";
 import RobustClient from "%/adb/robust-client.ts";
+import { runDeviceSetupExclusively } from "%/adb/setup-lock.ts";
 import { BASE_ORIGIN } from "%/constants.ts";
 import { withSentryContext } from "%/sentry/error-context.ts";
 import { resolveOrDefaultValue } from "%/utils/promise-utils.ts";
@@ -314,7 +315,8 @@ async function installOrUpdateApkAndGrantAllPermissions(
     // to prevent this, we will be using async-lock with the key of the apkPath and the device id
     const adbFileName = path.basename(apkPath);
 
-    // todo: kinggrand -- between different nodes in the cluster, we need to ensure that the same apk is not installed on the same device at the same time
+    // Other processes don't install on this device meanwhile: a device runs one
+    // setup at a time (runDeviceSetupExclusively)
     await thisProcessInstallLock.acquire(
       `${adbFileName}-${adbClient.serial}`,
       async () => {
@@ -381,6 +383,10 @@ async function upsertSystemProperties(device: Device): Promise<void> {
 export default async function doInitialDeviceSetup(
   device: Device,
 ): Promise<void> {
+  await runDeviceSetupExclusively(device.id, () => setUpDevice(device));
+}
+
+async function setUpDevice(device: Device): Promise<void> {
   const adbDevice = new AdbDevice(device);
   // await adbDevice.connectRobust(600_000); // we do it lazily
   const adbClient = adbDevice.adbDeviceClient;
