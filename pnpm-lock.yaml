@@ -195,8 +195,8 @@ importers:
         specifier: ^16.4.5
         version: 16.6.1
       dotenv-expand:
-        specifier: ^11.0.6
-        version: 11.0.7
+        specifier: ^1000.0.0
+        version: 1000.0.0
       find-up:
         specifier: ^7.0.0
         version: 7.0.0
@@ -7486,11 +7486,9 @@ packages:
       is-obj: 2.0.0
     dev: false
 
-  /dotenv-expand@11.0.7:
-    resolution: {integrity: sha512-zIHwmZPRshsCdpMDyVsqGmgyP0yT8GAgXUnkdAoJisxvf33k7yO6OuoKmcTGuXPWSsm8Oh88nZicRLA9Y0rUeA==}
-    engines: {node: '>=12'}
-    dependencies:
-      dotenv: 16.6.1
+  /dotenv-expand@1000.0.0:
+    resolution: {integrity: sha512-3T4TtUjXm5iGKFEirqKjcDJ0EheFJbv9peb5xytC+HNu3l5Ygnu4dYE8yeqkppHMsh1If9C/A//EJu7IPtNu+A==}
+    engines: {node: '>=16'}
     dev: false
 
   /dotenv@16.6.1:

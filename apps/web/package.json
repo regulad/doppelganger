@@ -71,7 +71,7 @@
     "date-fns": "^3.6.0",
     "dockerode": "^5.0.1",
     "dotenv": "^16.4.5",
-    "dotenv-expand": "^11.0.6",
+    "dotenv-expand": "^1000.0.0",
     "find-up": "^7.0.0",
     "framer-motion": "^11.3.17",
     "globby": "^14.0.2",
