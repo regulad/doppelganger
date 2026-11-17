@@ -3,6 +3,7 @@ import { Device } from "%/generated/prisma/client";
 import * as Sentry from "@sentry/node";
 import ApkReader, { ManifestObject } from "adbkit-apkreader";
 // import { globStream } from "glob"; // glob doesn't webpack
+import { installOrReplace } from "%/adb/install-or-replace.ts";
 import RobustClient from "%/adb/robust-client.ts";
 import { BASE_ORIGIN } from "%/constants.ts";
 import { resolveOrDefaultValue } from "%/utils/promise-utils.ts";
@@ -154,40 +155,6 @@ async function unlockPackageFromUninstall(
 }
 
 /**
- * Queries an ADB device to determine if a package was installed with Debug keys. With debug (self-signed) keys, the app must be uninstalled before a new update is installed or Android will return an error
- */
-async function getIsPackageDebug(
-  adbClient: RobustClient,
-  packageName: string,
-): Promise<boolean> {
-  // debug dumpsys: https://gist.github.com/regulad/574f9bbcc6218ca7a4a36f35e086a5c6
-  //     flags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA TEST_ONLY ]
-  // prod dympsys: https://gist.github.com/regulad/48c4e192a9ad065ae5c5db8e9b209141
-  //     flags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
-
-  if (packageName === "com.android.webview") {
-    // for systems that have webview, the default webview may be installed with debug keys if the aosp build is debuggable
-    // we are writing the chrome webview over it, so we will need to uninstall the default webview
-    return true;
-  }
-
-  const packageIsInstalled = await adbClient.isInstalled(packageName);
-  if (!packageIsInstalled) {
-    return false;
-  }
-  const rawFlagString = await adbClient
-    .shell(`dumpsys package ${packageName} | grep "flags=\["`)
-    .then(readFullStreamIntoBuffer)
-    .then((output: Buffer) => output.toString().trim());
-
-  return (
-    !!rawFlagString &&
-    (rawFlagString.includes("DEBUGGABLE") ||
-      rawFlagString.includes("TEST_ONLY"))
-  );
-}
-
-/**
  * Grants all permissions requested in the manifest of a package
  * @param adbClient
  * @param manifest
@@ -283,7 +250,7 @@ async function uninstallPackageCompletely(
   packageName: string,
 ): Promise<void> {
   const packageIsInstalled = await adbClient.isInstalled(packageName);
-  if (packageIsInstalled) {
+  if (!packageIsInstalled) {
     return;
   }
 
@@ -335,38 +302,11 @@ async function installOrUpdateApkAndGrantAllPermissions(
   // step 3: if not, install the apk
   // step 4: grant all requested permissions
   if (shouldInstall) {
-    // Every Pheidippides build is signed with the same key, so a new version
-    // installs over the old one in place (pm install -r), keeping its data,
-    // permissions and device ownership. Other debug-signed packages have to be
-    // uninstalled first.
-    if (!isOurPackage) {
-      // we use debug versions of the apps to enable logcat logging, so we need to uninstall to clear the keys
-      // https://stackoverflow.com/questions/71872027/how-to-fix-signatures-do-not-match-previously-installed-version-error
-      const appIsDebug = await getIsPackageDebug(adbClient, packageName).catch(
-        (e) => {
-          console.error(
-            "Failed to check if package is debug, assuming it is and continuing",
-            packageName,
-            e,
-          );
-          Sentry.captureException(e);
-          return true;
-        },
-      );
-
-      if (appIsDebug) {
-        await uninstallPackageCompletely(adbClient, packageName).catch((e) => {
-          console.error(
-            "Failed to uninstall package, continuing",
-            packageName,
-            e,
-          );
-          Sentry.captureException(e);
-        });
-      }
-
-      await removeSafeguards(adbClient, packageName);
-    }
+    // A new version installs over the old one in place (pm install -r),
+    // keeping its data, permissions and, for Administrate, device ownership,
+    // whenever both are signed with the same key. Every Pheidippides build is,
+    // and so is each Chromium snapshot. A third-party copy signed with another
+    // key, such as an image's own WebView, is uninstalled and replaced.
 
     // interesting node: without a stream, this will copy the app-debug.apk file to the device and then install it
     // now, there are multiple app-debug.apk files at the same time that will attempt to install at the same time
@@ -377,7 +317,14 @@ async function installOrUpdateApkAndGrantAllPermissions(
     await thisProcessInstallLock.acquire(
       `${adbFileName}-${adbClient.serial}`,
       async () => {
-        await adbClient.install(apkPath);
+        if (isOurPackage) {
+          await adbClient.install(apkPath);
+        } else {
+          await installOrReplace(
+            () => adbClient.install(apkPath),
+            () => uninstallPackageCompletely(adbClient, packageName),
+          );
+        }
       },
     );
 
