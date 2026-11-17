@@ -32,7 +32,10 @@ export async function saveSubscription(
     return "not-ours";
   }
 
-  const price = subscription.items.data[0].price;
+  // Doppelganger's subscriptions have one item, its plan. Since the 2025-03-31
+  // API, the billing period is the item's rather than the subscription's.
+  const item = subscription.items.data[0];
+  const price = item.price;
   const productId =
     typeof price.product === "string" ? price.product : price.product.id;
 
@@ -40,8 +43,8 @@ export async function saveSubscription(
     status: subscription.status,
     stripePriceId: price.id,
     plan: getPlanForProduct(planPrices, productId),
-    currentPeriodStart: new Date(subscription.current_period_start * 1000),
-    currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    currentPeriodStart: new Date(item.current_period_start * 1000),
+    currentPeriodEnd: new Date(item.current_period_end * 1000),
   };
 
   await prisma.subscription.upsert({

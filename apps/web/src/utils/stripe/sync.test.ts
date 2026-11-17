@@ -33,10 +33,17 @@ function subscription(productId: string): Stripe.Subscription {
     id: "sub_1",
     customer: "cus_1",
     status: "active",
-    current_period_start: 1_700_000_000,
-    current_period_end: 1_702_592_000,
-    // a price the plan's lookup key has since moved away from
-    items: { data: [{ price: { id: "price_old", product: productId } }] },
+    items: {
+      data: [
+        {
+          // a price the plan's lookup key has since moved away from
+          price: { id: "price_old", product: productId },
+          // the billing period is the item's, since the 2025-03-31 API
+          current_period_start: 1_700_000_000,
+          current_period_end: 1_702_592_000,
+        },
+      ],
+    },
   } as unknown as Stripe.Subscription;
 }
 

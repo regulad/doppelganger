@@ -121,7 +121,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      payment_method_types: ["card"],
+      // Cards only, as before: the current API filters the payment methods
+      // it would offer rather than taking a fixed list
+      allowed_payment_method_types: ["card"],
       customer: stripeCustomer.stripeCustomerId,
       line_items: [{ price: priceId, quantity: 1 }],
       // checkout-complete saves the subscription, then shows the devices.

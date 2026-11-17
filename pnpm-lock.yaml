@@ -297,8 +297,8 @@ importers:
         specifier: ^0.35.5
         version: 0.35.5(@types/node@22.20.5)
       stripe:
-        specifier: ^16.6.0
-        version: 16.12.0
+        specifier: ^23.1.0
+        version: 23.1.0(@types/node@22.20.5)
       svg-inline-loader:
         specifier: ^0.8.2
         version: 0.8.2
@@ -12074,14 +12074,6 @@ packages:
       hookified: 2.2.0
     dev: true
 
-  /qs@6.17.1:
-    resolution: {integrity: sha512-jd3COkaKVgGUW+ZHyEHCG9bH7RoaaiWuMgzsIBjUMVjLAaWGWpoUAVwljVvBHxRu/2qEHnadLGZrkutYUBPQJA==}
-    engines: {node: '>=0.6'}
-    dependencies:
-      es-define-property: 1.0.1
-      side-channel: 1.1.1
-    dev: false
-
   /querystringify@2.2.0:
     resolution: {integrity: sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==}
 
@@ -13181,12 +13173,16 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /stripe@16.12.0:
-    resolution: {integrity: sha512-H7eFVLDxeTNNSn4JTRfL2//LzCbDrMSZ+2q1c7CanVWgK2qIW5TwS+0V7N9KcKZZNpYh/uCqK0PyZh/2UsaAtQ==}
-    engines: {node: '>=12.*'}
+  /stripe@23.1.0(@types/node@22.20.5):
+    resolution: {integrity: sha512-fVUfMSfTPoukfoV//MUKAx2+YxyKmYaYtnAL9VkfnHfaPNQylFdWZMD+zgUFerI8rjbaiER8Vzj2XEUQ2AhAsQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@types/node': '>=20'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
     dependencies:
       '@types/node': 22.20.5
-      qs: 6.17.1
     dev: false
 
   /style-to-js@1.1.21:
