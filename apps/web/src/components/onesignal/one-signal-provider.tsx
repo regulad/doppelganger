@@ -77,13 +77,27 @@ export default function OneSignalProvider({
         ) {
           console.warn(error);
           return;
+        } else if (
+          error instanceof Error &&
+          error.message === "OneSignal script failed to load."
+        ) {
+          // The browser didn't load OneSignal's SDK from cdn.onesignal.com,
+          // usually because an ad blocker stops it. Push notifications are then
+          // off for this visitor, which is theirs to choose, not an error.
+          // react-onesignal 3.0 ignored this silently; 3.5 rejects init and
+          // every later call, so OneSignal is left alone from here on.
+          console.warn(error);
+          return false;
         }
 
         Sentry.captureException(error);
         console.error("OneSignal initialization failed:", error);
         throw error;
       })
-      .then(() => {
+      .then((loaded) => {
+        if (loaded === false) {
+          return; // the SDK never loaded, see above
+        }
         setOneSignalInitialized(true);
 
         supabaseClient.auth.getUser().then(async ({ data: { user } }) => {
