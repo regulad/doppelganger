@@ -53,7 +53,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           lfs: false
           fetch-depth: 0
@@ -132,7 +132,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           lfs: false
           fetch-depth: 0
@@ -257,7 +257,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           lfs: false
           # versionCode counts each app's commits, which needs the whole history
@@ -343,7 +343,7 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
 
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           lfs: true
           fetch-depth: 0
@@ -614,7 +614,7 @@ jobs:
       # The whole history, so set_commits can find the commits since the
       # previous release
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -697,7 +697,7 @@ jobs:
       # previous release
       - name: Checkout repository
         if: steps.release.outputs.new == 'true'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
