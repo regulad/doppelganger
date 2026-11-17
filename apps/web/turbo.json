@@ -58,7 +58,7 @@
       "cache": false
     },
     "licenses:check": {
-      "inputs": ["package.json", "pnpm-lock.yaml"],
+      "inputs": ["package.json", "../../pnpm-lock.yaml"],
       "outputs": [
         "src/app/\\(userland\\)/\\(contained\\)/licenses/licenses.json"
       ]
@@ -77,14 +77,6 @@
         "NEXT_PUBLIC_STRIPE_PUBLISHABLE",
         "NEXT_PUBLIC_SENTRY_DSN"
       ]
-    },
-    "precommit": {
-      "inputs": [
-        "./package.json",
-        "../../package.json",
-        "../../pnpm-lock.yaml"
-      ],
-      "outputs": ["./pnpm-lock.yaml"]
     }
   }
 }

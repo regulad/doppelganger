@@ -1,8 +1,11 @@
 # Use an official Node runtime as a parent image
 FROM node:22-alpine3.22
 
-# Set the working directory in the container
-WORKDIR /usr/src/app
+# The image is built from the repository's root (the root .dockerignore keeps
+# the context to the web app and the workspace's manifests), so it can install
+# from the workspace's one lockfile. The app sits at apps/web below the
+# workspace's root, as in the repository.
+WORKDIR /usr/src/app/apps/web
 
 # Install system dependencies
 # Used by:
@@ -46,21 +49,22 @@ ENV npm_config_nodedir=/usr/local
 # The third-party APKs installed on every device, checked against pinned
 # hashes. Fetched before the app is copied in, so this layer is reused until
 # the script changes.
-COPY scripts/download-android-apps.sh scripts/
+COPY apps/web/scripts/download-android-apps.sh scripts/
 RUN bash scripts/download-android-apps.sh android
 
-# Install project dependencies
-# The weirdness of this one file building like a monolithic project separate of the monorepo 
-# exists because this project was bolted into a monorepo when building apks in parallel in the project became neccesary
+# Install the web app's dependencies, and only its own (--filter web), from the
+# workspace's lockfile, hoisted into the workspace root's node_modules.
 # NODE_ENV is unset during install-time because pnpm needs to install both regular dependencies and devDependencies for the build
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml /usr/src/app/
+COPY apps/web/package.json ./
 ENV NODE_ENV=production
 # The pnpm store is a cache mount, so a changed lockfile downloads only what's new
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
-    NODE_ENV= pnpm install --frozen-lockfile --shamefully-hoist
+    cd /usr/src/app \
+    && NODE_ENV= pnpm install --frozen-lockfile --filter web --shamefully-hoist
 
 # Copy the rest of the application code
-COPY . .
+COPY apps/web/ ./
 
 # Build the application
 ARG SENTRY_RELEASE
@@ -70,7 +74,7 @@ ARG SENTRY_RELEASE
 ENV SENTRY_RELEASE=$SENTRY_RELEASE
 # Next.js keeps its build cache in a cache mount, which CI carries between runs
 RUN --mount=type=secret,id=sentry_token \
-    --mount=type=cache,id=next-cache,target=/usr/src/app/.next/cache \
+    --mount=type=cache,id=next-cache,target=/usr/src/app/apps/web/.next/cache \
     export NODE_OPTIONS="--max-old-space-size=4096" \
     && export SENTRY_AUTH_TOKEN=$(cat /run/secrets/sentry_token) \
     && export SENTRY_ORG=regulad \

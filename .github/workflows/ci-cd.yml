@@ -323,7 +323,7 @@ jobs:
           cache-map: |
             {
               "next-cache": {
-                "target": "/usr/src/app/.next/cache",
+                "target": "/usr/src/app/apps/web/.next/cache",
                 "id": "next-cache"
               }
             }
@@ -335,7 +335,10 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          context: apps/web
+          # The repository's root, for the workspace's lockfile; the root
+          # .dockerignore keeps the context to what the image uses
+          context: .
+          file: apps/web/Dockerfile
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}

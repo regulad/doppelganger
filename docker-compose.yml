@@ -5,8 +5,9 @@ services:
     restart: unless-stopped
     hostname: "doppelganger"
     build:
-      context: apps/web
-      dockerfile: Dockerfile
+      # the repository's root, for the workspace's lockfile
+      context: .
+      dockerfile: apps/web/Dockerfile
       secrets:
         - sentry_token
       args:

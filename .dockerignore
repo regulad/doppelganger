@@ -1,0 +1,53 @@
+# The web image (apps/web/Dockerfile) is built from the repository's root, for
+# the workspace's lockfile, but uses only the workspace's manifests and the web
+# app: everything else stays out of the build context.
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!apps/web/
+
+**/.git/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+**/node_modules/
+
+# testing
+apps/web/coverage/
+
+# next.js
+apps/web/.next/
+apps/web/out/
+
+# production
+apps/web/build/
+
+# misc
+**/.DS_Store
+**/*.pem
+
+# debug
+**/npm-debug.log*
+
+# local env files
+**/.env*.local
+**/.env
+
+# vercel
+apps/web/.vercel/
+**/.turbo/
+
+# typescript
+apps/web/*.tsbuildinfo
+apps/web/next-env.d.ts
+
+# babel custom server
+apps/web/dist/
+apps/web/public/workers/
+
+# Sentry Config File
+apps/web/.env.sentry-build-plugin
+
+# the image downloads and checks these itself; see the Dockerfile
+apps/web/android/*.apk
