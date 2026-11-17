@@ -37,9 +37,12 @@ env:
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   # java, gradle & android
   JAVA_VERSION: "17"
-  DISTRIBUTION: "oracle"
+  # Temurin's latest 17 update: Oracle's free download of 17 is only the 2021
+  # GA build, missing five years of fixes
+  DISTRIBUTION: "temurin"
   MAIN_PROJECT_MODULE: app
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+  # Full stack traces, so a Gradle failure in CI shows its cause
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.logging.stacktrace=all"
 
 jobs:
   check:
@@ -143,7 +146,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -268,7 +271,7 @@ jobs:
           cache: gradle
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       # The emulator needs KVM, which GitHub's Linux runners have but don't
       # open to the runner's user
