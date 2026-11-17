@@ -32,9 +32,6 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-  # turbo
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
   # java, gradle & android
   JAVA_VERSION: "17"
   # Temurin's latest 17 update: Oracle's free download of 17 is only the 2021
@@ -68,8 +65,8 @@ jobs:
             exit 1
           fi
 
-      # turbo's local cache, kept between runs; the remote cache is used too
-      # when TURBO_TOKEN is set
+      # turbo's local cache, kept between runs in GitHub's Actions cache, which
+      # is the only cache turbo uses
       - name: Cache turbo
         uses: actions/cache@v6
         with:
@@ -194,8 +191,8 @@ jobs:
             echo "PHEIDIPPIDES_KEYSTORE_PASSWORD=$password"
           } >> "$GITHUB_ENV"
 
-      # turbo's local cache, kept between runs; the remote cache is used too
-      # when TURBO_TOKEN is set
+      # turbo's local cache, kept between runs in GitHub's Actions cache, which
+      # is the only cache turbo uses
       - name: Cache turbo
         uses: actions/cache@v6
         with:
