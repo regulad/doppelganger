@@ -9,8 +9,7 @@
       "instances": "max",
       "exec_mode": "cluster",
       "env": {
-        "NODE_ENV": "production",
-        "BLUEBIRD_DEBUG": "1"
+        "NODE_ENV": "production"
       }
     }
   ]

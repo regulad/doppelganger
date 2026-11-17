@@ -3,27 +3,35 @@ import { getDeviceContainerStates } from "%/docker/containers.ts";
 import { withSentryContext } from "%/sentry/error-context.ts";
 import { resolveOrDefaultValue } from "%/utils/promise-utils.ts";
 import {
+  type DeviceClient as AdbDeviceClient,
   type Client,
   type Device,
   type Features,
   type Forward,
   type FramebufferStreamWithMeta,
+  type MonkeyClient,
   type Reverse,
   type StartActivityOptions,
   type StartServiceOptions,
   type WithToString,
 } from "@devicefarmer/adbkit";
-/* illegal imports */
-import type Logcat from "@devicefarmer/adbkit-logcat";
-import type JdwpTracker from "@devicefarmer/adbkit/dist/src/adb/jdwptracker";
-import type ProcStat from "@devicefarmer/adbkit/dist/src/adb/proc/stat";
-import type Sync from "@devicefarmer/adbkit/dist/src/adb/sync";
-import type Entry from "@devicefarmer/adbkit/dist/src/adb/sync/entry";
-import type PullTransfer from "@devicefarmer/adbkit/dist/src/adb/sync/pulltransfer";
-import type Stats from "@devicefarmer/adbkit/dist/src/adb/sync/stats";
-/* end illegal imports */
 import { retry } from "@lifeomic/attempt";
 import { Duplex, Readable } from "node:stream";
+
+// adbkit's package exports leave these types out, so they're read off the
+// methods that return them
+type Resolved<M extends keyof AdbDeviceClient> = AdbDeviceClient[M] extends (
+  ...args: never[]
+) => Promise<infer T>
+  ? T
+  : never;
+type Logcat = Resolved<"openLogcat">;
+type JdwpTracker = Resolved<"trackJdwp">;
+type ProcStat = Resolved<"openProcStat">;
+type Sync = Resolved<"syncService">;
+type Stats = Resolved<"stat">;
+type Entry = Resolved<"readdir">[number];
+type PullTransfer = Resolved<"pull">;
 
 export const DEFAULT_ADB_TIMEOUT = 5 * 60 * 1_000; // so much time 🔥
 
@@ -240,7 +248,7 @@ export default class RobustClient extends DeviceClient {
     return this.withConnection("openTcp", () => super.openTcp(port));
   }
 
-  openMonkey(port?: number): Promise<Duplex> {
+  openMonkey(port?: number): Promise<MonkeyClient> {
     return this.withConnection("openMonkey", () => super.openMonkey(port));
   }
 
