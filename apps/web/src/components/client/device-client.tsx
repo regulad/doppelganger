@@ -406,9 +406,11 @@ const OneshotDeviceClient = forwardRef<
           },
           body: JSON.stringify(locationPayload),
         });
-      } catch (e: any) {
-        console.error("Failed to send location", e);
-        Sentry.captureException(e);
+      } catch (e: unknown) {
+        // The request never got an answer: the connection dropped, or the
+        // browser gave it up as the page navigated away. The next location
+        // tries again, and nothing on the server went wrong to report.
+        console.warn("Failed to send location", e);
         return;
       }
       if (!response.ok) {

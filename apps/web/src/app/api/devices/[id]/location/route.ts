@@ -1,4 +1,5 @@
 import { AdbDevice, readFullStreamIntoBuffer } from "%/adb/adb-device.ts";
+import { isTransientAdbError } from "%/adb/robust-client.ts";
 import { getDeviceForId } from "%/device-info/device-info.ts";
 import { deviceApiEndpoint } from "%/endpoint-regex.ts";
 import { type Device } from "%/generated/prisma/client.ts";
@@ -19,6 +20,11 @@ const locationSchema = z.object({
 });
 
 export type LocationPutSendType = z.infer<typeof locationSchema>;
+
+// The page sends a location every few seconds while it's open, each newer
+// than the last, so one that can't reach the device soon isn't worth waiting
+// for
+const LOCATION_ADB_TIMEOUT_MS = 10_000;
 
 export interface LocationPutReturnType {
   error?: string;
@@ -61,6 +67,14 @@ export async function PUT(
   } catch (e: unknown) {
     // The page gets a JSON error, as from every other failure here, rather
     // than Next's empty 500
+    if (isTransientAdbError(e)) {
+      // The device is off or still booting, so the location is dropped; the
+      // next one tries again
+      return NextResponse.json(
+        { error: "The device isn't reachable right now" },
+        { status: 503 },
+      );
+    }
     Sentry.captureException(e);
     return NextResponse.json(
       { error: "Couldn't send the location to the device" },
@@ -75,7 +89,7 @@ async function sendLocationToDevice(
   device: Device,
   location: LocationPutSendType,
 ): Promise<void> {
-  const adbDevice = new AdbDevice(device);
+  const adbDevice = new AdbDevice(device, LOCATION_ADB_TIMEOUT_MS);
   const adbDeviceClient = adbDevice.adbDeviceClient;
   const isEmulator = (await adbDeviceClient.getStateRuntime()) === "emulator";
   const locateInstalled = await adbDeviceClient.isInstalled(

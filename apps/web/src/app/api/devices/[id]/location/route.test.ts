@@ -68,9 +68,31 @@ describe("sending a location to a device", () => {
     );
   });
 
-  it("answers with a JSON error, and reports it, when the device can't be reached", async () => {
-    const notConnected = new Error("Device is not connected");
-    getStateRuntime.mockRejectedValue(notConnected);
+  it("waits only briefly for the device", async () => {
+    await PUT(request());
+
+    const { AdbDevice } = jest.requireMock("%/adb/adb-device.ts");
+    expect(AdbDevice).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "abc123" }),
+      10_000,
+    );
+  });
+
+  it("drops the location, without reporting it, while the device can't be reached", async () => {
+    getStateRuntime.mockRejectedValue(new Error("Device is not connected"));
+
+    const res = await PUT(request());
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({
+      error: "The device isn't reachable right now",
+    });
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  it("answers with a JSON error, and reports it, when the command fails", async () => {
+    const failed = new Error("Activity not started, unable to resolve Intent");
+    shell.mockRejectedValue(failed);
 
     const res = await PUT(request());
 
@@ -78,17 +100,6 @@ describe("sending a location to a device", () => {
     expect(await res.json()).toEqual({
       error: "Couldn't send the location to the device",
     });
-    expect(captureException).toHaveBeenCalledWith(notConnected);
-  });
-
-  it("answers with a JSON error when the command fails", async () => {
-    const closed = new Error("Failure: 'closed'");
-    shell.mockRejectedValue(closed);
-
-    const res = await PUT(request());
-
-    expect(res.status).toBe(502);
-    expect((await res.json()).error).toBeTruthy();
-    expect(captureException).toHaveBeenCalledWith(closed);
+    expect(captureException).toHaveBeenCalledWith(failed);
   });
 });
