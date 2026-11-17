@@ -29,14 +29,14 @@
         <activity android:name=".ForfeitAdminActivity" android:exported="true" />
         <activity android:name=".LockAppActivity" android:exported="true">
             <intent-filter>
-                <action android:name="xyz.regulad.pheidippidies.administrate.LOCK_APP" />
+                <action android:name="xyz.regulad.pheidippides.administrate.LOCK_APP" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="package" />
             </intent-filter>
         </activity>
         <activity android:name=".UnlockAppActivity" android:exported="true">
             <intent-filter>
-                <action android:name="xyz.regulad.pheidippidies.administrate.UNLOCK_APP" />
+                <action android:name="xyz.regulad.pheidippides.administrate.UNLOCK_APP" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="package" />
             </intent-filter>

@@ -117,9 +117,12 @@ async function lockPackageFromUninstall(
     return;
   }
 
+  // Started by component rather than by its action, which older Administrate
+  // builds still on devices declare misspelled (pheidippidies). Administrate's
+  // DeviceOwnerDeviceTest runs this same command.
   await adbClient
     .shell(
-      `am start -a xyz.regulad.pheidippides.administrate/.LOCK_APP -d package:${packageName}`,
+      `am start -n xyz.regulad.pheidippides.administrate/.LockAppActivity -d package:${packageName}`,
     )
     .then(readFullStreamIntoBuffer);
 }
@@ -142,9 +145,10 @@ async function unlockPackageFromUninstall(
     return;
   }
 
+  // By component, as lockPackageFromUninstall does
   await adbClient
     .shell(
-      `am start -a xyz.regulad.pheidippides.administrate/.UNLOCK_APP -d package:${packageName}`,
+      `am start -n xyz.regulad.pheidippides.administrate/.UnlockAppActivity -d package:${packageName}`,
     )
     .then(readFullStreamIntoBuffer);
 }
@@ -214,9 +218,10 @@ async function grantAllPermissionsOfPackage(
  * @param adbClient
  */
 async function forfeitDeviceOwnership(adbClient: RobustClient): Promise<void> {
+  // Administrate's DeviceOwnerDeviceTest runs this same command
   await adbClient
     .shell(
-      "am start -n xyz.regulad.pheidippidies.administrate/.ForfeitAdminActivity",
+      "am start -n xyz.regulad.pheidippides.administrate/.ForfeitAdminActivity",
     )
     .then(readFullStreamIntoBuffer);
 }
@@ -260,7 +265,7 @@ async function removeSafeguards(
       console.error("Failed to forfeit device ownership, continuing", e);
       Sentry.captureException(e);
     });
-  } else if (packageName in PROTECTED_PACKAGES) {
+  } else if (PROTECTED_PACKAGES.includes(packageName)) {
     await unlockPackageFromUninstall(adbClient, packageName).catch((e) => {
       console.error("Failed to unlock package, continuing", packageName, e);
       Sentry.captureException(e);

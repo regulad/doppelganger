@@ -20,7 +20,15 @@ class ForfeitAdminActivity : Activity() {
         componentName = ComponentName(this, DeviceAdminReceiver::class.java)
 
         try {
-            if (devicePolicyManager.isAdminActive(componentName)) {
+            if (devicePolicyManager.isDeviceOwnerApp(packageName)) {
+                // removeActiveAdmin leaves a device owner in place, and a device
+                // owner can't be uninstalled. Clearing ownership also removes the
+                // admin. Android deprecated it as meant for testing, but it still
+                // works, and it's how a device owner gives the role up itself.
+                @Suppress("DEPRECATION")
+                devicePolicyManager.clearDeviceOwnerApp(packageName)
+                Log.d(TAG, "Device ownership forfeited successfully")
+            } else if (devicePolicyManager.isAdminActive(componentName)) {
                 devicePolicyManager.removeActiveAdmin(componentName)
                 Log.d(TAG, "Device admin rights forfeited successfully")
             } else {
