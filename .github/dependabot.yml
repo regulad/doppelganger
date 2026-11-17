@@ -6,14 +6,11 @@
 # merge the npm, gradle and docker groups once CI passes, and a merge to master deploys. These wait for a person:
 # - the nextjs group: next.config.mjs's pinMdxToServerComponents works around a Next.js bug in the versions it was
 #   written against, so each Next.js update needs that checked;
-# - the kotlin group: Compose's compiler (kotlinCompilerExtensionVersion) accepts only the one Kotlin version it was
-#   built for, so Kotlin moves together with it, by hand;
 # - the actions group, since workflow changes get a review;
 # - major updates, which come as PRs of their own, a Gradle one covering all three apps;
 # - security updates, which skip the cooldown.
 #
-# The groups held back for a person name their dependencies exactly, and the npm and gradle groups exclude them by
-# the same names. Dependabot ranks a group without patterns above any wildcard pattern, and a job refreshing one group
+# The nextjs group names its dependencies exactly, and the npm group excludes them by the same names. Dependabot ranks a group without patterns above any wildcard pattern, and a job refreshing one group
 # takes every dependency that group contains, whatever other group it also belongs to.
 #
 # The cooldown holds each release back until it is two weeks old, so nothing ships while it's days old.
@@ -65,14 +62,8 @@ updates:
       - dependency-name: "androidx.core:core-ktx"
         versions: [">= 1.15.0"]
     groups:
-      kotlin:
-        patterns:
-          - "org.jetbrains.kotlin.android"
-        update-types: ["minor", "patch"]
       gradle:
         update-types: ["minor", "patch"]
-        exclude-patterns:
-          - "org.jetbrains.kotlin.android"
       # A PR for each dependency's major update, rather than one for each app
       gradle-major:
         group-by: dependency-name
