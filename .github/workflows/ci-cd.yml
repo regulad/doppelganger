@@ -76,7 +76,7 @@ jobs:
             turbo-check-
 
       # Run CI tasks
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         name: Install pnpm
         with:
           run_install: false
@@ -153,7 +153,7 @@ jobs:
           # repository no longer has the legacy tools package
           packages: "platform-tools"
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         name: Install pnpm
         with:
           run_install: false
