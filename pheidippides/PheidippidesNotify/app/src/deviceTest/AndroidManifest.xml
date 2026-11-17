@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The deviceTest build type's only difference from debug: Sentry stays on, so
+     tests exercise it, but its DSN is a port on the device itself that nothing
+     listens on, so nothing reaches production's Sentry project -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+    <application>
+        <meta-data android:name="io.sentry.dsn"
+                   android:value="http://devicetest@127.0.0.1:9/0"
+                   tools:replace="android:value" />
+    </application>
+</manifest>

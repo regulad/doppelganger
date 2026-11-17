@@ -61,6 +61,12 @@ android {
                 signingConfig = signingConfigs.getByName("pheidippides")
             }
         }
+        // The debug build as shipped, but with Sentry's DSN pointed at a port
+        // nothing listens on (src/deviceTest/AndroidManifest.xml), so a test run
+        // exercises the SDK without reporting to production
+        create("deviceTest") {
+            initWith(getByName("debug"))
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -84,6 +90,24 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    // Instrumented tests run against deviceTest rather than debug, whose DSN is
+    // production's
+    testBuildType = "deviceTest"
+    testOptions {
+        // Robolectric reads the merged manifest and resources
+        unitTests.isIncludeAndroidResources = true
+    }
+    // Checks that both the unit tests and the device tests use
+    sourceSets {
+        getByName("test").java.srcDir("src/sharedTest/java")
+        getByName("androidTest").java.srcDir("src/sharedTest/java")
+    }
+}
+
+androidComponents {
+    // Unit tests run once, against deviceTest: the other build types compile the
+    // same code, and debug's manifest carries production's DSN
+    beforeVariants { variant -> variant.enableUnitTest = variant.buildType == "deviceTest" }
 }
 
 dependencies {
@@ -96,8 +120,14 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    androidTestImplementation("androidx.test:core:1.6.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 sentry {
