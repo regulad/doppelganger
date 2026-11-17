@@ -411,17 +411,16 @@ const OneshotDeviceClient = forwardRef<
         Sentry.captureException(e);
         return;
       }
-      let responseJson: LocationPutReturnType;
-      try {
-        responseJson = await response.json();
-      } catch (e: any) {
-        console.error("Failed to parse location response", e);
-        Sentry.captureException(e);
-        return;
-      }
-
-      if (responseJson.error || !response.ok) {
-        console.error("Failed to send location", responseJson.error);
+      if (!response.ok) {
+        // The server reports its own failures. Its errors are JSON, but one
+        // from in between, like a proxy's, may have any body or none.
+        const { error } = (await response
+          .json()
+          .catch(() => ({}))) as LocationPutReturnType;
+        console.error(
+          `Failed to send location (${response.status})`,
+          error ?? response.statusText,
+        );
         return;
       }
 

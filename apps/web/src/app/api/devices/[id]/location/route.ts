@@ -1,8 +1,10 @@
 import { AdbDevice, readFullStreamIntoBuffer } from "%/adb/adb-device.ts";
 import { getDeviceForId } from "%/device-info/device-info.ts";
 import { deviceApiEndpoint } from "%/endpoint-regex.ts";
+import { type Device } from "%/generated/prisma/client.ts";
 import { createClient } from "@/utils/supabase/server.ts";
 import { z } from "@/utils/zod.ts";
+import * as Sentry from "@sentry/nextjs";
 import { NextRequest, NextResponse } from "next/server";
 
 const locationSchema = z.object({
@@ -54,6 +56,25 @@ export async function PUT(
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
+  try {
+    await sendLocationToDevice(device, location);
+  } catch (e: unknown) {
+    // The page gets a JSON error, as from every other failure here, rather
+    // than Next's empty 500
+    Sentry.captureException(e);
+    return NextResponse.json(
+      { error: "Couldn't send the location to the device" },
+      { status: 502 },
+    );
+  }
+
+  return NextResponse.json({}, { status: 200 });
+}
+
+async function sendLocationToDevice(
+  device: Device,
+  location: LocationPutSendType,
+): Promise<void> {
   const adbDevice = new AdbDevice(device);
   const adbDeviceClient = adbDevice.adbDeviceClient;
   const isEmulator = (await adbDeviceClient.getStateRuntime()) === "emulator";
@@ -89,6 +110,4 @@ export async function PUT(
 
     await adbDeviceClient.shell(command).then(readFullStreamIntoBuffer);
   }
-
-  return NextResponse.json({}, { status: 200 });
 }
