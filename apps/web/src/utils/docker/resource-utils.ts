@@ -15,6 +15,14 @@ export async function getTotalDiskUsageOfDirectoryBytes(
   }
 }
 
+/**
+ * Whether a docker command failed because its container doesn't exist, as
+ * while a device is off or its containers are being recreated.
+ */
+export function isNoSuchContainerError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("No such container");
+}
+
 const ibiUnitToBytes = {
   B: 1,
   KiB: 1024,

@@ -32,7 +32,19 @@ jest.mock("@/utils/docker/resource-utils.ts", () => ({
   getCpuUsageOfDockerContainerCpus: jest.fn(),
   getMemoryUsageOfDockerContainerBytes: jest.fn(),
   getTotalDiskUsageOfDirectoryBytes: jest.fn(),
+  isNoSuchContainerError: jest.requireActual("@/utils/docker/resource-utils.ts")
+    .isNoSuchContainerError,
 }));
+
+const captureException = jest.fn();
+jest.mock("@sentry/nextjs", () => ({
+  captureException: (...args: unknown[]) => captureException(...args),
+}));
+
+const noSuchContainer = new Error(
+  'Command failed: docker stats --no-stream --format "{{.MemUsage}}" redroid_container\n' +
+    "Error response from daemon: No such container: redroid_container\n",
+);
 
 describe("Device Stats Functions", () => {
   const mockDevice: Device = {
@@ -92,6 +104,31 @@ describe("Device Stats Functions", () => {
         MEMORY_LIMIT_BYTES,
       ]);
     });
+
+    it("has no usage to show, and nothing to report, while the container doesn't exist", async () => {
+      captureException.mockClear();
+      require("@/utils/docker/resource-utils.ts").getMemoryUsageOfDockerContainerBytes.mockRejectedValue(
+        noSuchContainer,
+      );
+      await expect(getMemoryUsedBytes(mockDevice)).resolves.toEqual([
+        -1,
+        MEMORY_LIMIT_BYTES,
+      ]);
+      expect(captureException).not.toHaveBeenCalled();
+    });
+
+    it("reports any other failure to read the usage", async () => {
+      captureException.mockClear();
+      const daemonDown = new Error("Cannot connect to the Docker daemon");
+      require("@/utils/docker/resource-utils.ts").getMemoryUsageOfDockerContainerBytes.mockRejectedValue(
+        daemonDown,
+      );
+      await expect(getMemoryUsedBytes(mockDevice)).resolves.toEqual([
+        -1,
+        MEMORY_LIMIT_BYTES,
+      ]);
+      expect(captureException).toHaveBeenCalledWith(daemonDown);
+    });
   });
 
   describe("getCpuUsage", () => {
@@ -103,6 +140,18 @@ describe("Device Stats Functions", () => {
         2,
         CPU_LIMIT_CPUS,
       ]);
+    });
+
+    it("has no usage to show, and nothing to report, while the container doesn't exist", async () => {
+      captureException.mockClear();
+      require("@/utils/docker/resource-utils.ts").getCpuUsageOfDockerContainerCpus.mockRejectedValue(
+        noSuchContainer,
+      );
+      await expect(getCpuUsage(mockDevice)).resolves.toEqual([
+        -1,
+        CPU_LIMIT_CPUS,
+      ]);
+      expect(captureException).not.toHaveBeenCalled();
     });
   });
 });

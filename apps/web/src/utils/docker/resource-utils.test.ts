@@ -3,6 +3,7 @@ import {
   getCpuUsageOfDockerContainerCpus,
   getMemoryUsageOfDockerContainerBytes,
   getTotalDiskUsageOfDirectoryBytes,
+  isNoSuchContainerError,
 } from "./resource-utils";
 
 jest.mock("child_process", () => ({
@@ -76,6 +77,27 @@ describe("Docker Resource Utils", () => {
       await expect(
         getCpuUsageOfDockerContainerCpus("invalidContainer"),
       ).rejects.toThrow("Failed to execute command");
+    });
+  });
+
+  describe("isNoSuchContainerError", () => {
+    it("recognizes docker's answer for a container that doesn't exist", () => {
+      const error = new Error(
+        'Command failed: docker stats --no-stream --format "{{.CPUPerc}}" abc-redroid-1\n' +
+          "Error response from daemon: No such container: abc-redroid-1\n",
+      );
+      expect(isNoSuchContainerError(error)).toBe(true);
+    });
+
+    it("doesn't mistake other failures for a missing container", () => {
+      expect(
+        isNoSuchContainerError(
+          new Error(
+            "Cannot connect to the Docker daemon at unix:///var/run/docker.sock",
+          ),
+        ),
+      ).toBe(false);
+      expect(isNoSuchContainerError("No such container")).toBe(false);
     });
   });
 });

@@ -15,7 +15,27 @@ import {
   getCpuUsageOfDockerContainerCpus,
   getMemoryUsageOfDockerContainerBytes,
   getTotalDiskUsageOfDirectoryBytes,
+  isNoSuchContainerError,
 } from "@/utils/docker/resource-utils.ts";
+import * as Sentry from "@sentry/nextjs";
+
+/**
+ * Resolves a container's usage, or -1 when it can't be read. A container that
+ * doesn't exist has no usage to read, as while its device is off or being
+ * recreated, so only other failures are reported.
+ */
+async function containerUsageOrUnknown(
+  usage: Promise<number>,
+): Promise<number> {
+  try {
+    return await usage;
+  } catch (error: unknown) {
+    if (!isNoSuchContainerError(error)) {
+      Sentry.captureException(error);
+    }
+    return -1;
+  }
+}
 
 /**
  * Retrieves the running status of the device.
@@ -58,7 +78,7 @@ export async function getStorageUsedBytes(
 export async function getMemoryUsedBytes(
   device: Device,
 ): Promise<[number, number]> {
-  const usedBytes = await ignoreNumberRejection(
+  const usedBytes = await containerUsageOrUnknown(
     getMemoryUsageOfDockerContainerBytes(getRedroidContainerName(device.id)),
   );
   return [usedBytes, MEMORY_LIMIT_BYTES];
@@ -70,7 +90,7 @@ export async function getMemoryUsedBytes(
  * @returns {Promise<[number, number]>} The used CPUs and total CPUs.
  */
 export async function getCpuUsage(device: Device): Promise<[number, number]> {
-  const usedCpus = await ignoreNumberRejection(
+  const usedCpus = await containerUsageOrUnknown(
     getCpuUsageOfDockerContainerCpus(getRedroidContainerName(device.id)),
   );
   return [usedCpus, CPU_LIMIT_CPUS];
