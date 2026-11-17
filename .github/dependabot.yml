@@ -31,6 +31,10 @@ updates:
       # tailwind-merge 3 supports Tailwind CSS 4 only, and the site is on Tailwind 3: the two move together, by hand.
       - dependency-name: "tailwind-merge"
         update-types: ["version-update:semver-major"]
+      # typescript-eslint doesn't support TypeScript 7 yet ("typescript-eslint does not support TS 7.0"); 6.x still comes
+      # through. Lift this once typescript-eslint supports 7.
+      - dependency-name: "typescript"
+        versions: [">= 7"]
     groups:
       nextjs:
         patterns:
