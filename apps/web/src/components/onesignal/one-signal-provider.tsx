@@ -22,9 +22,8 @@ const ONE_SIGNAL_PARAMS = {
     process.env.NODE_ENV === "production"
       ? "web.onesignal.auto.24c5a223-602c-4339-a230-554aefc554b5"
       : "web.onesignal.auto.26f438e4-4907-4b0f-9fba-4ab15d3b5c3b",
-  notifyButton: {
-    enable: false, // the default notification icon looks so scummy
-  },
+  // No notifyButton: the Subscription Bell stays off, as it is by default (the
+  // default notification icon looks so scummy)
   allowLocalhostAsSecureOrigin: process.env.NODE_ENV !== "production",
 };
 

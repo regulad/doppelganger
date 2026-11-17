@@ -3,7 +3,6 @@ import { WebSocket as WsWebSocket } from "ws";
 
 // @ts-expect-error -- it is not a namespace but can be used as one
 export type WsWebSocketServer = WsWebSocket.Server;
-// @ts-expect-error -- it is not a namespace but can be used as one
 export type WsWebSocketOptions = WsWebSocket.ClientOptions;
 
 export function isFatalWebSocketError(err: Error & { code?: string }): boolean {

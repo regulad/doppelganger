@@ -72,7 +72,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { ReactNode, useMemo, useState } from "react";
 import { ControllerRenderProps, useForm, UseFormReturn } from "react-hook-form";
-import { LuCrown, LuInfo, LuLoader2, LuSettings } from "react-icons/lu";
+import { LuCrown, LuInfo, LuLoaderCircle, LuSettings } from "react-icons/lu";
 import { TbCashBanknoteOff } from "react-icons/tb";
 import { useMediaQuery } from "usehooks-ts";
 
@@ -545,7 +545,7 @@ function NewDeviceForm({
           <Button type="submit" disabled={!dialogCanClose}>
             Create
             {!dialogCanClose && (
-              <LuLoader2 className="ml-2 h-4 w-4 animate-spin" />
+              <LuLoaderCircle className="ml-2 h-4 w-4 animate-spin" />
             )}
           </Button>
         </FooterComp>

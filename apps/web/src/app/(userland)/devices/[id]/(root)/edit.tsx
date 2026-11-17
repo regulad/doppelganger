@@ -26,7 +26,7 @@ import { z } from "@/utils/zod.ts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { LuLoader2 } from "react-icons/lu";
+import { LuLoaderCircle } from "react-icons/lu";
 import { TbEdit } from "react-icons/tb";
 
 const formSchema = z.object({
@@ -121,7 +121,7 @@ export default function EditDeviceButton({
               <Button type="submit" className="w-full" disabled={isLoading}>
                 Submit New Name
                 {isLoading && (
-                  <LuLoader2 className={"ml-2 h-5 w-5 animate-spin"} />
+                  <LuLoaderCircle className={"ml-2 h-5 w-5 animate-spin"} />
                 )}
               </Button>
             </DialogFooter>

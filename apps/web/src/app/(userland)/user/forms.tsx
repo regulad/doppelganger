@@ -34,7 +34,7 @@ import {
 } from "@/utils/toast-utils.ts";
 import { z } from "@/utils/zod.ts";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { LuLoader2 } from "react-icons/lu";
+import { LuLoaderCircle } from "react-icons/lu";
 import { Link } from "react-transition-progress/next";
 import handleDeleteAccount from "./actions.ts";
 
@@ -350,7 +350,7 @@ export function DeleteAccountCard() {
               >
                 Delete Account
                 {accountDeleting && (
-                  <LuLoader2 className="ml-2 h-4 w-4 animate-spin" />
+                  <LuLoaderCircle className="ml-2 h-4 w-4 animate-spin" />
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>

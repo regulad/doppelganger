@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { LuLoader2 } from "react-icons/lu";
+import { LuLoaderCircle } from "react-icons/lu";
 import { Link } from "react-transition-progress/next";
 
 const INITIAL_LOGIN_FORM_STATE = {
@@ -31,7 +31,7 @@ function LoginButton() {
   return (
     <Button type="submit" className="w-full" disabled={isPending}>
       Login
-      {isPending && <LuLoader2 className="ml-2 h-4 w-4 animate-spin" />}
+      {isPending && <LuLoaderCircle className="ml-2 h-4 w-4 animate-spin" />}
     </Button>
   );
 }

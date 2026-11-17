@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast.ts";
 import { clientSideReloadWithToast } from "@/utils/toast-utils.ts";
 import * as Sentry from "@sentry/nextjs";
 import React, { useMemo, useState } from "react";
-import { LuLoader2, LuPower, LuPowerOff } from "react-icons/lu";
+import { LuLoaderCircle, LuPower, LuPowerOff } from "react-icons/lu";
 
 export function ClientDevicePowerStateButtons({
   deviceInfo,
@@ -124,7 +124,9 @@ export function ClientDevicePowerStateButtons({
       >
         <LuPower className="h-4 w-4" />
         <span className="ml-1">Start Device</span>
-        {deviceUpLoading && <LuLoader2 className="ml-2 h-4 w-4 animate-spin" />}
+        {deviceUpLoading && (
+          <LuLoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+        )}
       </Button>
       <Button
         onClick={handleDeviceDown}
@@ -134,7 +136,7 @@ export function ClientDevicePowerStateButtons({
         <LuPowerOff className="h-4 w-4" />
         <span className="ml-1">Stop Device</span>
         {deviceDownLoading && (
-          <LuLoader2 className="ml-2 h-4 w-4 animate-spin" />
+          <LuLoaderCircle className="ml-2 h-4 w-4 animate-spin" />
         )}
       </Button>
     </div>

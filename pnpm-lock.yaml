@@ -63,8 +63,8 @@ importers:
         specifier: 16.4.3
         version: 16.4.3(next@16.4.3)(react@19.3.1)
       '@onesignal/node-onesignal':
-        specifier: 5.0.0-alpha-01
-        version: 5.0.0-alpha-01
+        specifier: 5.20.0
+        version: 5.20.0
       '@paralleldrive/cuid2':
         specifier: ^2.2.2
         version: 2.3.1
@@ -267,11 +267,11 @@ importers:
         specifier: ^7.55.0
         version: 7.91.0(@types/react@19.3.0)(react@19.3.1)
       react-icons:
-        specifier: 5.2.1
-        version: 5.2.1(react@19.3.1)
+        specifier: 5.7.0
+        version: 5.7.0(react@19.3.1)
       react-onesignal:
-        specifier: 3.0.1
-        version: 3.0.1(react@19.3.1)
+        specifier: 3.5.6
+        version: 3.5.6
       react-resizable-panels:
         specifier: ^2.0.22
         version: 2.1.9(react-dom@19.3.1)(react@19.3.1)
@@ -385,8 +385,8 @@ importers:
         specifier: ^0.7.39
         version: 0.7.39
       '@types/ws':
-        specifier: 8.5.11
-        version: 8.5.11
+        specifier: 8.18.2
+        version: 8.18.2
       eslint:
         specifier: 9.39.5
         version: 9.39.5
@@ -2621,18 +2621,13 @@ packages:
     engines: {node: '>=12.4.0'}
     dev: true
 
-  /@onesignal/node-onesignal@5.0.0-alpha-01:
-    resolution: {integrity: sha512-Ed4CwHk6gh7iaettBQ6DLszCWugbT2ldts26HMmcC4b0GQ43riheKpXrf8yuezZppwFF77nYyHOE/JEyRyBBsg==}
+  /@onesignal/node-onesignal@5.20.0:
+    resolution: {integrity: sha512-KzXahli6oRdzO19UHY6f5UeB6cSFsfl5iRwHMlCG0QJ/5r9/6DL6Hj/tCPz8yC6ovIMQD9aUJGFguJ34hfiO4A==}
+    engines: {node: '>=18.0.0'}
     dependencies:
-      '@types/node': 20.19.43
-      '@types/node-fetch': 2.6.13
       btoa: 1.2.1
-      es6-promise: 4.2.8
       form-data: 2.5.6
-      node-fetch: 2.7.0
       url-parse: 1.5.10
-    transitivePeerDependencies:
-      - encoding
     dev: false
 
   /@opentelemetry/api-logs@0.57.2:
@@ -5445,13 +5440,6 @@ packages:
     resolution: {integrity: sha512-t+8/QWTAhOFlrF1IVZqKnMRJi84EgkIK5Kh0p2JV4OLywUvCwJPFxbJAl7XAow7DVIHsF+xW9f1MVzg0L6Szjw==}
     dev: true
 
-  /@types/node-fetch@2.6.13:
-    resolution: {integrity: sha512-QGpRVpzSaUs30JBSGPjOg4Uveu384erbHBoT1zeONvyCfwQxIkUshLAOqN/k9EjGviPRmWTTe6aH2qySWKTVSw==}
-    dependencies:
-      '@types/node': 20.19.43
-      form-data: 4.0.6
-    dev: false
-
   /@types/node@18.19.130:
     resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
     dependencies:
@@ -5521,8 +5509,8 @@ packages:
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
     dev: false
 
-  /@types/ws@8.5.11:
-    resolution: {integrity: sha512-4+q7P5h3SpJxaBft0Dzpbr6lmMaqh0Jr2tbhJZ/luAwvD7ohSCniYkwz/pLxuT2h0EOa6QADgJj1Ko+TzRfZ+w==}
+  /@types/ws@8.18.2:
+    resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
     dependencies:
       '@types/node': 20.19.43
     dev: true
@@ -7760,10 +7748,6 @@ packages:
     resolution: {integrity: sha512-3+AYXp9fmJ/UhHBMYj2/U+RaUouMD90SzoItyDOB2Za7W6dB7fQApFGnZPl2MF6K8/Tv1koh1JyirSx/kju6Pw==}
     dev: false
 
-  /es6-promise@4.2.8:
-    resolution: {integrity: sha512-HJDGx5daxeIvxdBxvG2cb9g4tEvwIk3i8+nhX0yGrYmZUzbkdg8QbDevheDB8gd0//uPj4c1EQua8Q+MViT0/w==}
-    dev: false
-
   /esast-util-from-estree@2.0.0:
     resolution: {integrity: sha512-4CyanoAudUSBAn5K13H4JhsMH6L9ZP7XbLVe/dKybkxMO7eDyLsT8UHl9TRNrU2Gr9nz+FovfSIjuXWJ81uVwQ==}
     dependencies:
@@ -8482,6 +8466,7 @@ packages:
       es-set-tostringtag: 2.1.0
       hasown: 2.0.4
       mime-types: 2.1.35
+    dev: true
 
   /format@0.2.2:
     resolution: {integrity: sha512-wzsgA6WOq+09wrU1tsJ09udeR/YZRaeArL9e1wPbFg3GG2yDnC2ldKpxs4xunpFF9DgqCqOIra3bc1HWrJ37Ww==}
@@ -11223,6 +11208,7 @@ packages:
         optional: true
     dependencies:
       whatwg-url: 5.0.0
+    dev: true
 
   /node-forge@1.4.2:
     resolution: {integrity: sha512-rRtAR5XLJ8gCKd9du4qrKAsgCG1ObGP4gLeNJMa4vYSeq4bmBMOJk5IHkrviBV0q7uoAJlVd8HEQYQSVUb4FGQ==}
@@ -12186,8 +12172,8 @@ packages:
       react: 19.3.1
     dev: false
 
-  /react-icons@5.2.1(react@19.3.1):
-    resolution: {integrity: sha512-zdbW5GstTzXaVKvGSyTaBalt7HSfuK5ovrzlpyiWHAFXndXTdd/1hdDHI4xBM1Mn7YriT6aqESucFl9kEXzrdw==}
+  /react-icons@5.7.0(react@19.3.1):
+    resolution: {integrity: sha512-LBLy340Rzqy6+/yVhZKT3B/QpP1BZaesGqasf09HPOBzRarcDIFH0WwXlXQfE7q7ipxK4MSiC5DIBWURCny6fw==}
     peerDependencies:
       react: '*'
     dependencies:
@@ -12206,13 +12192,9 @@ packages:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
     dev: true
 
-  /react-onesignal@3.0.1(react@19.3.1):
-    resolution: {integrity: sha512-AfAtGdXRcuMhVf+9OXehGcQeiJIYl1ihAByvfVNa3RCA1Vnn19tBha4XQB+o3ukUh2IQn0yiflRO4vXgI9nOng==}
-    engines: {node: '>=8', npm: '>=5'}
-    peerDependencies:
-      react: '>= 16.8'
-    dependencies:
-      react: 19.3.1
+  /react-onesignal@3.5.6:
+    resolution: {integrity: sha512-QlvuWilG8n86GMaYG7a7DSzyLrZIsbM6PFW2XrDI68AYV50axUF5RCzWIqEGfNc1COa/QiDlz7wGkpuiKBayoQ==}
+    engines: {node: '>=18'}
     dev: false
 
   /react-remove-scroll-bar@2.3.8(@types/react@19.3.0)(react@19.3.1):
@@ -13508,6 +13490,7 @@ packages:
 
   /tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
+    dev: true
 
   /tr46@3.0.0:
     resolution: {integrity: sha512-l7FvfAHlcmulp8kr+flpQZmVwtu7nfRV7NZujtN0OqES8EL4O4e0qqzL0DC5gAvx/ZC/9lk6rhcUwYvkBnBnYA==}
@@ -14065,6 +14048,7 @@ packages:
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
+    dev: true
 
   /webidl-conversions@7.0.0:
     resolution: {integrity: sha512-VwddBukDzu71offAQR975unBIGqfKZpM+8ZX6ySk8nYhVoo5CYaZyzt3YBvYtRtO+aoGlqxPg/B87NGVZ/fu6g==}
@@ -14214,6 +14198,7 @@ packages:
     dependencies:
       tr46: 0.0.3
       webidl-conversions: 3.0.1
+    dev: true
 
   /which-boxed-primitive@1.1.1:
     resolution: {integrity: sha512-TbX3mj8n0odCBFVlY8AxkqcHASw3L60jIuF8jFP78az3C2YhmGvqbHBpAjTRH2/xqYunrJ9g1jSyjCjpoWzIAA==}

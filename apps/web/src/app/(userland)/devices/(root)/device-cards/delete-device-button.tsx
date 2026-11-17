@@ -18,7 +18,7 @@ import { useToast } from "@/components/ui/use-toast.ts";
 import { clientSideRedirectWithToast } from "@/utils/toast-utils.ts";
 import React, { useMemo, useState } from "react";
 import { HiOutlineTrash } from "react-icons/hi2";
-import { LuLoader2 } from "react-icons/lu";
+import { LuLoaderCircle } from "react-icons/lu";
 
 const deleteDeviceTooltip = "Delete Device";
 
@@ -92,7 +92,9 @@ export default function DeleteDeviceButton({
             onClick={handleDelete}
           >
             Delete
-            {loading && <LuLoader2 className="ml-2 h-4 w-4 animate-spin" />}
+            {loading && (
+              <LuLoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

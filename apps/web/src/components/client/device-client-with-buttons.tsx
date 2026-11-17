@@ -22,7 +22,7 @@ import { IoStatsChartOutline } from "react-icons/io5";
 import {
   LuCircle,
   LuClipboardPaste,
-  LuLoader2,
+  LuLoaderCircle,
   LuPower,
   LuSettings2,
   LuSquare,
@@ -376,7 +376,9 @@ export default function DeviceClientWithButtons({
             <DeviceClient
               ref={deviceClientHandleRef}
               device={device}
-              loadingNode={<LuLoader2 className="h-20 w-20 animate-spin" />}
+              loadingNode={
+                <LuLoaderCircle className="h-20 w-20 animate-spin" />
+              }
               captureKeyboard={captureKeyboard}
               playAudio={playAudio}
             />
