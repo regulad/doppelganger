@@ -236,6 +236,76 @@ jobs:
           name: sentry-release-${{ matrix.tag }}
           path: ${{ runner.temp }}/sentry-release
 
+  # Runs each Pheidippides app's device tests (app/src/androidTest) on an
+  # emulator at the oldest and newest Android versions the devices run, against
+  # its deviceTest build: the debug APK with Sentry's DSN pointed nowhere.
+  # build-android only compiles, lints and unit-tests the apps; this shows that
+  # an update still works on Android itself.
+  test-android:
+    runs-on: "ubuntu-latest"
+    name: Test Pheidippides on API ${{ matrix.api-level }}
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [31, 36]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          lfs: false
+          # versionCode counts each app's commits, which needs the whole history
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.DISTRIBUTION }}
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # The emulator needs KVM, which GitHub's Linux runners have but don't
+      # open to the runner's user
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Each script line runs on its own, from the repository root. adb root
+      # lets the tests set persist.doppelganger.* as Doppelganger's initial
+      # setup does. No SENTRY_AUTH_TOKEN here: nothing is uploaded.
+      - name: Run the device tests
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: default
+          arch: x86_64
+          profile: pixel_5
+          ram-size: 2048M
+          disk-size: 4G
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            adb root
+            adb wait-for-device
+            cd pheidippides/PheidippidesNotify && ./gradlew --no-daemon --console=plain connectedAndroidTest
+            cd pheidippides/PheidippidesLocate && ./gradlew --no-daemon --console=plain connectedAndroidTest
+            cd pheidippides/PheidippidesAdministrate && ./gradlew --no-daemon --console=plain connectedAndroidTest
+
+      - name: Upload the device test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pheidippides-device-tests-api-${{ matrix.api-level }}
+          path: pheidippides/*/app/build/reports/androidTests/connected/
+
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than
     # under QEMU emulation. Each pushes its image by digest alone; merge-docker
@@ -374,6 +444,8 @@ jobs:
     if: github.event_name != 'pull_request'
     needs:
       - build-docker
+      # A master push whose device tests fail isn't published or deployed
+      - test-android
 
     permissions:
       contents: read
