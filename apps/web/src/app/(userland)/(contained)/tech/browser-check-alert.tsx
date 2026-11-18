@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toTitleCase } from "@/utils/misc.ts";
 import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 import { headers } from "next/headers";
-import UAParser from "ua-parser-js";
+import { UAParser } from "ua-parser-js";
 import packageJson from "../../../../../package.json";
 
 const BROWSERS_CONFIG = packageJson.browserslist;
