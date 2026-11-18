@@ -338,6 +338,79 @@ jobs:
           name: pheidippides-device-tests-api-${{ matrix.api-level }}
           path: pheidippides/*/app/build/reports/androidTests/connected/
 
+  # Sets up a redroid device, as production's devices are, with the server's
+  # own setup code and the APKs build-android made, then sends it a location
+  # through the location route, which hands it to Pheidippides Locate:
+  # apps/web/server/src/adb/device-setup.redroid.ts. test-android runs the
+  # apps on emulators, where neither the server's setup nor Locate's part of
+  # the route runs.
+  test-device-setup:
+    runs-on: "ubuntu-latest"
+    name: Test device setup on redroid
+    needs: build-android
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          lfs: false
+
+      # Android 14: redroid's 16 needs ashmem, which these runners' kernels
+      # lack. They have binder, which every version needs.
+      - name: Start redroid
+        run: |
+          docker run -d --privileged --name redroid -p 5555:5555 \
+            redroid/redroid:14.0.0_64only-latest@sha256:0a611199ba2e0b5d60af39b3327a517f6407231f4352114ed3bd3cbfe2be69aa
+
+      # The Pheidippides APKs from build-android, where setup looks for them
+      - uses: actions/download-artifact@v8
+        name: Download APKs
+        with:
+          pattern: pheidippides-*
+          path: apps/web/android
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22" # as in apps/web engines and its Dockerfile
+          cache: "pnpm"
+
+      - name: Install dependencies with pnpm
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for redroid to boot
+        run: |
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          adb="$ANDROID_HOME/platform-tools/adb"
+          for i in $(seq 1 120); do
+            "$adb" connect localhost:5555 >/dev/null 2>&1
+            if [ "$("$adb" -s localhost:5555 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs redroid 2>&1 | tail -50
+          exit 1
+
+      - name: Run the device setup test
+        working-directory: apps/web
+        env:
+          REDROID_ADB_SERIAL: localhost:5555
+        run: |
+          pnpm run catalog:generate
+          pnpm exec jest --testMatch '**/*.redroid.ts' --coverage=false
+
+      - name: Show the device's log
+        if: failure()
+        run: adb -s localhost:5555 logcat -d | tail -300
+
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than
     # under QEMU emulation. Each pushes its image by digest alone; merge-docker
