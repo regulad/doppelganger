@@ -115,6 +115,10 @@ jobs:
     env:
       # A step's if can't read secrets directly
       HAS_SIGNING_KEY: ${{ secrets.SOPS_AGE_KEY != '' }}
+      # regulad's Nexus mirror of Maven Central, for Gradle (see
+      # .github/gradle/maven-central-mirror.init.gradle.kts)
+      MAVEN_MIRROR_USERNAME: ${{ secrets.MAVEN_MIRROR_USERNAME }}
+      MAVEN_MIRROR_PASSWORD: ${{ secrets.MAVEN_MIRROR_PASSWORD }}
 
     strategy:
       fail-fast: true
@@ -144,6 +148,11 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      # Maven Central rate-limits GitHub's runners at times; Gradle fetches it
+      # through regulad's mirror instead, when the token is there
+      - name: Fetch Maven Central through the mirror
+        run: install -D -m 644 .github/gradle/maven-central-mirror.init.gradle.kts "${GRADLE_USER_HOME:-$HOME/.gradle}/init.d/maven-central-mirror.init.gradle.kts"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
@@ -247,6 +256,12 @@ jobs:
     permissions:
       contents: read
 
+    env:
+      # regulad's Nexus mirror of Maven Central, for Gradle (see
+      # .github/gradle/maven-central-mirror.init.gradle.kts)
+      MAVEN_MIRROR_USERNAME: ${{ secrets.MAVEN_MIRROR_USERNAME }}
+      MAVEN_MIRROR_PASSWORD: ${{ secrets.MAVEN_MIRROR_PASSWORD }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -269,6 +284,11 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      # Maven Central rate-limits GitHub's runners at times; Gradle fetches it
+      # through regulad's mirror instead, when the token is there
+      - name: Fetch Maven Central through the mirror
+        run: install -D -m 644 .github/gradle/maven-central-mirror.init.gradle.kts "${GRADLE_USER_HOME:-$HOME/.gradle}/init.d/maven-central-mirror.init.gradle.kts"
 
       # The emulator needs KVM, which GitHub's Linux runners have but don't
       # open to the runner's user
