@@ -92,6 +92,10 @@ const nextConfig = {
     // do not disable it
     forceSwcTransforms: true,
   },
+  // These ship only ES modules. Next bundles them either way; listing them
+  // here is for jest, which next/jest has compile only the node_modules
+  // packages named here, and which can't load ES modules uncompiled.
+  transpilePackages: ["@paralleldrive/cuid2", "@noble/hashes"],
   // ignore sentry utils from server action bundling
   serverExternalPackages: [
     // we load these in our server functions, if i ever split this won't be required
