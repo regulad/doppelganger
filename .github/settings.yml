@@ -16,6 +16,15 @@ repository:
   # workflows/dependabot-auto-merge.yml turns it on for Dependabot's grouped minor and patch updates.
   allow_auto_merge: true
 
+  # Off: Dependabot's security updates ran for apps/web's package.json as well as for the
+  # workspace root, and the apps/web PRs (#10, #74) changed package.json without the root's
+  # lockfile, failing CI. Security fixes come through Dependabot's version updates instead,
+  # once past the same two-week cooldown as everything else.
+  enable_automated_security_fixes: false
+
+  # On: Dependabot still alerts on vulnerable dependencies.
+  enable_vulnerability_alerts: true
+
 branches:
   - name: master
     # https://docs.github.com/en/rest/reference/repos#update-branch-protection
