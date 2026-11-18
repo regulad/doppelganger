@@ -1,7 +1,7 @@
 // @ts-check
 import withMdxFactory from "@next/mdx";
 import { withSentryConfig } from "@sentry/nextjs/config";
-import { withContentlayer } from "next-contentlayer2";
+import { PHASE_PRODUCTION_SERVER } from "next/constants.js";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkToc from "remark-toc";
@@ -202,6 +202,16 @@ const mdxConfig = withMdxFactory({
   },
 })(sentryConfig);
 
-const contentlayerConfig = withContentlayer(mdxConfig);
-
-export default contentlayerConfig;
+// withContentlayer only hooks Contentlayer into webpack builds and the dev
+// server, so the production server has no use for it. Importing it loads
+// contentlayer2's OpenTelemetry tracing, about 250 modules, which held up
+// every server start, long enough after a deploy to set off Sentry's
+// 5-second ANR detection. So it's imported only for the other phases.
+/** @type {(phase: string) => Promise<import('next').NextConfig>} */
+export default async function config(phase) {
+  if (phase === PHASE_PRODUCTION_SERVER) {
+    return mdxConfig;
+  }
+  const { withContentlayer } = await import("next-contentlayer2");
+  return withContentlayer(mdxConfig);
+}
