@@ -48,6 +48,14 @@ jobs:
     permissions:
       contents: read
 
+    services:
+      # Stripe's mock API, which apps/web/src/app/api/stripe/subscribing.test.ts
+      # sends its Stripe requests to
+      stripe-mock:
+        image: stripe/stripe-mock:v0.206.0@sha256:aeb96b83e87a893d2ac005e363ac01ffa6e59a5ad85b49c155dfc9129de02e78
+        ports:
+          - 12111:12111
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -102,6 +110,8 @@ jobs:
       # its own runner, rather than here, where their Gradle builds would run
       # side by side and contend for the one Gradle daemon registry
       - name: Turbo
+        env:
+          STRIPE_MOCK_URL: http://localhost:12111
         run: |
           ./scripts/verify-clean-commit.sh
           pnpm exec turbo run lint type-check test --filter='!pheidippides-*'
@@ -327,6 +337,108 @@ jobs:
         with:
           name: pheidippides-device-tests-api-${{ matrix.api-level }}
           path: pheidippides/*/app/build/reports/androidTests/connected/
+
+  # Sets up a redroid device, as production's devices are, with the server's
+  # own setup code and the APKs build-android made, then sends it a location
+  # through the location route, which hands it to Pheidippides Locate:
+  # apps/web/server/src/adb/device-setup.redroid.ts. test-android runs the
+  # apps on emulators, where neither the server's setup nor Locate's part of
+  # the route runs.
+  test-device-setup:
+    runs-on: "ubuntu-latest"
+    name: Test device setup on redroid
+    needs: build-android
+    # A device that never comes up would otherwise hold the runner for six hours
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          lfs: false
+
+      # Android 14: redroid's 16 needs ashmem, which these runners' kernels
+      # lack. Every version needs binder, which they have as the binder_linux
+      # module, not loaded until asked for (or, failing that, in the kernel's
+      # extra modules). The runners have no GPU, so Android renders on the CPU
+      # (redroid_gpu_mode=guest), as regulad/redroid-script's boot tests do.
+      #
+      # The device is on a network with no way out, which adb reaches at the
+      # device's own address: the APKs are the ones production installs, and
+      # their Sentry reports would otherwise reach production's projects.
+      - name: Start redroid
+        run: |
+          echo "kernel $(uname -r)"
+          if ! grep -qw binder /proc/filesystems; then
+            if ! sudo modprobe binder_linux devices=binder,hwbinder,vndbinder; then
+              sudo apt-get update -q
+              sudo apt-get install -y -q "linux-modules-extra-$(uname -r)"
+              sudo modprobe binder_linux devices=binder,hwbinder,vndbinder
+            fi
+          fi
+          grep -w binder /proc/filesystems
+          docker network create --internal redroid
+          docker run -d --privileged --name redroid --network redroid \
+            redroid/redroid:14.0.0_64only-latest@sha256:0a611199ba2e0b5d60af39b3327a517f6407231f4352114ed3bd3cbfe2be69aa \
+            androidboot.redroid_gpu_mode=guest
+          ip=$(docker inspect -f '{{.NetworkSettings.Networks.redroid.IPAddress}}' redroid)
+          echo "REDROID_ADB_SERIAL=$ip:5555" >> "$GITHUB_ENV"
+
+      # The Pheidippides APKs from build-android, where setup looks for them
+      - uses: actions/download-artifact@v8
+        name: Download APKs
+        with:
+          pattern: pheidippides-*
+          path: apps/web/android
+
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22" # as in apps/web engines and its Dockerfile
+          cache: "pnpm"
+
+      - name: Install dependencies with pnpm
+        run: pnpm install --frozen-lockfile
+
+      # Every adb call has a timeout: adb shell waits indefinitely for a device
+      # that hasn't connected
+      - name: Wait for redroid to boot
+        run: |
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          adb="$ANDROID_HOME/platform-tools/adb"
+          deadline=$((SECONDS + 600))
+          while [ $SECONDS -lt $deadline ]; do
+            timeout 10 "$adb" connect "$REDROID_ADB_SERIAL" >/dev/null 2>&1 || true
+            booted=$(timeout 10 "$adb" -s "$REDROID_ADB_SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "$booted" = 1 ]; then
+              echo "booted: $(timeout 10 "$adb" -s "$REDROID_ADB_SERIAL" shell getprop ro.build.fingerprint)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::redroid didn't finish booting in 10 minutes"
+          docker ps -a
+          timeout 10 "$adb" devices || true
+          docker logs redroid 2>&1 | tail -100
+          exit 1
+
+      # REDROID_ADB_SERIAL is the device's address, from Start redroid
+      - name: Run the device setup test
+        working-directory: apps/web
+        run: |
+          pnpm run catalog:generate
+          pnpm exec jest --testMatch '**/*.redroid.ts' --coverage=false
+
+      - name: Show the device's log
+        if: failure()
+        run: timeout 60 "$ANDROID_HOME/platform-tools/adb" -s "$REDROID_ADB_SERIAL" logcat -d | tail -300 || true
 
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than
