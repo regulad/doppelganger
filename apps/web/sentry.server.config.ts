@@ -15,6 +15,7 @@ import { nodeProfilingIntegration } from "@sentry/profiling-node";
 import { dataCollection } from "./sentry.data-collection.ts";
 import { dsn } from "./sentry.dsn.ts";
 import { readSentryContext } from "./server/src/sentry/error-context.ts";
+import { getPm2Instance } from "./server/src/sentry/pm2-instance.ts";
 import { describeProcessState } from "./server/src/sentry/process-state.ts";
 
 if (!dsn && process.env.NODE_ENV === "production") {
@@ -29,7 +30,7 @@ Sentry.init({
     tags: {
       // Which of pm2's cluster workers sent the event. Two events from
       // different workers at once can mean they raced each other.
-      "pm2.instance": process.env.NODE_APP_INSTANCE ?? "none",
+      "pm2.instance": getPm2Instance(),
     },
   },
 
