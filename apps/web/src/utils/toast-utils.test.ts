@@ -1,7 +1,7 @@
 import {
-  clientSideRedirectWithToast,
   encodeQueryParams,
   encodeToastParams,
+  getUrlWithToast,
 } from "./toast-utils";
 
 describe("toast-utils", () => {
@@ -49,30 +49,27 @@ describe("toast-utils", () => {
     });
   });
 
-  describe("clientSideRedirectWithToast", () => {
-    beforeEach(() => {
-      // @ts-expect-error -- weird
-      delete window.location;
-      window.location = { href: "" } as any;
-    });
-
-    it("redirects with both title and description in the query params", () => {
-      clientSideRedirectWithToast("/path", {
-        title: "Title",
-        description: "Description",
-      });
-      expect(window.location.href).toEqual(
+  // clientSideRedirectWithToast sets window.location.href to this URL. jsdom
+  // doesn't navigate, and since jsdom 26 a test can't replace
+  // window.location, so the URL is what's tested.
+  describe("getUrlWithToast", () => {
+    it("puts both title and description in the query params", () => {
+      expect(
+        getUrlWithToast("/path", {
+          title: "Title",
+          description: "Description",
+        }),
+      ).toEqual(
         `/path?toastTitle=${encodeURIComponent("Title")}&toastDescription=${encodeURIComponent("Description")}`,
       );
     });
 
-    it("redirects with only title in the query params when description is not provided", () => {
-      clientSideRedirectWithToast("/path", {
-        title: "Title",
-      });
-      expect(window.location.href).toEqual(
-        `/path?toastTitle=${encodeURIComponent("Title")}`,
-      );
+    it("puts only the title in the query params when there's no description", () => {
+      expect(
+        getUrlWithToast("/path", {
+          title: "Title",
+        }),
+      ).toEqual(`/path?toastTitle=${encodeURIComponent("Title")}`);
     });
   });
 });
