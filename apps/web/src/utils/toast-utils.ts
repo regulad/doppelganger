@@ -35,6 +35,14 @@ export function getQueryForToast(params: PlaintextToastParams): string {
   return encodeQueryParams(encodedToastParams);
 }
 
+/** The URL of pathName, opening with a toast showing the given message */
+export function getUrlWithToast(
+  pathName: string,
+  toast: PlaintextToastParams,
+): string {
+  return `${pathName}${getQueryForToast(toast)}`;
+}
+
 /**
  * Redirects the user (client-side) to a given URL and has a toast show up with the given message.
  * @param pathName
@@ -45,8 +53,7 @@ export function clientSideRedirectWithToast(
   toast: PlaintextToastParams,
 ) {
   // client-side redirect
-  const queryParams = encodeQueryParams(encodeToastParams(toast));
-  window.location.href = `${pathName}${queryParams}`;
+  window.location.href = getUrlWithToast(pathName, toast);
 }
 
 export function clientSideReloadWithToast(toast: PlaintextToastParams) {
