@@ -23,8 +23,10 @@ if (!SERIAL) {
 }
 const [ADB_HOSTNAME, ADB_PORT] = SERIAL.split(":");
 
+// IDs are letters and digits, as the routes expect (endpoint-regex.ts)
 const DEVICE = {
-  id: "redroid-test",
+  id: "redroidtestdevice",
+  redroidSecret: "redroidtestsecret",
   ownerId: "owner",
   adbHostname: ADB_HOSTNAME,
   adbPort: Number(ADB_PORT),
@@ -109,13 +111,22 @@ async function waitForShell(
 jest.setTimeout(15 * 60_000);
 
 describe("a redroid device", () => {
-  afterEach(() => {
+  afterEach(async () => {
     expect(reported).toEqual([]);
+    // Nor did any of the apps crash, which Android logs on its crash buffer
+    expect(await shell("logcat -b crash -d")).not.toContain(
+      "xyz.regulad.pheidippides",
+    );
   });
 
   it("is set up for the Pheidippides apps", async () => {
     await doInitialDeviceSetup(DEVICE);
 
+    // The apps learn which device they're on, and its secret, from these
+    expect(await shell("getprop persist.doppelganger.device")).toBe(DEVICE.id);
+    expect(await shell("getprop persist.doppelganger.secret")).toBe(
+      DEVICE.redroidSecret,
+    );
     expect(await shell("pm list packages xyz.regulad.pheidippides")).toEqual(
       expect.stringContaining("package:xyz.regulad.pheidippides.locate"),
     );
@@ -129,9 +140,9 @@ describe("a redroid device", () => {
       "xyz.regulad.pheidippides.locate",
     );
     // Notify reads notifications, and Administrate owns the device
-    expect(await shell("cmd notification allowed_listeners")).toContain(
-      "xyz.regulad.pheidippides.notify",
-    );
+    expect(
+      await shell("settings get secure enabled_notification_listeners"),
+    ).toContain("xyz.regulad.pheidippides.notify");
     expect(await shell("dpm list-owners")).toContain(
       "xyz.regulad.pheidippides.administrate",
     );

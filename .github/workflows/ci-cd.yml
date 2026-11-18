@@ -364,6 +364,10 @@ jobs:
       # module, not loaded until asked for (or, failing that, in the kernel's
       # extra modules). The runners have no GPU, so Android renders on the CPU
       # (redroid_gpu_mode=guest), as regulad/redroid-script's boot tests do.
+      #
+      # The device is on a network with no way out, which adb reaches at the
+      # device's own address: the APKs are the ones production installs, and
+      # their Sentry reports would otherwise reach production's projects.
       - name: Start redroid
         run: |
           echo "kernel $(uname -r)"
@@ -375,9 +379,12 @@ jobs:
             fi
           fi
           grep -w binder /proc/filesystems
-          docker run -d --privileged --name redroid -p 5555:5555 \
+          docker network create --internal redroid
+          docker run -d --privileged --name redroid --network redroid \
             redroid/redroid:14.0.0_64only-latest@sha256:0a611199ba2e0b5d60af39b3327a517f6407231f4352114ed3bd3cbfe2be69aa \
             androidboot.redroid_gpu_mode=guest
+          ip=$(docker inspect -f '{{.NetworkSettings.Networks.redroid.IPAddress}}' redroid)
+          echo "REDROID_ADB_SERIAL=$ip:5555" >> "$GITHUB_ENV"
 
       # The Pheidippides APKs from build-android, where setup looks for them
       - uses: actions/download-artifact@v8
@@ -408,10 +415,10 @@ jobs:
           adb="$ANDROID_HOME/platform-tools/adb"
           deadline=$((SECONDS + 600))
           while [ $SECONDS -lt $deadline ]; do
-            timeout 10 "$adb" connect localhost:5555 >/dev/null 2>&1 || true
-            booted=$(timeout 10 "$adb" -s localhost:5555 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            timeout 10 "$adb" connect "$REDROID_ADB_SERIAL" >/dev/null 2>&1 || true
+            booted=$(timeout 10 "$adb" -s "$REDROID_ADB_SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
             if [ "$booted" = 1 ]; then
-              echo "booted: $(timeout 10 "$adb" -s localhost:5555 shell getprop ro.build.fingerprint)"
+              echo "booted: $(timeout 10 "$adb" -s "$REDROID_ADB_SERIAL" shell getprop ro.build.fingerprint)"
               exit 0
             fi
             sleep 5
@@ -422,17 +429,16 @@ jobs:
           docker logs redroid 2>&1 | tail -100
           exit 1
 
+      # REDROID_ADB_SERIAL is the device's address, from Start redroid
       - name: Run the device setup test
         working-directory: apps/web
-        env:
-          REDROID_ADB_SERIAL: localhost:5555
         run: |
           pnpm run catalog:generate
           pnpm exec jest --testMatch '**/*.redroid.ts' --coverage=false
 
       - name: Show the device's log
         if: failure()
-        run: timeout 60 "$ANDROID_HOME/platform-tools/adb" -s localhost:5555 logcat -d | tail -300 || true
+        run: timeout 60 "$ANDROID_HOME/platform-tools/adb" -s "$REDROID_ADB_SERIAL" logcat -d | tail -300 || true
 
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than
