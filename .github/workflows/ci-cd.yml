@@ -89,10 +89,10 @@ jobs:
         with:
           run_install: false
 
-      - name: Set up Node.js 22
+      - name: Set up Node.js 24
         uses: actions/setup-node@v7
         with:
-          node-version: "22" # as in apps/web engines and its Dockerfile
+          node-version: "24" # as in apps/web engines and its Dockerfile
           cache: "pnpm"
 
       - name: Install dependencies with pnpm
@@ -177,10 +177,10 @@ jobs:
         with:
           run_install: false
 
-      - name: Set up Node.js 22
+      - name: Set up Node.js 24
         uses: actions/setup-node@v7
         with:
-          node-version: "22" # as in apps/web engines and its Dockerfile
+          node-version: "24" # as in apps/web engines and its Dockerfile
           cache: "pnpm"
 
       # Pheidippides' signing key is kept in pheidippides/signing.sops.yaml,
@@ -398,10 +398,10 @@ jobs:
         with:
           run_install: false
 
-      - name: Set up Node.js 22
+      - name: Set up Node.js 24
         uses: actions/setup-node@v7
         with:
-          node-version: "22" # as in apps/web engines and its Dockerfile
+          node-version: "24" # as in apps/web engines and its Dockerfile
           cache: "pnpm"
 
       - name: Install dependencies with pnpm

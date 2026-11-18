@@ -1,5 +1,7 @@
 # Use an official Node runtime as a parent image
-FROM node:22-alpine3.22
+# Node 24 on Alpine 3.23. The alpine3.22 images stopped getting rebuilds, Node's
+# security releases included, in May 2026.
+FROM node:24-alpine3.23
 
 # The image is built from the repository's root (the root .dockerignore keeps
 # the context to the web app and the workspace's manifests), so it can install
@@ -17,19 +19,19 @@ WORKDIR /usr/src/app/apps/web
 # Pinned to the minor version only: Alpine keeps just the newest build of each
 # package, so a full pin (=~3.5.4-r0) stops resolving at its next security fix.
 RUN apk add --no-cache \
-    git=~2.49 \
-    bash=~5.2 \
-    docker-cli=~28.3 \
-    docker-cli-compose=~2.36 \
-    curl=~8.14 \
+    git=~2.52 \
+    bash=~5.3 \
+    docker-cli=~29.5 \
+    docker-cli-compose=~2.40 \
+    curl=~8.23 \
     android-tools=~35.0 \
     \
     autoconf=~2.72 \
-    automake=~1.17 \
+    automake=~1.18 \
     zlib-dev=~1.4 \
     libpng-dev=~1.6 \
     build-base=~0.5 \
-    vips-dev=~8.16 \
+    vips-dev=~8.17 \
     python3-dev=~3.12 \
     py3-setuptools=~80.9 \
     py3-pip=~25.1 \
