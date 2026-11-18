@@ -4,6 +4,10 @@ import * as Sentry from "@sentry/node";
 import ApkReader, { ManifestObject } from "adbkit-apkreader";
 // import { globStream } from "glob"; // glob doesn't webpack
 import { installOrReplace } from "%/adb/install-or-replace.ts";
+import {
+  getKeptImageCopyFor,
+  noteKeptImageCopy,
+} from "%/adb/kept-image-copy.ts";
 import RobustClient from "%/adb/robust-client.ts";
 import { runDeviceSetupExclusively } from "%/adb/setup-lock.ts";
 import { BASE_ORIGIN } from "%/constants.ts";
@@ -346,6 +350,18 @@ async function installOrUpdateApkAndGrantAllPermissions(
     // now, there are multiple app-debug.apk files at the same time that will attempt to install at the same time
     // to prevent this, we will be using async-lock with the key of the apkPath and the device id
     const adbFileName = path.basename(apkPath);
+    const shell = (command: string) => shellOutput(adbClient, command);
+
+    // An APK that couldn't replace the image's own copy before won't now:
+    // pushing it again, a large one in the case of Chromium's WebView, would
+    // only fail the same way
+    if (
+      !isOurPackage &&
+      (await getIsSystemPackage(adbClient, packageName)) &&
+      (await getKeptImageCopyFor(shell, packageName, manifest.versionCode))
+    ) {
+      return;
+    }
 
     // Other processes don't install on this device meanwhile: a device runs one
     // setup at a time (runDeviceSetupExclusively)
@@ -369,6 +385,7 @@ async function installOrUpdateApkAndGrantAllPermissions(
       console.info(
         `Keeping the image's own ${packageName}, which ${adbFileName} can't replace: they're signed with different keys`,
       );
+      await noteKeptImageCopy(shell, packageName, manifest.versionCode);
       return;
     }
 
