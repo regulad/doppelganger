@@ -125,9 +125,6 @@ importers:
       '@sentry/profiling-node':
         specifier: 11.10.0
         version: 11.10.0(webpack@5.112.2)
-      '@stripe/stripe-js':
-        specifier: ^10.2.1
-        version: 10.2.1
       '@supabase/ssr':
         specifier: ^0.12.7
         version: 0.12.7(@supabase/supabase-js@2.118.0)
@@ -194,9 +191,6 @@ importers:
       dotenv:
         specifier: ^18.0.9
         version: 18.0.9
-      dotenv-expand:
-        specifier: ^11.0.6
-        version: 11.0.7
       find-up:
         specifier: ^8.0.0
         version: 8.0.0
@@ -4905,11 +4899,6 @@ packages:
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
     dev: false
 
-  /@stripe/stripe-js@10.2.1:
-    resolution: {integrity: sha512-diHeR1/FeWZZzuFXEvkjRMzydgKEpxUTrKEUxSV8NcpeZY3Kl8C4Gerw/JSMK+3oXsBRJtgkG7ckviQJ651moA==}
-    engines: {node: '>=12.16'}
-    dev: false
-
   /@supabase/auth-js@2.118.0:
     resolution: {integrity: sha512-xWfPXyhS2KDSfAneMtI6p/tBnbdiz/5vaRKXEqUfzfC9WCniKr2Ds5o5G7RIGig0bom4z6wUY9zaV07WDVTfnQ==}
     engines: {node: '>=22.0.0'}
@@ -7348,18 +7337,6 @@ packages:
     dependencies:
       webidl-conversions: 7.0.0
     dev: true
-
-  /dotenv-expand@11.0.7:
-    resolution: {integrity: sha512-zIHwmZPRshsCdpMDyVsqGmgyP0yT8GAgXUnkdAoJisxvf33k7yO6OuoKmcTGuXPWSsm8Oh88nZicRLA9Y0rUeA==}
-    engines: {node: '>=12'}
-    dependencies:
-      dotenv: 16.6.1
-    dev: false
-
-  /dotenv@16.6.1:
-    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
-    dev: false
 
   /dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
