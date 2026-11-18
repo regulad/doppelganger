@@ -48,6 +48,14 @@ jobs:
     permissions:
       contents: read
 
+    services:
+      # Stripe's mock API, which apps/web/src/app/api/stripe/subscribing.test.ts
+      # sends its Stripe requests to
+      stripe-mock:
+        image: stripe/stripe-mock:v0.206.0@sha256:aeb96b83e87a893d2ac005e363ac01ffa6e59a5ad85b49c155dfc9129de02e78
+        ports:
+          - 12111:12111
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -102,6 +110,8 @@ jobs:
       # its own runner, rather than here, where their Gradle builds would run
       # side by side and contend for the one Gradle daemon registry
       - name: Turbo
+        env:
+          STRIPE_MOCK_URL: http://localhost:12111
         run: |
           ./scripts/verify-clean-commit.sh
           pnpm exec turbo run lint type-check test --filter='!pheidippides-*'

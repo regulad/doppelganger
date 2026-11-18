@@ -17,7 +17,8 @@
       "dependsOn": ["^type-check"]
     },
     "test": {
-      "dependsOn": ["^test"]
+      "dependsOn": ["^test"],
+      "passThroughEnv": ["CI", "STRIPE_MOCK_URL"]
     }
   }
 }
