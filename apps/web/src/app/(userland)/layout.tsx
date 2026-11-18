@@ -42,7 +42,8 @@ export function ConfiguredFooter() {
       ]}
       notice={
         <>
-          © 2024–2026 Parker Wahle. Doppelganger is free software under the{" "}
+          © 2024–2025 Nefum LLC, © 2025–2026 Parker Wahle. Doppelganger is free
+          software under the{" "}
           <a
             className="underline"
             href="https://www.gnu.org/licenses/agpl-3.0.html"
