@@ -23,7 +23,6 @@
       }
     ],
     "paths": {
-      "contentlayer/generated": ["./.contentlayer/generated"],
       "@/*": ["./src/*"],
       "%/*": ["./server/src/*"]
     }
@@ -44,7 +43,6 @@
     "src/utils/**/*.ts",
     "src/*.ts",
     "src/*.d.ts",
-    ".contentlayer/generated",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", ".next", "src/ws-scrcpy/**/*.ts"]

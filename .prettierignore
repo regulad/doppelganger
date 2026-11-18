@@ -16,4 +16,3 @@ apps/web/server/src/generated/
 apps/web/public/sitemap*.xml
 
 **/.idea/
-**/.contentlayer/

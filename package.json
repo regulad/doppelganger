@@ -20,11 +20,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@contentlayer2/source-files>zod": "^4.6.7",
       "@tailwindcss/typography>postcss-selector-parser": "6.1.5",
-      "adbkit-apkreader>debug": "^4.4.3",
-      "mdx-bundler>uuid": "^11.1.1",
-      "remark-mdx-frontmatter>toml": "^5.0.1"
+      "adbkit-apkreader>debug": "^4.4.3"
     }
   },
   "packageManager": "pnpm@8.15.5"
