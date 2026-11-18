@@ -46,6 +46,7 @@ public/workers/
 
 # compiled licenses
 src/app/(userland)/(contained)/licenses/licenses.json
+public/third-party-notices.txt
 
 # temporary built android files
 android/*/

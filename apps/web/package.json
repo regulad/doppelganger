@@ -168,7 +168,7 @@
     "dev": "pnpm run catalog:generate && tsx server/src/index.ts",
     "workers:dev": "rimraf -rf public/workers/ && webpack --config workers/webpack.config.cjs",
     "workers:build": "rimraf -rf public/workers/ && webpack --config workers/webpack.config.cjs --mode production",
-    "licenses:check": "node scripts/generate-licenses.mjs \"src/app/(userland)/(contained)/licenses/licenses.json\"",
+    "licenses:check": "node scripts/generate-licenses.mjs \"src/app/(userland)/(contained)/licenses/licenses.json\" public/third-party-notices.txt",
     "build": "pnpm run catalog:generate && next build --webpack && next-sitemap --config next-sitemap.config.mjs",
     "start": "prisma migrate deploy && pm2 start ecosystem.config.json --no-daemon",
     "lint": "eslint --max-warnings 0 src",

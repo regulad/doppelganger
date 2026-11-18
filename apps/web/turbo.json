@@ -54,9 +54,18 @@
       "cache": false
     },
     "licenses:check": {
-      "inputs": ["package.json", "../../pnpm-lock.yaml"],
+      "inputs": [
+        "package.json",
+        "../../pnpm-lock.yaml",
+        "scripts/generate-licenses.mjs",
+        "scrcpy/LICENSE",
+        "src/components/ui/LICENSE.md",
+        "src/ws-scrcpy/**/LICENSE",
+        "src/ws-scrcpy/vendor/*/AUTHORS"
+      ],
       "outputs": [
-        "src/app/\\(userland\\)/\\(contained\\)/licenses/licenses.json"
+        "src/app/\\(userland\\)/\\(contained\\)/licenses/licenses.json",
+        "public/third-party-notices.txt"
       ]
     },
     "build": {
