@@ -2,19 +2,15 @@
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
   "tasks": {
-    "content:build": {
-      "inputs": ["posts/**"],
-      "outputs": [".contentlayer/generated/**"]
-    },
     "android:fetch": {
       "cache": false,
       "outputs": ["android/**"]
     },
     "test": {
-      "dependsOn": ["db:generate", "licenses:check", "content:build"]
+      "dependsOn": ["db:generate", "licenses:check"]
     },
     "type-check": {
-      "dependsOn": ["db:generate", "licenses:check", "content:build"]
+      "dependsOn": ["db:generate", "licenses:check"]
     },
     "workers:dev": {
       "inputs": ["workers/**"],
