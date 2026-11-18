@@ -348,6 +348,8 @@ jobs:
     runs-on: "ubuntu-latest"
     name: Test device setup on redroid
     needs: build-android
+    # A device that never comes up would otherwise hold the runner for six hours
+    timeout-minutes: 30
     permissions:
       contents: read
 
@@ -358,11 +360,19 @@ jobs:
           lfs: false
 
       # Android 14: redroid's 16 needs ashmem, which these runners' kernels
-      # lack. They have binder, which every version needs.
+      # lack. Every version needs binder, which they have built in or as the
+      # binder_linux module. The runners have no GPU, so Android renders on the
+      # CPU (redroid_gpu_mode=guest), as regulad/redroid-script's boot tests do.
       - name: Start redroid
         run: |
+          echo "kernel $(uname -r)"
+          if ! { test -e /dev/binder || grep -qw binder /proc/filesystems; }; then
+            sudo apt-get install -y "linux-modules-extra-$(uname -r)"
+            sudo modprobe binder_linux devices=binder,hwbinder,vndbinder
+          fi
           docker run -d --privileged --name redroid -p 5555:5555 \
-            redroid/redroid:14.0.0_64only-latest@sha256:0a611199ba2e0b5d60af39b3327a517f6407231f4352114ed3bd3cbfe2be69aa
+            redroid/redroid:14.0.0_64only-latest@sha256:0a611199ba2e0b5d60af39b3327a517f6407231f4352114ed3bd3cbfe2be69aa \
+            androidboot.redroid_gpu_mode=guest
 
       # The Pheidippides APKs from build-android, where setup looks for them
       - uses: actions/download-artifact@v8
@@ -385,18 +395,26 @@ jobs:
       - name: Install dependencies with pnpm
         run: pnpm install --frozen-lockfile
 
+      # Every adb call has a timeout: adb shell waits indefinitely for a device
+      # that hasn't connected
       - name: Wait for redroid to boot
         run: |
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           adb="$ANDROID_HOME/platform-tools/adb"
-          for i in $(seq 1 120); do
-            "$adb" connect localhost:5555 >/dev/null 2>&1
-            if [ "$("$adb" -s localhost:5555 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; then
+          deadline=$((SECONDS + 600))
+          while [ $SECONDS -lt $deadline ]; do
+            timeout 10 "$adb" connect localhost:5555 >/dev/null 2>&1 || true
+            booted=$(timeout 10 "$adb" -s localhost:5555 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "$booted" = 1 ]; then
+              echo "booted: $(timeout 10 "$adb" -s localhost:5555 shell getprop ro.build.fingerprint)"
               exit 0
             fi
-            sleep 2
+            sleep 5
           done
-          docker logs redroid 2>&1 | tail -50
+          echo "::error::redroid didn't finish booting in 10 minutes"
+          docker ps -a
+          timeout 10 "$adb" devices || true
+          docker logs redroid 2>&1 | tail -100
           exit 1
 
       - name: Run the device setup test
@@ -409,7 +427,7 @@ jobs:
 
       - name: Show the device's log
         if: failure()
-        run: adb -s localhost:5555 logcat -d | tail -300
+        run: timeout 60 adb -s localhost:5555 logcat -d | tail -300 || true
 
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than
