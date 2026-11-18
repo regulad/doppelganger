@@ -30,16 +30,20 @@ const ONE_SIGNAL_PARAMS = {
 const OneSignalContext = createContext<boolean>(false);
 
 /**
- * Whether a OneSignal call failed because the browser didn't load OneSignal's
- * SDK from cdn.onesignal.com, usually because an ad blocker stopped it. Push
- * notifications are then off for this visitor, which is theirs to choose, not
- * an error. react-onesignal 3.0 ignored this silently; 3.5 rejects init and
- * every later call with it.
+ * Whether a OneSignal call failed because of how the visitor set up their
+ * browser. Push notifications are then off for this visitor, which is theirs
+ * to choose, not an error:
+ * - The browser didn't load OneSignal's SDK from cdn.onesignal.com, usually
+ *   because an ad blocker stopped it. react-onesignal 3.0 ignored this
+ *   silently; 3.5 rejects init and every later call with it.
+ * - The browser blocks the site's storage (cookies and site data turned off),
+ *   so the SDK's first read of localStorage throws a SecurityError.
  */
-export function isOneSignalScriptBlocked(error: unknown): boolean {
+export function isOneSignalUnavailable(error: unknown): boolean {
   return (
-    error instanceof Error &&
-    error.message === "OneSignal script failed to load."
+    (error instanceof Error || error instanceof DOMException) &&
+    (error.message === "OneSignal script failed to load." ||
+      error.name === "SecurityError")
   );
 }
 
@@ -74,6 +78,13 @@ export default function OneSignalProvider({
   const supabaseClient = createClient(); // auto-singleton
 
   useEffect(() => {
+    // Some browsers have no Web Push, such as Safari on an iPhone when the site
+    // isn't on the home screen. OneSignal has nothing to do there, and its init
+    // would only reject.
+    if (!OneSignal.Notifications.isPushSupported()) {
+      return;
+    }
+
     const subscriptionPromise = OneSignal.init(ONE_SIGNAL_PARAMS)
       .catch((error: any) => {
         // https://nefum.sentry.io/issues/5644485008/?project=4507558058721280&query=is%3Aarchived+onesignal&referrer=issue-stream&statsPeriod=14d&stream_index=0
@@ -91,7 +102,7 @@ export default function OneSignalProvider({
         ) {
           console.warn(error);
           return;
-        } else if (isOneSignalScriptBlocked(error)) {
+        } else if (isOneSignalUnavailable(error)) {
           // OneSignal is left alone from here on
           console.warn(error);
           return false;

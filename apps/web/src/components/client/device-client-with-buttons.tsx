@@ -5,7 +5,7 @@ import DeviceClient, {
   DeviceClientHandle,
 } from "@/components/client/device-client.tsx";
 import MaxWidthHardlimiter from "@/components/max-width-hardlimiter.tsx";
-import { isOneSignalScriptBlocked } from "@/components/onesignal/one-signal-provider.tsx";
+import { isOneSignalUnavailable } from "@/components/onesignal/one-signal-provider.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { SimpleTooltip } from "@/components/ui/tooltip.tsx";
 import { useToast } from "@/components/ui/use-toast.ts";
@@ -347,9 +347,10 @@ export default function DeviceClientWithButtons({
           title: "Failed to enable notification passthrough",
           description: "Try disabling your adblocker",
         });
-        // The toast tells the visitor about an ad blocker stopping OneSignal;
-        // only another failure is ours to look at
-        if (!isOneSignalScriptBlocked(e)) {
+        // The toast covers OneSignal being unavailable in this browser (an ad
+        // blocker, or storage turned off); only another failure is ours to
+        // look at
+        if (!isOneSignalUnavailable(e)) {
           Sentry.captureException(e);
         }
       });
