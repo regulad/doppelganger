@@ -6,4 +6,4 @@ creation_rules:
   - path_regex: \.sops\.(json|ya?ml|env)$
     age: >-
       age14e7wj4lltcvva2jy9vzzul8y7yuj5xk9vtqfxt9erzz58xqwmpjqurdhep,
-      age1ehs8kwmhgx8esu85phh7h5rxhwadhzr82q2dtegl454su43zkunsfndrpw
+      age1tahlpql7ftelfttqpc6ggrg400r289teukhwgzhln9zxyxu66f7qkw5lh5
