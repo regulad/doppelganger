@@ -419,19 +419,29 @@ async function upsertSystemProperties(device: Device): Promise<void> {
   const adbDevice = new AdbDevice(device);
   const adbClient = adbDevice.adbDeviceClient;
 
-  await adbClient.shell("setprop persist.sys.timezone America/New_York");
-  await adbClient.shell("setprop persist.sys.locale en-US");
-  await adbClient.shell("setprop persist.sys.language en");
+  // Each command is run to its end. Setup asks for root next, which restarts
+  // adbd and cuts off a command still running: a device then went without
+  // persist.doppelganger.device, and Notify, which can't start without it,
+  // crashed (PHEIDIPPIDES-NOTIFY-8).
+  await shellOutput(adbClient, "setprop persist.sys.timezone America/New_York");
+  await shellOutput(adbClient, "setprop persist.sys.locale en-US");
+  await shellOutput(adbClient, "setprop persist.sys.language en");
 
-  // old
-  //       - "ro.doppelganger.origin={{ &doppelgangerOrigin }}"
-  //       - "ro.doppelganger.secret={{ &doppelgangerSecret }}"
-  //       - "ro.doppelganger.device={{ id }}"
-  await adbClient.shell(`setprop persist.doppelganger.origin "${BASE_ORIGIN}"`);
-  await adbClient.shell(
-    `setprop persist.doppelganger.secret "${device.redroidSecret}"`,
-  );
-  await adbClient.shell(`setprop persist.doppelganger.device "${device.id}"`);
+  // The Pheidippides apps read these (they were once ro.doppelganger.*
+  // properties, set when the container started)
+  const properties = {
+    "persist.doppelganger.origin": BASE_ORIGIN,
+    "persist.doppelganger.secret": device.redroidSecret,
+    "persist.doppelganger.device": device.id,
+  };
+  for (const [name, value] of Object.entries(properties)) {
+    await shellOutput(adbClient, `setprop ${name} "${value}"`);
+    // setprop prints nothing either way, so each is read back
+    const set = await shellOutput(adbClient, `getprop ${name}`);
+    if (set !== value) {
+      throw new Error(`${name} is "${set}" after setting it`);
+    }
+  }
 }
 
 /**
