@@ -36,15 +36,34 @@ export function ConfiguredFooter() {
       logo={<LogoBigHero className="inline-flex items-center" />}
       contactDetails={[
         {
-          label: "Address:",
-          lines: ["7 Beverly Road, Livingston NJ, US, 07039"],
-        },
-        {
           label: "Contact:",
-          lines: ["+1 (908) 656-8176", "doppelganger@regulad.xyz"],
+          lines: ["pw@regulad.xyz"],
         },
       ]}
-      notice="© 2025 Nefum LLC. All rights reserved. Any data uploaded or generated on our services is to be treated as insecure. Doppelganger is not responsible for the loss or compromise of any data. Doppelganger is best used for low-risk data, including but not limited to rewards apps, games, social media, and websites. Banking apps and similar high-security tasks may be blocked from running in Doppelganger environments."
+      notice={
+        <>
+          © 2024–2026 Parker Wahle. Doppelganger is free software under the{" "}
+          <a
+            className="underline"
+            href="https://www.gnu.org/licenses/agpl-3.0.html"
+          >
+            GNU AGPL
+          </a>
+          ; its{" "}
+          <a
+            className="underline"
+            href="https://github.com/regulad/doppelganger"
+          >
+            source code
+          </a>{" "}
+          is on GitHub. Any data uploaded or generated on our services is to be
+          treated as insecure. Doppelganger is not responsible for the loss or
+          compromise of any data. Doppelganger is best used for low-risk data,
+          including but not limited to rewards apps, games, social media, and
+          websites. Banking apps and similar high-security tasks may be blocked
+          from running in Doppelganger environments.
+        </>
+      }
       linkColumns={[
         [
           {
