@@ -436,9 +436,20 @@ jobs:
           pnpm run catalog:generate
           pnpm exec jest --testMatch '**/*.redroid.ts' --coverage=false
 
-      - name: Show the device's log
+      # All of it, from boot: its last lines alone are mostly the device
+      # failing to reach the internet, which the internal network blocks
+      - name: Save the device's log
         if: failure()
-        run: timeout 60 "$ANDROID_HOME/platform-tools/adb" -s "$REDROID_ADB_SERIAL" logcat -d | tail -300 || true
+        run: |
+          timeout 60 "$ANDROID_HOME/platform-tools/adb" -s "$REDROID_ADB_SERIAL" logcat -d -b all > redroid-logcat.txt || true
+          grep -E 'pheidippides|AndroidRuntime|ActivityTaskManager' redroid-logcat.txt | tail -300 || true
+
+      - name: Upload the device's log
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: redroid-logcat
+          path: redroid-logcat.txt
 
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than

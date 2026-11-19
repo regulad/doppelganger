@@ -87,7 +87,7 @@ updates:
     cooldown:
       default-days: 14
     ignore:
-      # The image's Node is apps/web's (engines: ^22). Native addons such as cpu-features don't build on newer majors.
+      # The image's Node is apps/web's (engines: ^24.11.0). Native addons such as cpu-features don't build on newer majors.
       - dependency-name: "node"
         update-types: ["version-update:semver-major"]
     groups:

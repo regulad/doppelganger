@@ -139,10 +139,16 @@ describe("a redroid device", () => {
     expect(await shell("settings get secure mock_location_app")).toBe(
       "xyz.regulad.pheidippides.locate",
     );
-    // Notify reads notifications, and Administrate owns the device
-    expect(
-      await shell("settings get secure enabled_notification_listeners"),
-    ).toContain("xyz.regulad.pheidippides.notify");
+    // Notify reads notifications, and Administrate owns the device. Android
+    // grants Notify's listener at once, but copies its listeners into this
+    // setting only when it saves its policy file, a quarter of a second later
+    // (NotificationManagerService.handleSavePolicyFile); the apps set up in
+    // parallel, so Notify's may finish last.
+    await waitForShell(
+      "settings get secure enabled_notification_listeners",
+      /xyz\.regulad\.pheidippides\.notify\//,
+      10_000,
+    );
     expect(await shell("dpm list-owners")).toContain(
       "xyz.regulad.pheidippides.administrate",
     );
