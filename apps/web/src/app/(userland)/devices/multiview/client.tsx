@@ -197,7 +197,8 @@ export function Multiview({ devices }: Readonly<{ devices: Device[] }>) {
   const addRow = () => setRows((r) => Math.min(MAX_SIZE, r + 1));
   const removeRow = () => setRows((r) => Math.max(1, r - 1));
 
-  // Calculate default sizes for columns and rows
+  // Default sizes for columns and rows, in percent; the panels take a bare
+  // number as pixels
   const defaultColumnSize = 100 / columns;
   const defaultRowSize = 100 / rows;
 
@@ -229,25 +230,23 @@ export function Multiview({ devices }: Readonly<{ devices: Device[] }>) {
       </div>
 
       <ResizablePanelGroup
-        direction="vertical"
+        orientation="vertical"
         className="min-h-[90vh] rounded-lg border"
       >
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <Fragment key={rowIndex}>
             <ResizablePanel
               id={`row-${rowIndex}`}
-              order={rowIndex + 1}
-              defaultSize={defaultRowSize}
-              minSize={100 / (MAX_SIZE + 1)}
+              defaultSize={`${defaultRowSize}%`}
+              minSize={`${100 / (MAX_SIZE + 1)}%`}
             >
-              <ResizablePanelGroup direction="horizontal">
+              <ResizablePanelGroup orientation="horizontal">
                 {Array.from({ length: columns }).map((_, colIndex) => (
                   <Fragment key={colIndex}>
                     <ResizablePanel
                       id={`row-${rowIndex}-col-${colIndex}`}
-                      order={colIndex + 1}
-                      defaultSize={defaultColumnSize}
-                      minSize={100 / (MAX_SIZE + 1)}
+                      defaultSize={`${defaultColumnSize}%`}
+                      minSize={`${100 / (MAX_SIZE + 1)}%`}
                     >
                       <DeviceView devices={devices} key={globalKey} />
                     </ResizablePanel>
