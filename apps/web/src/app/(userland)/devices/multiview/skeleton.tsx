@@ -33,21 +33,21 @@ export function MultiviewSkeleton() {
       </div>
 
       <ResizablePanelGroup
-        direction="vertical"
+        orientation="vertical"
         className="min-h-[90vh] rounded-lg border"
       >
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <Fragment key={rowIndex}>
             <ResizablePanel
-              defaultSize={defaultRowSize}
-              minSize={100 / (MAX_SIZE + 1)}
+              defaultSize={`${defaultRowSize}%`}
+              minSize={`${100 / (MAX_SIZE + 1)}%`}
             >
-              <ResizablePanelGroup direction="horizontal">
+              <ResizablePanelGroup orientation="horizontal">
                 {Array.from({ length: columns }).map((_, colIndex) => (
                   <Fragment key={colIndex}>
                     <ResizablePanel
-                      defaultSize={defaultColumnSize}
-                      minSize={100 / (MAX_SIZE + 1)}
+                      defaultSize={`${defaultColumnSize}%`}
+                      minSize={`${100 / (MAX_SIZE + 1)}%`}
                     >
                       <div className="h-full p-4 bg-gray-100">
                         <Skeleton className="h-8 w-full mb-4" />{" "}
