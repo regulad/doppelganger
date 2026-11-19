@@ -41,7 +41,7 @@ export default function GoogleOneTap() {
       />
       <div
         id="g_id_onload"
-        data-client_id="6822405828-jcheqartcigc09111gq22tb6oqnvsrpa.apps.googleusercontent.com"
+        data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
         data-context="signin"
         data-ux_mode="popup"
         data-callback="handleSignInWithGoogle"
