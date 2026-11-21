@@ -17,6 +17,7 @@ import { dsn } from "./sentry.dsn.ts";
 import { readSentryContext } from "./server/src/sentry/error-context.ts";
 import { getPm2Instance } from "./server/src/sentry/pm2-instance.ts";
 import { describeProcessState } from "./server/src/sentry/process-state.ts";
+import { isUnparseableRequestBody } from "./server/src/sentry/unparseable-request.ts";
 
 if (!dsn && process.env.NODE_ENV === "production") {
   console.warn("NEXT_PUBLIC_SENTRY_DSN is not set, so Sentry is off");
@@ -38,6 +39,11 @@ Sentry.init({
   // server/src/sentry/error-context.ts) onto its event, wherever the error
   // was captured
   beforeSend(event, hint) {
+    // A request body Next couldn't parse is the sender's fault, such as a
+    // scanner's broken multipart POST
+    if (isUnparseableRequestBody(event)) {
+      return null;
+    }
     const { tags, contexts } = readSentryContext(hint.originalException);
     if (tags && Object.keys(tags).length) {
       event.tags = { ...event.tags, ...tags };
