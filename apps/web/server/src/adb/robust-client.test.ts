@@ -5,6 +5,7 @@
 import { readSentryContext } from "%/sentry/error-context.ts";
 import { type Client, DeviceClient } from "@devicefarmer/adbkit";
 import { EventEmitter } from "node:events";
+import { Readable } from "node:stream";
 import RobustClient, { isTransientAdbError } from "./robust-client.ts";
 
 const mockClient = {
@@ -71,6 +72,44 @@ describe("ReconnectingAdbDeviceClient", () => {
     const { tags, contexts } = readSentryContext(error);
     expect(tags).toEqual({ "adb.operation": "getState" });
     expect(contexts?.adb).toMatchObject({ serial, operation: "getState" });
+  });
+
+  it("adds Android's own state to a failure the device answered", async () => {
+    jest.spyOn(reconnectingClient, "getIsConnected").mockResolvedValue(true);
+    jest
+      .spyOn(DeviceClient.prototype, "install")
+      .mockRejectedValue(
+        new Error(
+          "java.lang.NullPointerException: Attempt to invoke virtual method 'java.util.List android.os.storage.StorageManager.getVolumes()' on a null object reference",
+        ),
+      );
+    jest
+      .spyOn(DeviceClient.prototype, "getProperties")
+      .mockResolvedValue({ "sys.boot_completed": "1" });
+    jest
+      .spyOn(DeviceClient.prototype, "shell")
+      .mockImplementation(
+        async () =>
+          Readable.from([Buffer.from("Service mount: not found\n")]) as never,
+      );
+
+    const error = await reconnectingClient
+      .install("app-debug.apk")
+      .catch((e: unknown) => e);
+    const { contexts } = readSentryContext(error);
+    expect(contexts?.android_state).toMatchObject({
+      properties: { "sys.boot_completed": "1" },
+      services: { mount: false },
+    });
+  });
+
+  it("doesn't ask a device it couldn't reach about its state", async () => {
+    jest.spyOn(reconnectingClient, "getIsConnected").mockResolvedValue(false);
+    const getProperties = jest.spyOn(DeviceClient.prototype, "getProperties");
+
+    const error = await reconnectingClient.reboot().catch((e: unknown) => e);
+    expect(readSentryContext(error).contexts?.android_state).toBeUndefined();
+    expect(getProperties).not.toHaveBeenCalled();
   });
 
   it("waits out a device that isn't reachable yet until the timeout", async () => {

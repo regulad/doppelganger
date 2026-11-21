@@ -1,4 +1,5 @@
 import { DeviceClient } from "%/adb/adb.ts";
+import { getAndroidState } from "%/adb/android-state.ts";
 import { getDeviceContainerStates } from "%/docker/containers.ts";
 import { withSentryContext } from "%/sentry/error-context.ts";
 import { resolveOrDefaultValue } from "%/utils/promise-utils.ts";
@@ -121,7 +122,9 @@ export default class RobustClient extends DeviceClient {
    * Connects, then runs an operation, retrying both as retryUntilReachable
    * does. A final failure carries Sentry context: the device, the operation,
    * how many attempts it took and for how long, and what Docker says about the
-   * device's containers at that moment.
+   * device's containers at that moment. A failure other than the device being
+   * unreachable also carries what Android says about its own state
+   * (getAndroidState), while the device still answers.
    */
   private async withConnection<T>(
     operation: string,
@@ -136,9 +139,10 @@ export default class RobustClient extends DeviceClient {
         return run();
       });
     } catch (error: unknown) {
-      const containers = this.deviceId
-        ? await getDeviceContainerStates(this.deviceId)
-        : undefined;
+      const [containers, android] = await Promise.all([
+        this.deviceId ? getDeviceContainerStates(this.deviceId) : undefined,
+        isTransientAdbError(error) ? undefined : getAndroidState(this.direct),
+      ]);
       throw withSentryContext(error, {
         tags: {
           "adb.operation": operation,
@@ -152,6 +156,7 @@ export default class RobustClient extends DeviceClient {
             elapsed_s: Math.round((Date.now() - startedAt) / 1000),
           },
           ...(containers ? { device_containers: containers } : {}),
+          ...(android ? { android_state: android } : {}),
         },
       });
     }
