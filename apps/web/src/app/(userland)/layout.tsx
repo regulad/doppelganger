@@ -37,7 +37,7 @@ export function ConfiguredFooter() {
       contactDetails={[
         {
           label: "Contact:",
-          lines: ["pw@regulad.xyz"],
+          lines: ["contact@doppelgangerhq.com"],
         },
       ]}
       notice={
