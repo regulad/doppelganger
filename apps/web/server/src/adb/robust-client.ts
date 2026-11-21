@@ -182,7 +182,7 @@ export default class RobustClient extends DeviceClient {
 
   /** Connects, waiting out a device that isn't reachable yet. */
   async connectRobust(): Promise<void> {
-    await this.retryUntilReachable(() => this.connectOnce());
+    await this.withConnection("connect", async () => {});
   }
 
   async getIsConnected(): Promise<boolean> {
@@ -198,9 +198,8 @@ export default class RobustClient extends DeviceClient {
    * Get the state (moreso type) of the device after it has been connected
    */
   getStateRuntime(): Promise<"device" | "emulator"> {
-    return this.retryUntilReachable(async () => {
-      await this.connectOnce();
-      const maybeState = await this.getState();
+    return this.withConnection("getState", async () => {
+      const maybeState = await this.direct.getState();
       if (maybeState === "device" || maybeState === "emulator") {
         return maybeState;
       }

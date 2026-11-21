@@ -61,6 +61,18 @@ describe("ReconnectingAdbDeviceClient", () => {
     expect(contexts?.device_containers).toBeUndefined();
   });
 
+  it("says what failed when checking the device's state, too", async () => {
+    // DOPPELGANGER-DH's failures came through here, and said nothing more
+    jest.spyOn(reconnectingClient, "getIsConnected").mockResolvedValue(false);
+
+    const error = await reconnectingClient
+      .getStateRuntime()
+      .catch((e: unknown) => e);
+    const { tags, contexts } = readSentryContext(error);
+    expect(tags).toEqual({ "adb.operation": "getState" });
+    expect(contexts?.adb).toMatchObject({ serial, operation: "getState" });
+  });
+
   it("waits out a device that isn't reachable yet until the timeout", async () => {
     jest.spyOn(reconnectingClient, "getIsConnected").mockResolvedValue(false);
 
