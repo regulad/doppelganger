@@ -71,6 +71,8 @@ class DeviceOwnerDeviceTest {
     fun sentryIsOnButNotReportingToProduction() {
         assertTrue(Sentry.isEnabled())
         assertEquals("http://devicetest@127.0.0.1:9/0", Sentry.getCurrentScopes().options.dsn)
+        // PheidippidesApplication started it, to tag each event with its device
+        assertTrue(Sentry.getCurrentScopes().options.eventProcessors.any { it is DeviceIdEventProcessor })
     }
 
     private fun awaitUninstallBlocked(packageName: String, blocked: Boolean) {

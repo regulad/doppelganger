@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+            android:name=".PheidippidesApplication"
             android:allowBackup="false"
             android:dataExtractionRules="@xml/data_extraction_rules"
             android:fullBackupContent="@xml/backup_rules"
@@ -41,6 +42,10 @@
                 <data android:scheme="package" />
             </intent-filter>
         </activity>
+
+    <!-- PheidippidesApplication starts Sentry, so that each event is tagged with
+         its device -->
+    <meta-data android:name="io.sentry.auto-init" android:value="false" />
 
     <!-- Required: set your sentry.io project identifier (DSN) -->
     <meta-data android:name="io.sentry.dsn" android:value="https://c1f6594874fda42613c5e9bc59cfdb6d@o4506961510596608.ingest.us.sentry.io/4507685947244544" />

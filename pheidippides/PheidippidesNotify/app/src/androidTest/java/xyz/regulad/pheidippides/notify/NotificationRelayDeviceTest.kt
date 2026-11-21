@@ -49,6 +49,8 @@ class NotificationRelayDeviceTest {
     fun sentryIsOnButNotReportingToProduction() {
         assertTrue(Sentry.isEnabled())
         assertEquals(TEST_DSN, Sentry.getCurrentScopes().options.dsn)
+        // PheidippidesApplication started it, to tag each event with its device
+        assertTrue(Sentry.getCurrentScopes().options.eventProcessors.any { it is DeviceIdEventProcessor })
     }
 
     /** Waits for the relayed notification [matches] picks out of all those relayed. */

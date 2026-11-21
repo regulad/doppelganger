@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <application
+            android:name=".PheidippidesApplication"
             android:allowBackup="false"
             android:dataExtractionRules="@xml/data_extraction_rules"
             android:fullBackupContent="@xml/backup_rules"
@@ -36,6 +37,10 @@
                 <action android:name="xyz.regulad.pheidippides.locate.ACTION_STOP_SERVICE" />
             </intent-filter>
         </service>
+
+    <!-- PheidippidesApplication starts Sentry, so that each event is tagged with
+         its device -->
+    <meta-data android:name="io.sentry.auto-init" android:value="false" />
 
     <!-- Required: set your sentry.io project identifier (DSN) -->
     <meta-data android:name="io.sentry.dsn" android:value="https://7bbee926ce3f8fe51f48d312a6de8545@o4506961510596608.ingest.us.sentry.io/4507685918736384" />

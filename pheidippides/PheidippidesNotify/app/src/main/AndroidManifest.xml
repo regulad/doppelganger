@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
+            android:name=".PheidippidesApplication"
             android:allowBackup="false"
             android:dataExtractionRules="@xml/data_extraction_rules"
             android:fullBackupContent="@xml/backup_rules"
@@ -36,6 +37,10 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+
+    <!-- PheidippidesApplication starts Sentry, so that each event is tagged with
+         its device -->
+    <meta-data android:name="io.sentry.auto-init" android:value="false" />
 
     <!-- Required: set your sentry.io project identifier (DSN) -->
     <meta-data android:name="io.sentry.dsn" android:value="https://5b094f934cdadae555ec8545ae3bd4cf@o4506961510596608.ingest.us.sentry.io/4507672052695040" />
