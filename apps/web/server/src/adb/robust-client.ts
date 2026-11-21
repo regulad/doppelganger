@@ -38,14 +38,23 @@ export const DEFAULT_ADB_TIMEOUT = 5 * 60 * 1_000; // so much time 🔥
 
 const ADBD_RESTARTING = "adbd closed the connection without a reply";
 
+const ANDROID_BOOTING = "Android is still booting";
+
 type DeviceState = Device["type"];
+
+/** What an attempt is doing, so that running out of time can say */
+interface AttemptProgress {
+  /** Set while it waits for Android to finish booting, to stop that wait */
+  booting?: AbortController;
+}
 
 /**
  * Whether an ADB failure means the device can't be reached yet, as while its
  * Android boots, rather than that the operation itself failed: adbd refusing
  * or dropping the connection, adb's server reporting the device offline or
- * missing, or a reply cut short (adbkit's PrematureEOFError, which is also what
- * an install gets while Android's package manager isn't up yet).
+ * missing, a reply cut short (adbkit's PrematureEOFError, which is also what
+ * an install gets while Android's package manager isn't up yet), or Android
+ * not done booting when the time ran out.
  */
 export function isTransientAdbError(error: unknown): boolean {
   if (!(error instanceof Error)) {
@@ -54,7 +63,7 @@ export function isTransientAdbError(error: unknown): boolean {
   if (error.name === "PrematureEOFError") {
     return true;
   }
-  return /Device is not connected|adbd closed the connection without a reply|Connection refused|ECONNREFUSED|ECONNRESET|EPIPE|failed to connect|Failure: '(closed|device offline|device still (connecting|authorizing))'|device '[^']*' not found/i.test(
+  return /Device is not connected|adbd closed the connection without a reply|Android is still booting|Connection refused|ECONNREFUSED|ECONNRESET|EPIPE|failed to connect|Failure: '(closed|device offline|device still (connecting|authorizing))'|device '[^']*' not found/i.test(
     error.message,
   );
 }
@@ -75,6 +84,9 @@ export default class RobustClient extends DeviceClient {
    * and fail with "Can't open file".
    */
   private readonly direct: AdbDeviceClient;
+
+  /** Whether this client has seen Android finish booting */
+  private booted = false;
 
   constructor(
     client: Client,
@@ -97,15 +109,41 @@ export default class RobustClient extends DeviceClient {
    * `timeout` bounds each attempt, not the whole retry, and its attempts
    * default to three about 200 ms apart, so a device still booting used to
    * fail in about two seconds, whatever the timeout said.
+   *
+   * An attempt that runs out of time while it waits for Android to boot fails
+   * with "Android is still booting", which isTransientAdbError takes as the
+   * device not being reachable yet. One that runs out of time in the
+   * operation itself fails as @lifeomic/attempt's own timeout does.
    */
-  private retryUntilReachable<T>(attempt: () => Promise<T>): Promise<T> {
+  private retryUntilReachable<T>(
+    attempt: (progress: AttemptProgress) => Promise<T>,
+  ): Promise<T> {
     const deadline = Date.now() + this.timeout;
-    return retry(attempt, {
+    const progress: AttemptProgress = {};
+    return retry(() => attempt(progress), {
       maxAttempts: 0, // until handleError stops it
       delay: 250,
       factor: 1.5,
       maxDelay: 5_000,
       timeout: this.timeout, // and no single attempt outlasts the whole wait
+      // A timeout skips handleError: the retry ends with what this throws
+      handleTimeout: (context) => {
+        // The attempt left running still reaches handleError when it fails,
+        // and would start another attempt after the caller had its error
+        context.abort();
+        if (progress.booting) {
+          progress.booting.abort();
+          throw new Error(
+            `${ANDROID_BOOTING} after ${Math.round(this.timeout / 1000)} s`,
+          );
+        }
+        throw Object.assign(
+          new Error(
+            `Retry timeout (attemptNum: ${context.attemptNum}, timeout: ${this.timeout})`,
+          ),
+          { code: "ATTEMPT_TIMEOUT" },
+        );
+      },
       handleError: (error, context) => {
         if (
           isTransientAdbError(error)
@@ -133,9 +171,9 @@ export default class RobustClient extends DeviceClient {
     const startedAt = Date.now();
     let attempts = 0;
     try {
-      return await this.retryUntilReachable(async () => {
+      return await this.retryUntilReachable(async (progress) => {
         attempts++;
-        await this.connectOnce();
+        await this.connectOnce(progress);
         return run();
       });
     } catch (error: unknown) {
@@ -169,20 +207,34 @@ export default class RobustClient extends DeviceClient {
   }
 
   /**
-   * Connects once, unless already connected, and on a new connection waits for
-   * Android to finish booting. Throws "Device is not connected", which
-   * retryUntilReachable waits out, while adbd isn't up yet.
+   * Connects once, unless already connected, then waits for Android to finish
+   * booting, unless this client has already seen it booted. Throws "Device is
+   * not connected", which retryUntilReachable waits out, while adbd isn't up
+   * yet.
+   *
+   * Every client waits for the boot, not only the one that connects: adb's
+   * server is shared, so the others find the device connected. They used to
+   * go ahead at once, and the location route's `pm path` hung on an Android
+   * still booting while setup waited out the boot (DOPPELGANGER-DT).
    */
-  private async connectOnce(): Promise<void> {
-    if (await this.getIsConnected()) return;
-
-    await this.doConnect();
+  private async connectOnce(progress: AttemptProgress = {}): Promise<void> {
     if (!(await this.getIsConnected())) {
-      throw new Error(`Device is not connected`);
+      await this.doConnect();
+      if (!(await this.getIsConnected())) {
+        throw new Error(`Device is not connected`);
+      }
     }
+    if (this.booted) return;
 
-    await this.waitForDevice();
-    await this.waitBootComplete();
+    const booting = new AbortController();
+    progress.booting = booting;
+    try {
+      await this.waitForDevice({ signal: booting.signal });
+      await this.waitBootComplete({ signal: booting.signal });
+    } finally {
+      if (progress.booting === booting) progress.booting = undefined;
+    }
+    this.booted = true;
   }
 
   /** Connects, waiting out a device that isn't reachable yet. */

@@ -28,6 +28,89 @@ describe("ReconnectingAdbDeviceClient", () => {
   beforeEach(() => {
     jest.restoreAllMocks();
     jest.clearAllMocks();
+    // an Android that has booted, unless a test says otherwise
+    jest
+      .spyOn(DeviceClient.prototype, "waitForDevice")
+      .mockResolvedValue(serial);
+    jest
+      .spyOn(DeviceClient.prototype, "waitBootComplete")
+      .mockResolvedValue(true);
+  });
+
+  it("waits for Android to boot on a device another client connected", async () => {
+    // adb's server is shared: setup had connected this device, and the
+    // location route found it connected while Android still booted
+    // (DOPPELGANGER-DT)
+    const client = new RobustClient(mockClient, serial, 10_000);
+    jest.spyOn(client, "getIsConnected").mockResolvedValue(true);
+    const order: string[] = [];
+    jest
+      .spyOn(DeviceClient.prototype, "waitBootComplete")
+      .mockImplementation(async () => {
+        order.push("boot");
+        return true;
+      });
+    jest
+      .spyOn(DeviceClient.prototype, "isInstalled")
+      .mockImplementation(async () => {
+        order.push("isInstalled");
+        return true;
+      });
+
+    await client.isInstalled("xyz.regulad.pheidippides.locate");
+    await client.isInstalled("xyz.regulad.pheidippides.locate");
+
+    // once, as it has seen Android booted
+    expect(order).toEqual(["boot", "isInstalled", "isInstalled"]);
+  });
+
+  it("says Android is still booting when the time runs out waiting for it", async () => {
+    const client = new RobustClient(mockClient, serial, 1_000);
+    jest.spyOn(client, "getIsConnected").mockResolvedValue(true);
+    let signal: AbortSignal | undefined;
+    const waitBootComplete = jest
+      .spyOn(DeviceClient.prototype, "waitBootComplete")
+      .mockImplementation((options) => {
+        signal = options?.signal;
+        return new Promise((_, reject) =>
+          signal?.addEventListener("abort", () =>
+            reject(new Error("This operation was aborted")),
+          ),
+        );
+      });
+    const isInstalled = jest.spyOn(DeviceClient.prototype, "isInstalled");
+
+    const error = await client
+      .isInstalled("xyz.regulad.pheidippides.locate")
+      .catch((e: unknown) => e);
+
+    expect(error).toMatchObject({
+      message: "Android is still booting after 1 s",
+    });
+    expect(isTransientAdbError(error)).toBe(true);
+    expect(signal?.aborted).toBe(true);
+    // the wait it stopped doesn't start another attempt once it fails
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(waitBootComplete).toHaveBeenCalledTimes(1);
+    expect(isInstalled).not.toHaveBeenCalled();
+  });
+
+  it("still reports an operation that hangs on a booted Android", async () => {
+    const client = new RobustClient(mockClient, serial, 300);
+    jest.spyOn(client, "getIsConnected").mockResolvedValue(true);
+    jest
+      .spyOn(DeviceClient.prototype, "isInstalled")
+      .mockReturnValue(new Promise(() => {}));
+
+    const error = await client
+      .isInstalled("xyz.regulad.pheidippides.locate")
+      .catch((e: unknown) => e);
+
+    expect(error).toMatchObject({
+      message: "Retry timeout (attemptNum: 0, timeout: 300)",
+      code: "ATTEMPT_TIMEOUT",
+    });
+    expect(isTransientAdbError(error)).toBe(false);
   });
 
   it("throws error on install when timeout is reached", async () => {
@@ -229,6 +312,7 @@ describe("isTransientAdbError", () => {
   it("recognizes a device that isn't reachable yet", () => {
     for (const error of [
       new Error("Device is not connected"),
+      new Error("Android is still booting after 10 s"),
       new Error("failed to connect to 'abc-redroid:5555': Connection refused"),
       adbkitError(
         "PrematureEOFError",
@@ -254,6 +338,12 @@ describe("isTransientAdbError", () => {
         "app.apk could not be installed [INSTALL_FAILED_UPDATE_INCOMPATIBLE]",
       ),
       adbkitError("FailError", "Failure: 'unknown command'"),
+      Object.assign(
+        new Error("Retry timeout (attemptNum: 0, timeout: 10000)"),
+        {
+          code: "ATTEMPT_TIMEOUT",
+        },
+      ),
       new Error(
         "Device is not in a connected state, expected device or emulator but got unauthorized",
       ),

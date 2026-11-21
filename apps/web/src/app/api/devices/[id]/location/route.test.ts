@@ -90,6 +90,18 @@ describe("sending a location to a device", () => {
     expect(captureException).not.toHaveBeenCalled();
   });
 
+  it("drops the location, without reporting it, while Android still boots", async () => {
+    // DOPPELGANGER-DT: the device was up, but Android hadn't finished booting
+    isInstalled.mockRejectedValue(
+      new Error("Android is still booting after 10 s"),
+    );
+
+    const res = await PUT(request());
+
+    expect(res.status).toBe(503);
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
   it("answers with a JSON error, and reports it, when the command fails", async () => {
     const failed = new Error("Activity not started, unable to resolve Intent");
     shell.mockRejectedValue(failed);
