@@ -197,6 +197,16 @@ const sentryConfig = withSentryConfig(nextConfig, {
     // https://vercel.com/docs/cron-jobs
     automaticVercelMonitors: true,
   },
+
+  _experimental: {
+    // Keep the origin of browser stack frames from other sites' scripts. By
+    // default the SDK turns every frame's origin into app://, so Google's
+    // sign-in client (https://accounts.google.com/gsi/client) reads as our
+    // own app:///gsi/client, with no source maps. With this on, our own
+    // frames keep their https://doppelgangerhq.com URLs, which still resolve
+    // through the debug IDs the plugin injects.
+    thirdPartyOriginStackFrames: true,
+  },
 });
 
 const mdxConfig = withMdxFactory({

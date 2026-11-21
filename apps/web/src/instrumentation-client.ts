@@ -2,6 +2,7 @@
 // The config you add here will be used whenever a users loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
+import { markForeignFramesNotInApp } from "@/utils/sentry/foreign-frames.ts";
 import * as Sentry from "@sentry/nextjs";
 import { dataCollection } from "../sentry.data-collection.ts";
 import { dsn } from "../sentry.dsn.ts";
@@ -46,6 +47,12 @@ Sentry.init({
   profileLifecycle: "trace",
 
   dataCollection,
+
+  // Frames from other sites' scripts, such as Google's sign-in client, keep
+  // their origin (see thirdPartyOriginStackFrames in next.config.mjs) and
+  // aren't ours
+  beforeSend: (event) =>
+    markForeignFramesNotInApp(event, window.location.origin),
 });
 
 // Traces client-side navigations
