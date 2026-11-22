@@ -451,6 +451,10 @@ jobs:
           name: redroid-logcat
           path: redroid-logcat.txt
 
+  # The web image is built here, with docker/build-push-action, rather than by
+  # docker/github-builder's reusable workflows: their BuildKit Git context has
+  # no LFS files (Broadway's avc.wasm.asset), and can't take the Pheidippides
+  # APKs that build-android hands over as artifacts (2026-11-11).
   build-docker:
     # Each platform builds on a native runner, arm64 included, rather than
     # under QEMU emulation. Each pushes its image by digest alone; merge-docker

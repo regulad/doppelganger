@@ -22,6 +22,10 @@ the reason in a comment beside it, so that devices made from it still resolve.
 Android versions older than 14 are deprecated: Android 14 is the oldest version
 Google's Android Security Bulletins still patch (as of 2026-11).
 
+Usable images up to that oldest patched version are free, and newer ones are
+`premium` (Parker, 2026-11-10). `redroid-images.test.ts` checks both cutoffs:
+re-check them when the bulletins drop Android 14.
+
 `memfd` starts the image with `androidboot.use_memfd=true`. Images without it
 use ashmem, which the host's kernel must provide (`ashmem_linux`). Android 16
 needs ashmem on any kernel without Android's memfd patches, so only the Android
