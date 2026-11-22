@@ -1,18 +1,18 @@
-# These settings are synced to GitHub by https://probot.github.io/apps/settings/
+# Repository configuration, managed by the Settings app
+# (https://github.com/repository-settings/app). The shared defaults come from
+# regulad/.github; this file sets only what is this repository's own.
+_extends: .github
 
 repository:
-  # See https://docs.github.com/en/rest/reference/repos#update-a-repository for all available settings.
-
-  # A short description of the repository that will show up on GitHub
-  description: "Virtual Android phones in the cloud, used from any browser: Doppelganger's web app and its Pheidippides companion apps"
-
-  # A comma-separated list of topics to set on the repository
-  topics: android, redroid, cloud-phone, virtual-phone, scrcpy, adb, docker, nextjs, typescript, kotlin
-
-  # Either `true` to make the repository private, or `false` to make it public.
+  name: doppelganger
+  description: >-
+    Virtual Android phones in the cloud, used from any browser: Doppelganger's web app and its Pheidippides companion apps
+  homepage: https://doppelgangerhq.com
   private: false
+  # Topics: comma-and-space separated string, NOT a YAML list.
+  topics: android, redroid, cloud-phone, virtual-phone, scrcpy, adb, docker, nextjs, typescript, kotlin
+  default_branch: master
 
-  # Either `true` to allow auto-merge on pull requests, or `false` to disallow auto-merge.
   # workflows/dependabot-auto-merge.yml turns it on for Dependabot's grouped minor and patch updates.
   allow_auto_merge: true
 
@@ -22,8 +22,32 @@ repository:
   # once past the same two-week cooldown as everything else.
   enable_automated_security_fixes: false
 
-  # On: Dependabot still alerts on vulnerable dependencies.
-  enable_vulnerability_alerts: true
+labels:
+  # Dependabot's, one for each ecosystem in .github/dependabot.yml.
+  - name: javascript
+    color: "168700"
+    description: Pull requests that update javascript code
+  - name: java
+    color: "ffa221"
+    description: Pull requests that update java code
+  - name: docker
+    color: "21ceff"
+    description: Pull requests that update docker code
+  - name: github_actions
+    color: "000000"
+    description: Pull requests that update GitHub Actions code
+  - name: sentry
+    color: "362D59"
+    description: Reported by Sentry; the fixing commit also carries Fixes <SHORT-ID>
+  - name: "blocked: upstream"
+    color: "FBCA04"
+    description: Waits on a release from a dependency
+  - name: needs verification
+    color: "0E8A16"
+    description: Waits on a real-world check, such as a device test or a first subscription
+  - name: deferred
+    color: "CFD3D7"
+    description: Postponed by the maintainer
 
 branches:
   - name: master
