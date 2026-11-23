@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
 
-    id("io.sentry.android.gradle") version "6.25.0"
+    id("io.sentry.android.gradle") version "6.26.0"
 }
 
 // versionCode is the number of commits that touched this app, so every change
