@@ -3,12 +3,16 @@
 # which keeps its images current.
 #
 # Each ecosystem gets one PR a week grouping its minor and patch updates. workflows/dependabot-auto-merge.yml has GitHub
-# merge the npm, gradle and docker groups once CI passes, and a merge to master deploys. These wait for a person:
+# merge every minor and patch update once CI passes, security updates included, and a merge to master deploys. These
+# wait for a person:
 # - the nextjs group: next.config.mjs's pinMdxToServerComponents works around a Next.js bug in the versions it was
-#   written against, so each Next.js update needs that checked;
-# - the actions group, since workflow changes get a review;
-# - major updates, which come as PRs of their own, a Gradle one covering all three apps;
-# - security updates, which skip the cooldown.
+#   written against, so each Next.js update needs that checked. The workflow holds any PR that touches a dependency a
+#   group's exclude-patterns names, here the npm group's, so a security update that bumps next waits as well;
+# - the actions group, and any other GitHub Actions update, since workflow changes get a review;
+# - major updates, which come as PRs of their own, a Gradle one covering all three apps.
+#
+# Security updates are off for this repository (.github/settings.yml says why), so security fixes arrive through the
+# version updates below, after the cooldown. Were they turned on, the workflow would merge them under the same rules.
 #
 # The nextjs group names its dependencies exactly, and the npm group excludes them by the same names. Dependabot ranks a group without patterns above any wildcard pattern, and a job refreshing one group
 # takes every dependency that group contains, whatever other group it also belongs to.

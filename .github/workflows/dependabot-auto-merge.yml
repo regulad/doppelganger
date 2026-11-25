@@ -1,12 +1,22 @@
 name: Dependabot auto-merge
 
-# Turns on GitHub's auto-merge for Dependabot's npm, gradle and docker groups, which hold only minor and patch updates
-# (see dependabot.yml). GitHub then merges each one once CI's required checks pass (.github/settings.yml), and the
-# merge's push to master runs ci-cd.yml like any other: it builds, publishes, deploys, and records the Sentry release.
+# Turns on GitHub's auto-merge for Dependabot's minor and patch updates, security updates included. GitHub then merges
+# each one once CI's required checks pass (.github/settings.yml), and the merge's push to master runs ci-cd.yml like any
+# other: it builds, publishes, deploys, and records the Sentry release.
 #
-# The groups are named here rather than matching any group: GitHub's grouped security updates come as a group too
-# (npm_and_yarn), and they skip the cooldown. Those, the nextjs, kotlin and actions groups, and major updates all wait
-# for a person.
+# An update merges whether it is grouped or not, and whatever its group is called: GitHub's grouped security updates
+# come as a group named for the ecosystem (npm_and_yarn), not one from dependabot.yml. These wait for a person:
+# - major updates;
+# - GitHub Actions updates, matched by ecosystem rather than by group so that a security update to an action waits too,
+#   since workflow changes get a review;
+# - any update that touches a dependency some group in dependabot.yml excludes by name: today the npm group's
+#   exclude-patterns, next and the packages that move with it, for the pinMdxToServerComponents reason given there. The
+#   whole PR waits, so a grouped security update that also bumps next holds the other fixes in it until a person
+#   merges it.
+#
+# The held names are read from dependabot.yml on the PR's base rather than repeated here. Dependabot matches group
+# patterns after normalizing names, so the match below compares names lowercased, with each run of "-", "_" and "." as
+# one "-" (PEP 503's rule; harmless for npm's names), and reads "*" in a pattern as any run of characters.
 #
 # Auto-merge is turned on with the DEPENDABOT_MERGE_TOKEN secret, not GITHUB_TOKEN. GitHub credits the merge to whoever
 # turned auto-merge on, and starts no workflows for a push credited to GITHUB_TOKEN, so ci-cd.yml would never run. The
@@ -30,10 +40,30 @@ jobs:
     steps:
       - id: metadata
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+      - id: held
+        name: Find dependencies that wait for a person
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          UPDATED: ${{ steps.metadata.outputs.updated-dependencies-json }}
+        run: |
+          names=$(
+            gh api -H 'Accept: application/vnd.github.raw' "repos/$GITHUB_REPOSITORY/contents/.github/dependabot.yml?ref=$BASE_SHA" \
+              | yq -o=json \
+              | jq -r --argjson updated "$UPDATED" '
+                  def norm: ascii_downcase | gsub("[-_.]+"; "-");
+                  [.updates[].groups // {} | .[] | .["exclude-patterns"] // [] | .[] | "^" + (norm | gsub("\\*"; ".*")) + "$"] as $held
+                  | [$updated[].dependencyName | select(norm as $name | any($held[]; . as $re | $name | test($re)))]
+                  | join(", ")'
+          )
+          echo "Held: ${names:-none}"
+          echo "names=$names" >> "$GITHUB_OUTPUT"
       - name: Merge once CI passes
         if: >-
-          contains(fromJSON('["npm", "gradle", "docker"]'), steps.metadata.outputs.dependency-group)
-          && steps.metadata.outputs.update-type != 'version-update:semver-major'
+          steps.metadata.outputs.update-type != 'version-update:semver-major'
+          && steps.metadata.outputs.package-ecosystem != 'github_actions'
+          && steps.held.outputs.names == ''
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
