@@ -7,7 +7,6 @@ import ProviderComposer from "@/components/providers.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import { Toaster } from "@/components/ui/toaster.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip.tsx";
-import { GoogleAnalytics } from "@next/third-parties/google";
 import { clsx } from "clsx";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -113,8 +112,6 @@ export default function RootLayout({
             <Toaster />
           </Suspense>
         </ProviderComposer>
-        {/*no need for a cookie consent manager yet, we only do business in the us*/}
-        <GoogleAnalytics gaId="G-KN7ZDR3JD9" />
       </body>
     </html>
   );

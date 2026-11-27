@@ -51,7 +51,6 @@ updates:
         patterns:
           - "next"
           - "@next/mdx"
-          - "@next/third-parties"
           - "eslint-config-next"
         update-types: ["minor", "patch"]
       npm:
@@ -59,7 +58,6 @@ updates:
         exclude-patterns:
           - "next"
           - "@next/mdx"
-          - "@next/third-parties"
           - "eslint-config-next"
 
   # The three Pheidippides apps, each group in one PR across them.
